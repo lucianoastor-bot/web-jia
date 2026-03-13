@@ -5,7 +5,7 @@ export default function Contacto() {
       {/* ── ENCABEZADO ── */}
       <section className="pagina-header">
         <div className="contenedor">
-          <p className="pagina-label">Jornadas IA en Debate · FHyA UNR · 2026</p>
+          <p className="pagina-label">Jornadas: La IA en Debate · FHyA · UNR · 2026</p>
           <h1 className="pagina-titulo">Contacto</h1>
         </div>
       </section>

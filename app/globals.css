@@ -13,8 +13,8 @@
   --gris:       #5a6a7a;
   --gris-claro: #f0f4f8;
   --borde:      #e0e8f0;
-  --font-serif: 'Exo 2', Arial, sans-serif;
-  --font-sans:  'Rajdhani', Arial, sans-serif;
+  --font-sans: 'Exo 2', Arial, sans-serif;
+  --font-serif:  'Exo 2', Arial, sans-serif;
 }
 
 html { scroll-behavior: smooth; }
@@ -351,9 +351,10 @@ img { max-width: 100%; }
 .text-title {
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: clamp(2.4rem, 4.8vw, 5rem);
+  font-size: clamp(2.4rem, 3.5vw, 4rem);
   line-height: 1.08;
   margin-bottom: 0.1rem;
+  text-transform: uppercase;
 }
 
 .t-mid  { color: var(--azul-claro); }
@@ -468,6 +469,7 @@ img { max-width: 100%; }
   font-weight: 700;
   color: white;
   margin-bottom: 0.4rem;
+  text-transform: uppercase;
 }
 
 .pagina-subtitulo {
