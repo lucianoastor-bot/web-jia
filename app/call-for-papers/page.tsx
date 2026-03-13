@@ -18,7 +18,6 @@ export default function CallForPapers() {
         <div className="contenedor">
           <p className="pagina-label">Jornadas: La IA en Debate · FHyA · UNR · 2026</p>
           <h1 className="pagina-titulo">Call for Papers</h1>
-          <p className="pagina-subtitulo">Envío de resúmenes</p>
         </div>
       </section>
 
@@ -33,8 +32,8 @@ export default function CallForPapers() {
               {/* Presentación */}
               <div className="cfp-bloque">
                 <p className="cfp-texto">
-                  La <strong>Facultad de Humanidades y Artes</strong> convoca a las{' '}
-                  <strong>Jornadas "La Inteligencia Artificial en Debate"</strong>,
+                  La <strong>Facultad de Humanidades y Artes</strong> de la <strong>Universidad Nacional de Rosario</strong> convoca a las{' '}
+                  <strong>Jornadas: La Inteligencia Artificial en Debate</strong>,
                   dirigidas a estudiantes, graduados y docentes de la Facultad de
                   Humanidades y Artes y de la comunidad universitaria que deseen
                   compartir experiencias e investigaciones sobre la temática. El evento
