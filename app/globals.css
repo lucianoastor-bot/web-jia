@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,600;0,700;1,400&family=Rajdhani:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -13,7 +13,7 @@
   --gris:       #5a6a7a;
   --gris-claro: #f0f4f8;
   --borde:      #e0e8f0;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-serif: 'Exo 2', Arial, sans-serif;
   --font-sans:  'Rajdhani', Arial, sans-serif;
 }
 
