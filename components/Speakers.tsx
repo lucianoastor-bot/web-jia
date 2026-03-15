@@ -2,13 +2,37 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { SPEAKERS } from '@/lib/speakers-data'
 
 export default function Speakers() {
   const [current, setCurrent] = useState(0)
   const [visible, setVisible] = useState(4)
   const total = SPEAKERS.length
+
+  /* para desplazar el carousell con el dedo */
+  const touchStartX = useRef<number>(0)
+  const touchEndX = useRef<number>(0)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].clientX
+    const diff = touchStartX.current - touchEndX.current
+
+    if (Math.abs(diff) > 50) {  // umbral mínimo de 50px para considerar swipe
+      if (diff > 0) {
+        // swipe izquierda → siguiente
+        next()
+      } else {
+        // swipe derecha → anterior
+        prev()
+      }
+    }
+  }
+/* -------- */
 
   useEffect(() => {
     const update = () => {
@@ -38,8 +62,10 @@ export default function Speakers() {
         </div>
 
         {/* Carrusel */}
-        <div className="speakers__carousel-wrap">
-          
+        <div className="speakers__carousel-wrap"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd} >
+
           {/* Flechas */}
           <div className="speakers__nav">
             <button
