@@ -450,7 +450,7 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   
   .ejes__grid { grid-template-columns: repeat(2, 1fr); }
   
@@ -473,6 +473,15 @@
   }
   .noticia-card:last-child {
     grid-column: 1 / -1;  /* ← ocupa ambas columnas */
+  }
+
+  .eje-card.is-active .eje-card__desc {
+    max-height: 200px;
+    opacity: 1;
+  }
+  .eje-card__desc {
+    max-height: 0;
+    opacity: 0;
   }
 
 }
