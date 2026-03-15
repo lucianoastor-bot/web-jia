@@ -268,4 +268,11 @@
     display: none;   /* ← ocultar bio en mobile para que no se apriete */
   }
 
+    .noticias__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .noticia-card:last-child {
+    grid-column: 1 / -1;  /* ← ocupa ambas columnas */
+  }
+
 }
