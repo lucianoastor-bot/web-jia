@@ -4,7 +4,7 @@
 
 /* ── Hero wrapper ── */
 .hero {
-  min-height: 100vh;
+  min-height: 90vh;
   background-color: var(--c-dark);
   background-image: url('/logo-azul.png');
   background-size: 75%;
@@ -197,7 +197,7 @@
 }
 .countdown__units {
   display: flex;
-  gap: 4rem;
+  gap: 2rem;
   align-items: flex-end;
 }
 .countdown__unit {
