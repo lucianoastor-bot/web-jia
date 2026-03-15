@@ -18,7 +18,7 @@ export default function Hero() {
         fpsLimit: 60,
         background: { color: { value: 'transparent' } },
         particles: {
-          number: { value: 75, density: { enable: true, area: 1000 } },
+          number: { value: 65, density: { enable: true, area: 1000 } },
           color:  { value: ['#2374ab', '#4dccbd', '#ff8484'] },
           opacity: { value: 0.35, random: { enable: true, minimumValue: 0.1 } },
           size:    { value: { min: 1, max: 2.5 } },
