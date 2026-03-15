@@ -34,7 +34,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 2.5rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Carrusel wrapper — necesita position relative para los botones */
