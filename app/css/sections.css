@@ -37,23 +37,41 @@
   margin-bottom: 2.5rem;
 }
 
+/* Carrusel wrapper — necesita position relative para los botones */
+.speakers__carousel-wrap {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Botones posicionados a los costados */
 .speakers__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  left: 0;
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0 0.5rem;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .speakers__nav-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(35, 22, 81, 0.2);
-  background: transparent;
+  background: var(--c-white);
   color: var(--c-dark);
   font-size: 1rem;
   cursor: pointer;
+  pointer-events: auto;
   transition: background var(--ease), border-color var(--ease), color var(--ease);
+  box-shadow: 0 2px 8px rgba(35, 22, 81, 0.1);
+  opacity: 0.55;
 }
 .speakers__nav-btn:hover:not(:disabled) {
   background: var(--c-dark);
@@ -63,11 +81,6 @@
 .speakers__nav-btn:disabled {
   opacity: 0.25;
   cursor: default;
-}
-
-/* Carrusel wrapper */
-.speakers__carousel-wrap {
-  overflow: hidden;
 }
 
 .speakers__carousel {

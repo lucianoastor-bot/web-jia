@@ -34,9 +34,13 @@ export default function Speakers() {
       <div className="speakers__inner">
 
         <div className="speakers__header">
-          <div>
             <h2 className="section__title">Invitados</h2>
-          </div>
+        </div>
+
+        {/* Carrusel */}
+        <div className="speakers__carousel-wrap">
+          
+          {/* Flechas */}
           <div className="speakers__nav">
             <button
               className="speakers__nav-btn"
@@ -55,10 +59,6 @@ export default function Speakers() {
               →
             </button>
           </div>
-        </div>
-
-        {/* Carrusel */}
-        <div className="speakers__carousel-wrap">
           <div
             className="speakers__carousel"
             style={{
