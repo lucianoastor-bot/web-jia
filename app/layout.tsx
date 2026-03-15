@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" className={`${lora.variable} ${outfit.variable}`}>
+    <html lang="es" className={`${lora.variable} ${outfit.variable}`} data-scroll-behavior="smooth">
       <body>
         <Header />
         {children}

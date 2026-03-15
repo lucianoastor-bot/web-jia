@@ -249,7 +249,7 @@
      display: block;
   }
 
-  .hero__scroll { display: none; }
+  .hero__scroll { /*display: none;*/ }
 
   .countdown {
     padding: 1rem 4vw;

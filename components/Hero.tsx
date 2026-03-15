@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect } from 'react'
 import Countdown from './Countdown'
@@ -20,11 +19,11 @@ export default function Hero() {
         particles: {
           number: { value: 75, density: { enable: true, area: 1000 } },
           color:  { value: ['#2374ab', '#4dccbd', '#ff8484'] },
-          opacity: { value: 0.35, random: { enable: true, minimumValue: 0.1 } },
+          opacity: { value: 0.45, random: { enable: true, minimumValue: 0.1 } },
           size:    { value: { min: 1, max: 2.5 } },
           links: {
-            enable: true, distance: 140,
-            color: '#2374ab', opacity: 0.25, width: 1,
+            enable: true, distance: 160,
+            color: '#2374ab', opacity: 0.35, width: 1.5,
           },
           move: {
             enable: true, speed: 0.35, random: true,
@@ -78,7 +77,7 @@ export default function Hero() {
 
       </div>
 
-      <div className="hero__scroll" aria-hidden="true">scroll</div>
+      <div className="hero__scroll" aria-hidden="true">↓ scroll ↓</div>
 
       <Countdown />
 
