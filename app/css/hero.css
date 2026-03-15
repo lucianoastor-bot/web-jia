@@ -4,7 +4,7 @@
 
 /* ── Hero wrapper ── */
 .hero {
-  min-height: 85vh;
+  min-height: 95vh;
   background-color: var(--c-dark);
   background-image: url('/logo-azul.png');
   background-size: 75%;
@@ -230,25 +230,27 @@
 @media (max-width: 900px) {
   .hero {
     background-size: 100%;        /* ← más grande en mobile */
-    background-position: center 30%;
+    background-position: center 15%;
   }
 
   .hero__content {
     flex-direction: column;
-    padding: 4rem 6vw 3rem;
-    gap: 1.5rem;
+    padding: 6rem 6vw 3rem;
+    gap: 1rem;
   }
   .hero__actions {
     width: 100%;
     min-width: unset;
     flex-direction: row;
-    flex: 1;
-    margin-top: 1.5rem; 
+    margin-bottom: 0.25rem;
   }
+
   .btn {
-     display: flex;
+     display: block;
   }
+
   .hero__scroll { display: none; }
+
   .countdown {
     padding: 1rem 4vw;
     flex-direction: column;
