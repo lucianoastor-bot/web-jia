@@ -1,3 +1,7 @@
+'use client'
+
+import { useState } from 'react'
+
 const EJES = [
   {
     num: '01',
@@ -42,6 +46,12 @@ const EJES = [
 ]
 
 export default function Ejes() {
+  const [active, setActive] = useState<string | null>(null)
+
+  const toggle = (num: string) => {
+    setActive(prev => prev === num ? null : num)
+  }
+
   return (
     <section className="ejes" id="ejes">
       <div className="ejes__inner">
@@ -50,7 +60,11 @@ export default function Ejes() {
 
         <div className="ejes__grid">
           {EJES.map((eje) => (
-            <div key={eje.num} className="eje-card">
+            <div
+              key={eje.num}
+              className={`eje-card ${active === eje.num ? 'is-active' : ''}`}
+              onClick={() => toggle(eje.num)}
+            >
               <span className="eje-card__num">{eje.num}</span>
               <h3 className="eje-card__title">{eje.title}</h3>
               <p className="eje-card__desc">{eje.desc}</p>

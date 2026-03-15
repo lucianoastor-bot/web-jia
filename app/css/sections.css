@@ -322,7 +322,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: rgba(35, 22, 81, 0.08);
-  margin-top: 2.5rem;
+  margin-top: 1rem;
 }
 
 /* Card */
