@@ -240,12 +240,12 @@
 @media (max-width: 900px) {
   .hero {
     background-size: 100%;        /* ← más grande en mobile */
-    background-position: center 20%;
+    background-position: center 30%;
   }
 
   .hero__content {
     flex-direction: column;
-    padding: 6rem 6vw 3rem;
+    padding: 4rem 6vw 3rem;
     gap: 1.5rem;
   }
   .hero__actions {

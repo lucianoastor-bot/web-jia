@@ -8,7 +8,7 @@ import { useState } from 'react'
 const NAV_LINKS = [
   { href: '/conferencias', label: 'Conferencias' },
   { href: '/programa',     label: 'Programa' },
-  { href: '/propuestas',   label: 'Propuestas' },
+  { href: '/propuestas',   label: 'Envío de resúmenes' },
   { href: '/organizacion', label: 'Organización' },
   { href: '/contacto',     label: 'Contacto' },
 ]

@@ -1,4 +1,14 @@
-const ejes = [
+// app/propuestas/page.tsx
+
+import type { Metadata } from 'next'
+import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Propuestas — Jornadas: La IA en Debate',
+  description: 'Convocatoria y pautas para el envío de resúmenes. Jornadas: La IA en Debate, FHyA UNR 2026.',
+}
+
+const EJES = [
   'Inteligencia Artificial y educación',
   'Inteligencia Artificial y producción artística y cultural',
   'Inteligencia Artificial, escritura y traducción',
@@ -9,133 +19,122 @@ const ejes = [
   'Inteligencia Artificial: utopía y distopía',
 ]
 
-export default function CallForPapers() {
+export default function Propuestas() {
   return (
-    <div className="pagina-wrapper">
+    <main className="page">
+      <div className="section">
 
-      {/* ── ENCABEZADO ── */}
-      <section className="pagina-header">
-        <div className="contenedor">
-          <p className="pagina-label">Jornadas: La IA en Debate · FHyA · UNR · 2026</p>
-          <h1 className="pagina-titulo">Call for Papers</h1>
+        <div className="section__eyebrow">Convocatoria</div>
+        <h1 className="section__title">Envío de resúmenes</h1>
+
+        <p className="section__body">
+          La Facultad de Humanidades y Artes de la Universidad Nacional de Rosario
+          convoca a las Jornadas: <em>La Inteligencia Artificial en Debate</em>, dirigidas
+          a estudiantes, graduados y docentes de la Facultad de Humanidades y Artes y de
+          la comunidad universitaria que deseen compartir experiencias e investigaciones
+          sobre la temática. El evento se desarrollará los días 10, 11 y 12 de junio de 2026.
+        </p>
+
+        {/* Plazo */}
+        <div style={{ margin: '3rem 0', padding: '2rem', background: 'rgba(35,22,81,0.04)', borderLeft: '3px solid var(--c-turq)' }}>
+          <p style={{ fontSize: '1.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 500, marginBottom: '0.5rem' }}>
+            Plazo para el envío de resúmenes
+          </p>
+          <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--c-dark)', fontFamily: 'var(--font-sans)' }}>
+            20 de abril de 2026
+          </p>
         </div>
-      </section>
 
-      {/* ── CONTENIDO ── */}
-      <section className="seccion">
-        <div className="contenedor">
-          <div className="cfp-grid">
+        {/* Ejes */}
+        <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginTop: '1rem' }}>
+          Ejes temáticos
+        </h2>
 
-            {/* ── Columna principal ── */}
-            <div className="cfp-main">
+        <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '720px', counterReset: 'none' }}>
+          {EJES.map((eje, i) => (
+            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'baseline', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em' }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6 }}>
+                {eje}
+              </span>
+            </li>
+          ))}
+        </ol>
 
-              {/* Presentación */}
-              <div className="cfp-bloque">
-                <p className="cfp-texto">
-                  La <strong>Facultad de Humanidades y Artes</strong> de la <strong>Universidad Nacional de Rosario</strong> convoca a las{' '}
-                  <strong>Jornadas: La Inteligencia Artificial en Debate</strong>,
-                  dirigidas a estudiantes, graduados y docentes de la Facultad de
-                  Humanidades y Artes y de la comunidad universitaria que deseen
-                  compartir experiencias e investigaciones sobre la temática. El evento
-                  se desarrollará los días <strong>10, 11 y 12 de junio de 2026</strong>.
-                </p>
-              </div>
+        {/* Modalidades */}
+        <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginTop: '3rem' }}>
+          Modalidades de participación
+        </h2>
 
-              {/* Plazo */}
-              <div className="cfp-bloque">
-                <h2 className="cfp-subtitulo">Plazo para el envío de resúmenes</h2>
-                <p className="cfp-fecha-destacada">20 de abril de 2026</p>
-              </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
 
-              {/* Modalidades */}
-              <div className="cfp-bloque">
-                <h2 className="cfp-subtitulo">Modalidades de participación</h2>
-
-                <div className="cfp-modalidad">
-                  <h3 className="cfp-modalidad-titulo">
-                    Ponencias · Relatos de experiencias · Pósters
-                  </h3>
-                  <p className="cfp-texto">
-                    Se debe enviar un resumen de hasta 400 palabras siguiendo las
-                    pautas generales para la presentación de resúmenes.
-                  </p>
-                </div>
-
-                <div className="cfp-modalidad">
-                  <h3 className="cfp-modalidad-titulo">Paneles</h3>
-                  <p className="cfp-texto">
-                    Se aceptan paneles de entre 3 y 5 integrantes. El coordinador
-                    debe enviar un resumen general del panel y los resúmenes
-                    individuales de cada integrante. Todos los resúmenes se deben
-                    incluir en un único archivo.
-                  </p>
-                </div>
-              </div>
-
-              {/* Pautas generales */}
-              <div className="cfp-bloque">
-                <h2 className="cfp-subtitulo">
-                  Pautas generales para la presentación de resúmenes
-                </h2>
-
-                <div className="cfp-pautas">
-                  <div className="cfp-pauta">
-                    <span className="cfp-pauta-label">Encabezado</span>
-                    <span className="cfp-pauta-valor">
-                      Título en negritas (centrado), nombre y apellido del autor/es,
-                      institución, correo electrónico
-                    </span>
-                  </div>
-                  <div className="cfp-pauta">
-                    <span className="cfp-pauta-label">Extensión</span>
-                    <span className="cfp-pauta-valor">Máximo 400 palabras</span>
-                  </div>
-                  <div className="cfp-pauta">
-                    <span className="cfp-pauta-label">Fuente</span>
-                    <span className="cfp-pauta-valor">Arial 11, interlineado 1.5</span>
-                  </div>
-                  <div className="cfp-pauta">
-                    <span className="cfp-pauta-label">Nombre del archivo</span>
-                    <span className="cfp-pauta-valor">
-                      <code className="cfp-codigo">APELLIDO_EJEx</code>
-                      {' '}— apellido del autor y número de eje seleccionado
-                    </span>
-                  </div>
-                  <div className="cfp-pauta">
-                    <span className="cfp-pauta-label">Formatos</span>
-                    <span className="cfp-pauta-valor">.doc · .docx · .odt · .rtf</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Botón envío */}
-              <a href="https://forms.gle/SKB7J1o7beuXAsGz5" target="_blank" rel="noopener noreferrer" className="btn-primary cfp-btn">
-                {'Formulario de envío →'}
-              </a>
-
-            </div>
-
-            {/* ── Sidebar ── */}
-            <aside className="cfp-aside">
-
-              <div className="cfp-aside-bloque">
-                <h3 className="cfp-aside-titulo">Ejes temáticos</h3>
-                <ol className="cfp-ejes">
-                  {ejes.map((eje, i) => (
-                    <li key={i} className="cfp-eje">
-                      <span className="cfp-eje-num">{i + 1}</span>
-                      <span className="cfp-eje-texto">{eje}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-            </aside>
-
+          <div>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Ponencias · Relatos de experiencias · Pósters
+            </p>
+            <p className="section__body">
+              Se debe enviar un resumen de hasta 400 palabras siguiendo las pautas
+              generales para la presentación de resúmenes.
+            </p>
           </div>
-        </div>
-      </section>
 
-    </div>
+          <div>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Paneles
+            </p>
+            <p className="section__body">
+              Se aceptan paneles de entre 3 y 5 integrantes. El coordinador debe enviar
+              un resumen general del panel y los resúmenes individuales de cada integrante.
+              Todos los resúmenes se deben incluir en un único archivo.
+            </p>
+          </div>
+
+        </div>
+
+        {/* Pautas */}
+        <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginTop: '3rem' }}>
+          Pautas generales para la presentación de resúmenes
+        </h2>
+
+        <table style={{ width: '100%', maxWidth: '720px', borderCollapse: 'collapse', marginBottom: '3rem' }}>
+          <tbody>
+            {[
+              ['Encabezado', 'Título en negritas (centrado), nombre y apellido del autor/es, institución, correo electrónico'],
+              ['Extensión', 'Máximo 400 palabras'],
+              ['Fuente', 'Arial 11, interlineado 1.5'],
+              ['Nombre del archivo', 'APELLIDO_EJEx — apellido del autor y número de eje seleccionado'],
+              ['Formatos', '.doc · .docx · .odt · .rtf'],
+            ].map(([label, value]) => (
+              <tr key={label} style={{ borderBottom: '1px solid rgba(35,22,81,0.07)' }}>
+                <td style={{ padding: '0.9rem 1.5rem 0.9rem 0', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-mid)', whiteSpace: 'nowrap', verticalAlign: 'top', width: '180px' }}>
+                  {label}
+                </td>
+                <td style={{ padding: '0.9rem 0', fontSize: '0.9rem', color: '#444', lineHeight: 1.6 }}>
+                  {label === 'Nombre del archivo'
+                    ? <code style={{ fontFamily: 'monospace', background: 'rgba(35,22,81,0.06)', padding: '0.15rem 0.4rem', fontSize: '0.85rem' }}>{value}</code>
+                    : value
+                  }
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* CTA */}
+        <div style={{ marginBottom: '4rem' }}>
+          
+          <a href="https://forms.gle/SKB7J1o7beuXAsGz5"
+            className="btn btn--primary"
+            style={{ display: 'inline-block', background: 'var(--c-dark)', borderColor: 'var(--c-dark)', color: 'var(--c-white)' }}
+            target="_blank"
+          >
+            Formulario de envío →
+          </a>
+        </div>
+
+      </div>
+    </main>
   )
 }

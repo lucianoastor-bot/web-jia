@@ -2,6 +2,12 @@
    content.css — Content sections + Footer
 ═══════════════════════════════════════ */
 
+.page {
+  background: var(--content-bg);
+  min-height: 100vh;
+  padding-top: var(--nav-h);
+}
+
 /* ── Content wrapper ── */
 .content {
   background: var(--content-bg);
@@ -70,12 +76,7 @@
   margin: 3rem var(--pad-x);
   border: 2px dashed rgba(35, 22, 81, 0.09);
 }
-.placeholder__icon {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  display: block;
-  opacity: 0.15;
-}
+
 .placeholder__title {
   font-family: var(--font-sans);
   font-size: 0.72rem;
@@ -83,14 +84,20 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--c-dark);
-  opacity: 0.2;
+  opacity: 0.5;        /* ← era 0.2 */
   margin-bottom: 0.35rem;
 }
 .placeholder__text {
   font-size: 0.78rem;
   color: var(--c-dark);
-  opacity: 0.15;
+  opacity: 0.4;        /* ← era 0.15 */
   line-height: 1.6;
+}
+.placeholder__icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+  opacity: 0.4;        /* ← era 0.15 */
 }
 
 /* ── Footer ── */
