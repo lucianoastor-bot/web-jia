@@ -4,7 +4,7 @@
 
 /* ── Hero wrapper ── */
 .hero {
-  min-height: 90vh;
+  min-height: 85vh;
   background-color: var(--c-dark);
   background-image: url('/logo-azul.png');
   background-size: 75%;
@@ -239,8 +239,8 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .hero {
-    background-size: 90%;        /* ← más grande en mobile */
-    background-position: center 40%;
+    background-size: 100%;        /* ← más grande en mobile */
+    background-position: center 20%;
   }
 
   .hero__content {
