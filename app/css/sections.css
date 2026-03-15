@@ -346,9 +346,11 @@
   opacity: 0;
   transition: max-height 0.35s ease, opacity 0.35s ease;
 }
+
 .eje-card:hover {
   background: rgba(35, 22, 81, 0.04);
 }
+
 .eje-card:hover .eje-card__desc {
   max-height: 200px;
   opacity: 1;
@@ -468,7 +470,7 @@
     display: none;   /* ← ocultar bio en mobile para que no se apriete */
   }
 
-    .noticias__grid {
+  .noticias__grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .noticia-card:last-child {
@@ -484,4 +486,32 @@
     opacity: 0;
   }
 
+}
+
+/* Desktop: hover muestra la desc */
+@media (hover: hover) {
+  .eje-card:hover .eje-card__desc {
+    max-height: 200px;
+    opacity: 1;
+  }
+  .eje-card:hover {
+    background: rgba(35, 22, 81, 0.04);
+  }
+  .eje-card:hover::before {
+    transform: scaleX(1);
+  }
+}
+
+/* Mobile: solo click (is-active) muestra la desc */
+@media (hover: none) {
+  .eje-card.is-active .eje-card__desc {
+    max-height: 200px;
+    opacity: 1;
+  }
+  .eje-card.is-active {
+    background: rgba(35, 22, 81, 0.04);
+  }
+  .eje-card.is-active::before {
+    transform: scaleX(1);
+  }
 }
