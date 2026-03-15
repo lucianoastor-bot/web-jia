@@ -18,7 +18,7 @@ export default function Hero() {
         fpsLimit: 60,
         background: { color: { value: 'transparent' } },
         particles: {
-          number: { value: 55, density: { enable: true, area: 1000 } },
+          number: { value: 75, density: { enable: true, area: 1000 } },
           color:  { value: ['#2374ab', '#4dccbd', '#ff8484'] },
           opacity: { value: 0.35, random: { enable: true, minimumValue: 0.1 } },
           size:    { value: { min: 1, max: 2.5 } },
@@ -44,19 +44,9 @@ export default function Hero() {
   return (
     <section className="hero" aria-label="Hero">
 
+      
       {/* Background: particles */}
       <div id="hero-particles" className="hero__particles" aria-hidden="true" />
-
-      {/* Background: ghost logo */}
-      <Image
-        className="hero__bg-logo"
-        src="/logo-azul2.png"
-        alt=""
-        aria-hidden="true"
-        width={1100}
-        height={883}
-        priority
-      />
 
       {/* Content */}
       <div className="hero__content">
