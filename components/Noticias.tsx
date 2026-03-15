@@ -30,8 +30,7 @@ export default function Noticias() {
     <section className="noticias" id="noticias">
       <div className="noticias__inner">
 
-        <div className="section__eyebrow">Novedades</div>
-        <h2 className="section__title">Noticias</h2>
+        <h2 className="section__title">Novedades</h2>
 
         <div className="noticias__grid">
           {NOTICIAS.map((n, i) => (

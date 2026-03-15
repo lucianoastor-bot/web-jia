@@ -46,7 +46,6 @@ export default function Ejes() {
     <section className="ejes" id="ejes">
       <div className="ejes__inner">
 
-        <div className="section__eyebrow">Temáticas</div>
         <h2 className="section__title">Ejes temáticos</h2>
 
         <div className="ejes__grid">
