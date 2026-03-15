@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 const NAV_LINKS = [
-  { href: '/conferencias', label: 'Conferencias' },
+  { href: '/invitados', label: 'Invitados' },
   { href: '/programa',     label: 'Programa' },
   { href: '/propuestas',   label: 'Envío de resúmenes' },
   { href: '/organizacion', label: 'Organización' },
