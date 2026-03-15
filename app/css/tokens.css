@@ -1,0 +1,38 @@
+/* ═══════════════════════════════════════
+   tokens.css — Design variables
+   Cambiar aquí afecta todo el sitio
+═══════════════════════════════════════ */
+
+:root {
+  /* ── Palette ── */
+  --c-dark:   #231651;
+  --c-mid:    #2374ab;
+  --c-turq:   #4dccbd;
+  --c-coral:  #ff8484;
+  --c-white:  #ffffff;
+  --c-bg:     #ffffff;
+
+  /* ── Semantic ── */
+  --hero-bg:    var(--c-dark);
+  --nav-bg:     rgba(35, 22, 81, 0.95);
+  --footer-bg:  var(--c-dark);
+  --content-bg: var(--c-white);
+  --accent:     var(--c-turq);
+
+  /* ── Typography ── */
+  --font-serif: 'Lora', Georgia, serif;
+  --font-sans:  'Outfit', sans-serif;
+
+  /* ── Hero title sizes ── */
+  --sz-jornadas: clamp(1.9rem, 3.6vw, 4.32rem);
+  --sz-title:    clamp(3.5rem, 7.5vw, 8.5rem);
+  --sz-date:     clamp(0.9rem, 1.9vw, 1.9rem);
+
+  /* ── Layout ── */
+  --nav-h:   64px;
+  --pad-x:   8vw;
+  --pad-nav: 5vw;
+
+  /* ── Motion ── */
+  --ease: 0.2s ease;
+}

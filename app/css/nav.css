@@ -1,0 +1,137 @@
+/* ═══════════════════════════════════════
+   nav.css — Header / Navigation
+═══════════════════════════════════════ */
+
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: var(--nav-h);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--pad-nav);
+  background: var(--nav-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Brand ── */
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.nav__brand-logo {
+  height: 34px;
+  width: auto;
+  /*filter: brightness(10);*/
+  opacity: 1;
+}
+.nav__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.nav__brand-title {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--c-white);
+  letter-spacing: 0.02em;
+}
+.nav__brand-sub {
+  font-size: 0.58rem;
+  font-weight: 400;
+  color: var(--c-turq);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── Links ── */
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+.nav__link {
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--c-white);
+  font-weight: 400;
+  padding: 0.4rem 0.7rem;
+  opacity: 0.45;
+  transition: opacity var(--ease), color var(--ease);
+}
+.nav__link:hover {
+  opacity: 1;
+  color: var(--c-turq);
+}
+.nav__sep {
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 0.75rem;
+  padding: 0 0.1rem;
+  user-select: none;
+}
+.nav__link--login {
+  margin-left: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  opacity: 0.4;
+}
+.nav__link--login:hover {
+  border-color: rgba(77, 204, 189, 0.5);
+  color: var(--c-turq);
+  opacity: 1;
+}
+
+/* ── Mobile menu button ── */
+.nav__menu-btn {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0.4rem;
+  cursor: pointer;
+}
+.nav__menu-btn span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: var(--ease);
+}
+
+/* ── Mobile drawer ── */
+.nav__drawer {
+  display: none;
+  position: fixed;
+  top: var(--nav-h);
+  left: 0; right: 0;
+  background: var(--c-dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.5rem var(--pad-nav);
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 99;
+}
+.nav__drawer.is-open {
+  display: flex;
+}
+.nav__drawer .nav__link {
+  opacity: 0.55;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.nav__drawer .nav__link:last-child {
+  border-bottom: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .nav { padding: 0 1.5rem; }
+  .nav__links { display: none; }
+  .nav__menu-btn { display: flex; }
+}
