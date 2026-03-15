@@ -5,6 +5,7 @@ export default function Footer() {
   return (
     <footer className="footer" role="contentinfo">
       <div className="footer__main">
+        
         <Link href="https://fhumyar.unr.edu.ar" target="_blank" rel="noopener noreferrer">
           <Image
             className="footer__logo"

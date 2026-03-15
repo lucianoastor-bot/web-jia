@@ -32,7 +32,7 @@ export default function Countdown() {
   return (
     <div className="countdown" aria-label="Cuenta regresiva al evento">
       <div className="countdown__left">
-        <span className="countdown__label">Faltan</span>
+        <span className="countdown__label">Faltan:</span>
         <div className="countdown__units">
           <div className="countdown__unit">
             <span className="countdown__num">{mounted ? pad(time.days) : '--'}</span>

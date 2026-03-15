@@ -224,17 +224,7 @@
   opacity: 0.3;
   padding-bottom: 0.3rem;
 }
-.countdown__info {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.38);
-  letter-spacing: 0.04em;
-  line-height: 1.9;
-  text-align: right;
-}
-.countdown__info strong {
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 400;
-}
+
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
@@ -252,11 +242,15 @@
     width: 100%;
     min-width: unset;
     flex-direction: row;
+    flex: 1;
+    margin-top: 1.5rem; 
   }
-  .hero__actions .btn { flex: 1; }
+  .btn {
+     display: flex;
+  }
   .hero__scroll { display: none; }
   .countdown {
-    padding: 1.5rem 6vw;
+    padding: 1rem 4vw;
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -265,6 +259,7 @@
   .countdown__left {
     flex-direction: column;
     align-items: center;
+    gap: 0.5rem;   /* ← menos espacio en mobile */
   }
 
   .countdown__units {
