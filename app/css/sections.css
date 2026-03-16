@@ -325,38 +325,15 @@
   margin-top: 1rem;
 }
 
-/* Card */
 .eje-card {
   background: var(--content-bg);
   padding: 2rem 1.8rem;
   position: relative;
   overflow: hidden;
-  cursor: default;
+  cursor: pointer;
   transition: background var(--ease);
 }
 
-/* Descripción aparece con animación en hover */
-.eje-card__desc {
-  font-size: 0.82rem;
-  line-height: 1.65;
-  color: #555;
-  margin-top: 0.8rem;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.35s ease, opacity 0.35s ease;
-}
-
-.eje-card:hover {
-  background: rgba(35, 22, 81, 0.04);
-}
-
-.eje-card:hover .eje-card__desc {
-  max-height: 200px;
-  opacity: 1;
-}
-
-/* Línea de acento arriba en hover */
 .eje-card::before {
   content: '';
   position: absolute;
@@ -368,9 +345,6 @@
   transform-origin: left;
   transition: transform 0.3s ease;
 }
-.eje-card:hover::before {
-  transform: scaleX(1);
-}
 
 .eje-card__num {
   font-family: var(--font-sans);
@@ -381,12 +355,24 @@
   display: block;
   margin-bottom: 0.6rem;
 }
+
 .eje-card__title {
   font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--c-dark);
   line-height: 1.4;
+}
+
+.eje-card__desc {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #555;
+  margin-top: 0.8rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
 }
 
 /* ══════════════════════════════════════
@@ -488,30 +474,30 @@
 
 }
 
-/* Desktop: hover muestra la desc */
+/* ── Desktop: hover ── */
 @media (hover: hover) {
-  .eje-card:hover .eje-card__desc {
-    max-height: 200px;
-    opacity: 1;
-  }
   .eje-card:hover {
     background: rgba(35, 22, 81, 0.04);
   }
   .eje-card:hover::before {
     transform: scaleX(1);
   }
-}
-
-/* Mobile: solo click (is-active) muestra la desc */
-@media (hover: none) {
-  .eje-card.is-active .eje-card__desc {
+  .eje-card:hover .eje-card__desc {
     max-height: 200px;
     opacity: 1;
   }
+}
+
+/* ── Mobile: click (is-active) ── */
+@media (hover: none) {
   .eje-card.is-active {
     background: rgba(35, 22, 81, 0.04);
   }
   .eje-card.is-active::before {
     transform: scaleX(1);
+  }
+  .eje-card.is-active .eje-card__desc {
+    max-height: 200px;
+    opacity: 1;
   }
 }
