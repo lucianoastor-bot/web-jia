@@ -13,6 +13,7 @@ import AdminBienvenida from '@/components/admin/AdminBienvenida'
 
 const MENU = [
   { id: 'bienvenida',   label: 'Bienvenida' },
+  { id: 'novedades',    label: 'Novedades' },
   { id: 'invitados',    label: 'Invitados' },
   { id: 'modalidades',  label: 'Modalidades' },
   { id: 'participantes',label: 'Participantes' },

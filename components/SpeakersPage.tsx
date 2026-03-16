@@ -9,7 +9,6 @@ export default function SpeakersPage() {
   if (loading) return (
     <section className="speakers-page">
       <div className="speakers-page__inner">
-        <div className="section__eyebrow">Conferencias invitadas</div>
         <h1 className="section__title">Invitados</h1>
         <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
       </div>
