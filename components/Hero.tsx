@@ -17,7 +17,7 @@ export default function Hero() {
         fpsLimit: 60,
         background: { color: { value: 'transparent' } },
         particles: {
-          number: { value: 75, density: { enable: true, area: 750 } },
+          number: { value: 65, density: { enable: true, area: 750 } },
           color:  { value: ['#2374ab', '#4dccbd', '#ff8484'] },
           opacity: { value: 0.45, random: { enable: true, minimumValue: 0.1 } },
           size:    { value: { min: 1, max: 2.5 } },
@@ -26,13 +26,13 @@ export default function Hero() {
             color: '#2374ab', opacity: 0.35, width: 1.5,
           },
           move: {
-            enable: true, speed: 0.35, random: true,
+            enable: true, speed: 0.25, random: true,
             outModes: { default: 'bounce' },
           },
         },
         interactivity: {
           events: { onHover: { enable: true, mode: 'grab' } },
-          modes:  { grab: { distance: 160, links: { opacity: 0.28 } } },
+          modes:  { grab: { distance: 160, links: { opacity: 0.30 } } },
         },
         detectRetina: true,
       })

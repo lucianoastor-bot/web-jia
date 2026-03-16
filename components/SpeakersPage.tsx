@@ -1,42 +1,52 @@
-// components/SpeakersPage.tsx
+'use client'
 
 import Image from 'next/image'
-import { SPEAKERS, type Speaker } from '@/lib/speakers-data'
+import { useInvitados } from '@/lib/useInvitados'
 
 export default function SpeakersPage() {
+  const { invitados, loading } = useInvitados()
+
+  if (loading) return (
+    <section className="speakers-page">
+      <div className="speakers-page__inner">
+        <div className="section__eyebrow">Conferencias invitadas</div>
+        <h1 className="section__title">Invitados</h1>
+        <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
+      </div>
+    </section>
+  )
+
   return (
     <section className="speakers-page" id="conferencias">
       <div className="speakers-page__inner">
-
+        <div className="section__eyebrow">Conferencias invitadas</div>
         <h1 className="section__title">Invitados</h1>
 
         <div className="speakers-page__grid">
-          {SPEAKERS.map((speaker) => (
-            <article key={speaker.name} className="speaker-full-card">
+          {invitados.map((inv) => (
+            <article key={inv.id} className="speaker-full-card">
 
-              {/* Foto */}
               <div className="speaker-full-card__photo-wrap">
                 <Image
                   className="speaker-full-card__photo"
-                  src={speaker.photo}
-                  alt={speaker.name}
+                  src={inv.foto || '/speakers/placeholder.jpg'}
+                  alt={inv.nombre}
                   width={300}
                   height={300}
                 />
               </div>
 
-              {/* Contenido */}
               <div className="speaker-full-card__content">
                 <div className="speaker-full-card__header">
-                  <h2 className="speaker-full-card__name">{speaker.name}</h2>
-                  <p className="speaker-full-card__role">{speaker.role}</p>
-                  <p className="speaker-full-card__institution">{speaker.institution}</p>
+                  <h2 className="speaker-full-card__name">{inv.nombre}</h2>
+                  <p className="speaker-full-card__role">{inv.rol}</p>
+                  <p className="speaker-full-card__institution">{inv.institucion}</p>
                 </div>
-                <p className="speaker-full-card__bio">{speaker.bio}</p>
+                <p className="speaker-full-card__bio">{inv.bio}</p>
                 <div className="speaker-full-card__meta">
-                  <span className="speaker-full-card__meta-item">📅 {speaker.date}</span>
-                  <span className="speaker-full-card__meta-item">🕐 {speaker.time}</span>
-                  <span className="speaker-full-card__meta-item">📍 {speaker.place}</span>
+                  <span className="speaker-full-card__meta-item">📅 {inv.fecha}</span>
+                  <span className="speaker-full-card__meta-item">🕐 {inv.hora}</span>
+                  <span className="speaker-full-card__meta-item">📍 {inv.lugar}</span>
                 </div>
               </div>
 

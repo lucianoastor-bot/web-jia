@@ -3,6 +3,7 @@ import { Lora, Outfit } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { AuthProvider } from '@/lib/auth-context'
 
 const lora = Lora({
   subsets: ['latin'],
@@ -33,17 +34,15 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${lora.variable} ${outfit.variable}`} data-scroll-behavior="smooth">
+    <html lang="es" className={`${lora.variable} ${outfit.variable}`}>
       <body>
-        <Header />
-        {children}
-        <Footer />
+        <AuthProvider>
+          <Header />
+          {children}
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )
