@@ -308,3 +308,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Bienvenida ── */
+.admin-bienvenida {
+  padding: 2.5rem;
+  border: 1px solid rgba(35, 22, 81, 0.08);
+  background: var(--c-white);
+  max-width: 680px;
+}
+.admin-bienvenida__titulo {
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--c-dark);
+  margin-bottom: 1rem;
+}
+.admin-bienvenida__texto {
+  font-size: 0.92rem;
+  color: #555;
+  line-height: 1.8;
+}
+.admin-bienvenida__texto strong {
+  color: var(--c-mid);
+  font-weight: 600;
+}
+

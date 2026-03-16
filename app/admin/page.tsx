@@ -9,6 +9,7 @@ import { auth } from '@/lib/firebase'
 
 // Módulos del panel
 import AdminInvitados from '@/components/admin/AdminInvitados'
+import AdminBienvenida from '@/components/admin/AdminBienvenida'
 
 const MENU = [
   { id: 'bienvenida',   label: 'Bienvenida' },
@@ -45,6 +46,7 @@ export default function Admin() {
   const renderModule = () => {
     switch (active) {
       case 'invitados':    return <AdminInvitados />
+      case 'bienvenida': return <AdminBienvenida />
       default:             return (
         <div className="admin-placeholder">
           <p>Módulo <strong>{active}</strong> — próximamente</p>
