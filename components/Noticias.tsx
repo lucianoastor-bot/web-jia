@@ -13,9 +13,9 @@ const NOTICIAS: Noticia[] = [
     link: '/propuestas',
   },
   {
-    fecha: '5 mar 2026',
-    titulo: 'Se confirmaron los primeros invitados a las jornadas',
-    resumen: 'En los próximos días anunciaremos quiénes serán las personas que disertarán en las jornadas. Seguí nuestras redes para estar al tanto.',
+    fecha: '',
+    titulo: '',
+    resumen: '',
   },
   {
     fecha: '1 mar 2026',
