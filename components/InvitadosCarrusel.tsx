@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 
 export default function InvitadosCarrusel() {
-  const { invitados, loading } = useInvitados()
+  const { invitados: todos, loading } = useInvitados()
+  const invitados = todos.filter(inv => inv.confirmado)
   const [current, setCurrent]  = useState(0)
   const [visible, setVisible]  = useState(4)
 

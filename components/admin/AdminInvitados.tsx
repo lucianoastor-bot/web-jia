@@ -10,7 +10,7 @@ type DatosInvitado = Omit<Invitado, 'id'>
 
 const VACIO: DatosInvitado = {
   nombre: '', rol: '', institucion: '', bio: '',
-  foto: '/invitados/', email: '', titulo: '', fecha: '', hora: '', lugar: '',
+  foto: '/invitados/', confirmado: false, email: '', titulo: '', fecha: '', hora: '', lugar: '',
 }
 
 const campos: { nombre: keyof DatosInvitado; etiqueta: string }[] = [
@@ -34,6 +34,10 @@ export default function AdminInvitados() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  const handleConfirmado = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm(f => ({ ...f, confirmado: e.target.checked }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,6 +103,19 @@ export default function AdminInvitados() {
           ))}
         </div>
 
+        {/* Confirmado */}
+        <div className="admin-form__field admin-form__field--full">
+          <label className="admin-form__checkbox">
+            <input
+              type="checkbox"
+              name="confirmado"
+              checked={form.confirmado}
+              onChange={handleConfirmado}
+            />
+            Participación confirmada
+          </label>
+        </div>
+
         {/* Bio — textarea separado */}
         <div className="admin-form__field admin-form__field--full">
           <label className="admin-form__label">Biografía</label>
@@ -135,7 +152,7 @@ export default function AdminInvitados() {
 
       {/* Lista */}
       <h2 className="admin-module__title" style={{ marginTop: '3rem' }}>
-        Invitados cargados ({invitados.length})
+        Invitados cargados ({invitados.length}) · confirmados ({invitados.filter(i => i.confirmado).length})
       </h2>
 
       <div className="admin-list">
@@ -145,7 +162,12 @@ export default function AdminInvitados() {
         {invitados.map(inv => (
           <div key={inv.id} className="admin-list__item">
             <div className="admin-list__item-info">
-              <p className="admin-list__item-name">{inv.nombre}</p>
+              <p className="admin-list__item-name">
+                {inv.nombre}
+                <span className={`admin-badge ${inv.confirmado ? 'admin-badge--ok' : 'admin-badge--pending'}`}>
+                  {inv.confirmado ? 'confirmado' : 'a confirmar'}
+                </span>
+              </p>
               <p className="admin-list__item-sub">{inv.rol} · {inv.institucion}</p>
               {(inv.fecha || inv.hora || inv.lugar) && (
                 <p className="admin-list__item-sub">{inv.fecha} {inv.hora} · {inv.lugar}</p>
