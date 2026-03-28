@@ -9,22 +9,12 @@ export default function InvitadosLista() {
   const invitados = todos.filter(inv => inv.confirmado)
 
   if (loading) return (
-    <section className="invitados-pagina">
-      <div className="invitados-pagina__inner">
-        <h1 className="section__title">Invitados</h1>
-        <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
-      </div>
-    </section>
+    <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
   )
 
   return (
-    <section className="invitados-pagina" id="conferencias">
-      <div className="invitados-pagina__inner">
-        <div className="section__eyebrow">Conferencias invitadas</div>
-        <h1 className="section__title">Invitados</h1>
-
-        <div className="invitados-pagina__grilla">
-          {invitados.map((inv) => (
+    <div className="invitados-pagina__grilla" id="conferencias">
+      {invitados.map((inv) => (
             <article key={inv.id} className="invitado-completo">
 
               <div className="invitado-completo__foto-wrap">
@@ -55,9 +45,6 @@ export default function InvitadosLista() {
 
             </article>
           ))}
-        </div>
-
-      </div>
-    </section>
+    </div>
   )
 }

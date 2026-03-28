@@ -1,15 +1,22 @@
 import type { Metadata } from 'next'
 import InvitadosLista from '@/components/InvitadosLista'
+import { CONGRESO } from '@/congreso.config'
 
 export const metadata: Metadata = {
-  title: 'Invitados — Jornadas: La IA en Debate',
-  description: 'Invitados a las Jornadas: La IA en Debate, FHyA UNR 2026.',
+  title: `Invitados — ${CONGRESO.nombreCorto}`,
+  description: `Conferencias invitadas. ${CONGRESO.nombre}, ${CONGRESO.siglas} ${CONGRESO.anio}.`,
 }
 
 export default function Invitados() {
   return (
     <main className="page">
-      <InvitadosLista />
+      <section className="invitados-pagina">
+        <div className="invitados-pagina__inner">
+          <div className="section__eyebrow">Conferencias invitadas</div>
+          <h1 className="section__title">Invitados</h1>
+          <InvitadosLista />
+        </div>
+      </section>
     </main>
   )
 }
