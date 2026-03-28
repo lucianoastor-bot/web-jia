@@ -91,6 +91,7 @@ export default function InvitadosCarrusel() {
                     alt={inv.nombre}
                     width={400}
                     height={400}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/invitados/placeholder.jpg' }}
                   />
                 </div>
                 <div className="invitado-card__info">

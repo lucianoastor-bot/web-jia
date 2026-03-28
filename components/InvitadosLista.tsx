@@ -34,6 +34,7 @@ export default function InvitadosLista() {
                   alt={inv.nombre}
                   width={300}
                   height={300}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/invitados/placeholder.jpg' }}
                 />
               </div>
 
