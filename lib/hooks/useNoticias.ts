@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy } from 'firebase/firestore/lite'
 import { db } from '@/lib/firebase'
 import { NOTICIAS_DEFECTO } from '@/congreso.config'
 import type { Noticia } from '@/types'

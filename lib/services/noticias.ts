@@ -3,7 +3,7 @@
 import {
   collection, addDoc, updateDoc, deleteDoc,
   doc, serverTimestamp,
-} from 'firebase/firestore'
+} from 'firebase/firestore/lite'
 import { db } from '@/lib/firebase'
 import type { Noticia } from '@/types'
 

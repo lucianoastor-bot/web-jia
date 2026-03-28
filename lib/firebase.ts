@@ -2,7 +2,7 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { initializeFirestore, memoryLocalCache } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore/lite'
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -17,7 +17,5 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 
 
 export const auth           = getAuth(app)
-export const db             = initializeFirestore(app, {
-  localCache: memoryLocalCache(),   // evita IndexedDB y el canal Listen automático
-})
+export const db             = getFirestore(app)
 export const googleProvider = new GoogleAuthProvider()

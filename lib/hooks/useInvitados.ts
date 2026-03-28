@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore/lite'
 import { db } from '@/lib/firebase'
 import type { Invitado } from '@/types'
 
