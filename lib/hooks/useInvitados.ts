@@ -11,10 +11,16 @@ export function useInvitados() {
   const [loading, setLoading]     = useState(true)
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'invitados'), snap => {
-      setInvitados(snap.docs.map(d => ({ id: d.id, ...d.data() } as Invitado)))
-      setLoading(false)
-    })
+    const unsub = onSnapshot(
+      collection(db, 'invitados'),
+      snap => {
+        setInvitados(snap.docs.map(d => ({ id: d.id, ...d.data() } as Invitado)))
+        setLoading(false)
+      },
+      () => {
+        setLoading(false)
+      }
+    )
     return () => unsub()
   }, [])
 
