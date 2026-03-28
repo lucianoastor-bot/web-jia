@@ -25,13 +25,15 @@ export default function Propuestas() {
 
         {/* Plazo */}
         <div style={{ margin: '3rem 0' }}>
-          <p style={{ fontSize: '0.68rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 500, marginBottom: '1.5rem' }}>
-            Plazo para el envío de resúmenes
-          </p>
+          <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginBottom: '1.5rem' }}>
+            <span style={{ color: 'var(--c-mid)' }}>Plazo:</span>{' '}
+            <span style={{ color: 'var(--c-coral)' }}>20 de abril de 2026</span>
+          </h2>
           <PlazoTimeline />
         </div>
 
         {/* Ejes */}
+        <br />
         <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginTop: '1rem' }}>
           Ejes temáticos
         </h2>
@@ -51,7 +53,7 @@ export default function Propuestas() {
             </li>
           ))}
         </ol>
-
+        
         {/* Modalidades */}
         <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginTop: '3rem' }}>
           Modalidades de participación
@@ -60,11 +62,23 @@ export default function Propuestas() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
           <div>
             <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Ponencias · Relatos de experiencias · Pósters
+              Ponencias · Relatos de experiencias
             </p>
             <p className="section__body">
               Se debe enviar un resumen de hasta 400 palabras siguiendo las pautas
               generales para la presentación de resúmenes.
+            </p>
+          </div>
+
+          <div>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Pósters
+            </p>
+            <p className="section__body">
+              Se debe enviar un resumen de hasta 400 palabras siguiendo las pautas generales.
+              La evaluación se realizará sobre el resumen. De resultar seleccionado, se deberá
+              presentar el póster en formato impreso (A0 o A1, orientación vertical) durante
+              la sesión de pósters del programa.
             </p>
           </div>
 

@@ -66,18 +66,57 @@ export const EJES: Eje[] = [
   },
 ]
 
+export const COORDINADORES: string[] = [
+  'Tomás Giroud Guillet',
+  'Magalí Gómez Castillo',
+]
+
+export const COMITE_ORGANIZADOR: string[] = [
+  'Luciano Astor',
+  'Lucio Braida',
+  'Carlos Galassi',
+  'Luz Jovine',
+  'Lorena Pafumi',
+  'Adelina Pasalagua',
+  'Luis Rodríguez',
+  'Víctor Sánchez',
+  'Gina Valenti',
+  'Manuel Videguren',
+]
+
+export const COMITE_ACADEMICO: string[] = [
+  /*'Fernando Avendaño',
+  'Mariano Balla',
+  'Alicia Caporossi',
+  'María Laura Carrascal',
+  'Gabriel Data',
+  'Susana Daz',
+  'Federico Donner',
+  'María Victoria Gonzalez',
+  'Melina Mailhou',
+  'Erika Nawoczyk',
+  'Carola Nin',
+  'Lorena Pafumi',
+  'Natalia Ricchiardi',
+  'Andrea Rodrigo',
+  'Liliana Sanjurjo',
+  'Carolina Tramallino',
+  'Marcela Valdata',
+  'Gina Valenti',*/
+]
+
 export const NOTICIAS_DEFECTO: Noticia[] = [
   {
-    fecha: '2026-03-10',
-    titulo: 'Abrimos la convocatoria para el envío de resúmenes',
-    resumen: 'Ya está disponible el formulario para presentar ponencias, paneles, relatos de experiencias y pósters. El plazo cierra el 20 de abril.',
+    fecha: '2026-03-25',
+    titulo: 'Se encuentra abierta la convocatoria para el envío de resúmenes',
+    resumen: 'Ya está disponible el formulario para presentar ponencias, paneles, relatos de experiencias y pósters. El plazo es hasta el 20 de abril.',
     enlace: '/propuestas',
   },
 
   {
-    fecha: '2026-03-01',
-    titulo: 'Las jornadas se realizarán los días 10, 11 y 12 de junio',
-    resumen: 'La Facultad de Humanidades y Artes de la UNR será sede de las primeras Jornadas La Inteligencia Artificial en Debate.',
+    fecha: '2026-03-25',
+    titulo: 'Las jornadas se realizarán los días 10, 11 y 12 de junio de 2026',
+    resumen: 'La Facultad de Humanidades y Artes de la UNR será sede de las Jornadas: La Inteligencia Artificial en debate.',
     enlace: '/contacto',
   },
 ]
