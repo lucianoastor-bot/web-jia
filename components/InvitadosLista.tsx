@@ -4,7 +4,8 @@ import Image from 'next/image'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 
 export default function InvitadosLista() {
-  const { invitados, loading } = useInvitados()
+  const { invitados: todos, loading } = useInvitados()
+  const invitados = todos.filter(inv => inv.confirmado)
 
   if (loading) return (
     <section className="invitados-pagina">

@@ -7,6 +7,7 @@ export type Invitado = {
   institucion: string
   bio: string
   foto: string
+  confirmado: boolean
   email?: string
   titulo?: string
   fecha?: string
