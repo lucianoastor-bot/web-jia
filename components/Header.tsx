@@ -4,7 +4,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { CONGRESO, ENLACES_NAV } from '@/congreso.config'
+import { CONGRESO } from '@/congreso.config'
+import { NAVEGACION } from '@/app.config'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
@@ -31,7 +32,7 @@ export default function Header() {
 
         {/* Desktop links */}
         <ul className="nav__links">
-          {ENLACES_NAV.map((enlace, i) => (
+          {NAVEGACION.map((enlace, i) => (
             <React.Fragment key={enlace.href}>
               {i > 0 && <li><span className="nav__sep">·</span></li>}
               <li>
@@ -63,7 +64,7 @@ export default function Header() {
 
       {/* Mobile drawer */}
       <div className={`nav__drawer ${open ? 'is-open' : ''}`} role="menu">
-        {ENLACES_NAV.map(enlace => (
+        {NAVEGACION.map(enlace => (
           <Link
             key={enlace.href}
             href={enlace.href}

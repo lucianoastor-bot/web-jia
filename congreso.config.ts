@@ -22,13 +22,6 @@ export const CONGRESO = {
   plazoResumenes: '20 de abril de 2026',
 } as const
 
-export const ENLACES_NAV = [
-  { href: '/invitados',    etiqueta: 'Invitados' },
-  /*{ href: '/programa',     etiqueta: 'Programa' },*/
-  { href: '/propuestas',   etiqueta: 'Envío de resúmenes' },
-  { href: '/organizacion', etiqueta: 'Organización' },
-  { href: '/contacto',     etiqueta: 'Contacto' },
-]
 
 export const EJES: Eje[] = [
   {
