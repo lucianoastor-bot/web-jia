@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import Countdown from './Countdown'
+import { CONGRESO } from '@/congreso.config'
 
 export default function Hero() {
   useEffect(() => {
@@ -43,7 +44,6 @@ export default function Hero() {
   return (
     <section className="hero" aria-label="Hero">
 
-      
       {/* Background: particles */}
       <div id="hero-particles" className="hero__particles" aria-hidden="true" />
 
@@ -61,8 +61,8 @@ export default function Hero() {
           </h1>
 
           <p className="hero__date">
-            <strong>10 · 11 · 12 de junio de 2026</strong>
-            {' '}·{' '}Rosario, Argentina
+            <strong>{CONGRESO.fechaTexto}</strong>
+            {' '}·{' '}{CONGRESO.ciudad}, {CONGRESO.pais}
           </p>
         </div>
 

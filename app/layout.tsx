@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { AuthProvider } from '@/lib/auth-context'
+import { CONGRESO } from '@/congreso.config'
 
 const lora = Lora({
   subsets: ['latin'],
@@ -21,14 +22,13 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: 'Jornadas: La IA en Debate — FHyA UNR 2026',
-  description:
-    'Jornadas: La Inteligencia Artificial en Debate — Facultad de Humanidades y Artes, Universidad Nacional de Rosario - 10, 11 y 12 de junio de 2026 - Rosario, Argentina.',
+  title: `${CONGRESO.nombreCorto} — ${CONGRESO.siglas} ${CONGRESO.anio}`,
+  description: `${CONGRESO.nombre} — ${CONGRESO.institucion}, ${CONGRESO.universidad} - ${CONGRESO.fechaTexto} - ${CONGRESO.ciudad}, ${CONGRESO.pais}.`,
   openGraph: {
-    title: 'Jornadas: La Inteligencia Artificial en Debate',
-    description: 'Jornadas académicas · FHyA · UNR · Junio 2026 · Rosario',
-    url: 'https://iajornadas.vercel.app',
-    siteName: 'Jornadas: La Inteligencia Artificial en Debate',
+    title: CONGRESO.nombre,
+    description: `Jornadas académicas · ${CONGRESO.siglas} · ${CONGRESO.anio} · ${CONGRESO.ciudad}`,
+    url: CONGRESO.url,
+    siteName: CONGRESO.nombre,
     locale: 'es_AR',
     type: 'website',
   },

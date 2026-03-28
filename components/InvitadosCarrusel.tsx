@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useInvitados } from '@/lib/useInvitados'
+import { useInvitados } from '@/lib/hooks/useInvitados'
 
-export default function Speakers() {
+export default function InvitadosCarrusel() {
   const { invitados, loading } = useInvitados()
   const [current, setCurrent]  = useState(0)
   const [visible, setVisible]  = useState(4)
@@ -46,8 +46,8 @@ export default function Speakers() {
   }
 
   if (loading) return (
-    <section className="speakers">
-      <div className="speakers__inner">
+    <section className="invitados">
+      <div className="invitados__inner">
         <h2 className="section__title">Invitados</h2>
         <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
       </div>
@@ -57,56 +57,56 @@ export default function Speakers() {
   if (total === 0) return null
 
   return (
-    <section className="speakers" id="invitados">
-      <div className="speakers__inner">
+    <section className="invitados" id="invitados">
+      <div className="invitados__inner">
         <div className="section__eyebrow">Conferencias invitadas</div>
         <h2 className="section__title">Invitados</h2>
 
         <div
-          className="speakers__carousel-wrap"
+          className="invitados__carrusel-wrap"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="speakers__nav">
-            <button className="speakers__nav-btn" onClick={prev} disabled={current === 0} aria-label="Anterior">←</button>
-            <button className="speakers__nav-btn" onClick={next} disabled={current >= total - visible} aria-label="Siguiente">→</button>
+          <div className="invitados__nav">
+            <button className="invitados__nav-btn" onClick={prev} disabled={current === 0} aria-label="Anterior">←</button>
+            <button className="invitados__nav-btn" onClick={next} disabled={current >= total - visible} aria-label="Siguiente">→</button>
           </div>
 
           <div
-            className="speakers__carousel"
+            className="invitados__carrusel"
             style={{ transform: `translateX(calc(-${current} * (100% / ${visible}) - ${current} * var(--carousel-gap)))` }}
           >
             {shuffled.map((inv) => (
               <Link
                 key={inv.id}
                 href="/invitados"
-                className="speaker-card"
+                className="invitado-card"
                 style={{ flex: `0 0 calc((100% - ${visible - 1} * var(--carousel-gap)) / ${visible})` }}
               >
-                <div className="speaker-card__photo-wrap">
+                <div className="invitado-card__foto-wrap">
                   <Image
-                    className="speaker-card__photo"
-                    src={inv.foto || '/speakers/placeholder.jpg'}
+                    className="invitado-card__foto"
+                    src={inv.foto || '/invitados/placeholder.jpg'}
                     alt={inv.nombre}
                     width={400}
                     height={400}
                   />
                 </div>
-                <div className="speaker-card__info">
-                  <h3 className="speaker-card__name">{inv.nombre}</h3>
-                  <p className="speaker-card__role">{inv.rol}</p>
-                  <p className="speaker-card__institution">{inv.institucion}</p>
+                <div className="invitado-card__info">
+                  <h3 className="invitado-card__nombre">{inv.nombre}</h3>
+                  <p className="invitado-card__rol">{inv.rol}</p>
+                  <p className="invitado-card__institucion">{inv.institucion}</p>
                 </div>
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="speakers__dots">
+        <div className="invitados__puntos">
           {Array.from({ length: Math.max(0, total - visible + 1) }).map((_, i) => (
             <button
               key={i}
-              className={`speakers__dot ${i === current ? 'is-active' : ''}`}
+              className={`invitados__punto ${i === current ? 'is-active' : ''}`}
               onClick={() => setCurrent(i)}
               aria-label={`Ir al invitado ${i + 1}`}
             />

@@ -4,14 +4,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-
-const NAV_LINKS = [
-  { href: '/invitados', label: 'Invitados' },
-  { href: '/programa',     label: 'Programa' },
-  { href: '/propuestas',   label: 'Envío de resúmenes' },
-  { href: '/organizacion', label: 'Organización' },
-  { href: '/contacto',     label: 'Contacto' },
-]
+import { CONGRESO, ENLACES_NAV } from '@/congreso.config'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
@@ -24,26 +17,26 @@ export default function Header() {
         <Link href="/" className="nav__brand">
           <Image
             className="nav__brand-logo"
-            src="/logo-hya.png"
-            alt="HyA UNR"
+            src={CONGRESO.logoPath}
+            alt={CONGRESO.siglas}
             width={120}
             height={34}
             priority
           />
           <div className="nav__brand-text">
-            <span className="nav__brand-title">La IA en Debate</span>
-            <span className="nav__brand-sub">FHyA · UNR · 2026</span>
+            <span className="nav__brand-title">{CONGRESO.nombreCorto}</span>
+            <span className="nav__brand-sub">{CONGRESO.siglas} · {CONGRESO.anio}</span>
           </div>
         </Link>
 
         {/* Desktop links */}
         <ul className="nav__links">
-          {NAV_LINKS.map((link, i) => (
-            <React.Fragment key={link.href}>
+          {ENLACES_NAV.map((enlace, i) => (
+            <React.Fragment key={enlace.href}>
               {i > 0 && <li><span className="nav__sep">·</span></li>}
               <li>
-                <Link href={link.href} className="nav__link">
-                  {link.label}
+                <Link href={enlace.href} className="nav__link">
+                  {enlace.etiqueta}
                 </Link>
               </li>
             </React.Fragment>
@@ -70,15 +63,15 @@ export default function Header() {
 
       {/* Mobile drawer */}
       <div className={`nav__drawer ${open ? 'is-open' : ''}`} role="menu">
-        {NAV_LINKS.map(link => (
+        {ENLACES_NAV.map(enlace => (
           <Link
-            key={link.href}
-            href={link.href}
+            key={enlace.href}
+            href={enlace.href}
             className="nav__link"
             role="menuitem"
             onClick={() => setOpen(false)}
           >
-            {link.label}
+            {enlace.etiqueta}
           </Link>
         ))}
         <Link

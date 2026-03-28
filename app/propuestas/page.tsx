@@ -1,23 +1,12 @@
 // app/propuestas/page.tsx
 
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { CONGRESO, EJES } from '@/congreso.config'
 
 export const metadata: Metadata = {
-  title: 'Propuestas — Jornadas: La IA en Debate',
-  description: 'Convocatoria y pautas para el envío de resúmenes. Jornadas: La IA en Debate, FHyA UNR 2026.',
+  title: `Propuestas — ${CONGRESO.nombreCorto}`,
+  description: `Convocatoria y pautas para el envío de resúmenes. ${CONGRESO.nombre}, ${CONGRESO.siglas} ${CONGRESO.anio}.`,
 }
-
-const EJES = [
-  'Inteligencia Artificial y educación',
-  'Inteligencia Artificial y producción artística y cultural',
-  'Inteligencia Artificial, escritura y traducción',
-  'Filosofía de la Inteligencia Artificial',
-  'Problemas éticos del uso de la Inteligencia Artificial',
-  'Impacto de la Inteligencia Artificial en la sociedad, la economía y el trabajo',
-  'Inteligencia Artificial, vínculos, salud mental y redes sociales',
-  'Inteligencia Artificial: utopía y distopía',
-]
 
 export default function Propuestas() {
   return (
@@ -28,11 +17,10 @@ export default function Propuestas() {
         <h1 className="section__title">Envío de resúmenes</h1>
 
         <p className="section__body">
-          La Facultad de Humanidades y Artes de la Universidad Nacional de Rosario
-          convoca a las Jornadas: <em>La Inteligencia Artificial en Debate</em>, dirigidas
-          a estudiantes, graduados y docentes de la Facultad de Humanidades y Artes y de
-          la comunidad universitaria que deseen compartir experiencias e investigaciones
-          sobre la temática. El evento se desarrollará los días 10, 11 y 12 de junio de 2026.
+          La {CONGRESO.institucion} de la {CONGRESO.universidad} convoca a las {CONGRESO.nombre},
+          dirigidas a estudiantes, graduados y docentes de la {CONGRESO.institucion} y de la comunidad
+          universitaria que deseen compartir experiencias e investigaciones sobre la temática.
+          El evento se desarrollará los días {CONGRESO.fechaTexto}.
         </p>
 
         {/* Plazo */}
@@ -41,7 +29,7 @@ export default function Propuestas() {
             Plazo para el envío de resúmenes
           </p>
           <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--c-dark)', fontFamily: 'var(--font-sans)' }}>
-            20 de abril de 2026
+            {CONGRESO.plazoResumenes}
           </p>
         </div>
 
@@ -54,10 +42,10 @@ export default function Propuestas() {
           {EJES.map((eje, i) => (
             <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'baseline', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
               <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em' }}>
-                {String(i + 1).padStart(2, '0')}
+                {eje.num}
               </span>
               <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6 }}>
-                {eje}
+                {eje.titulo}
               </span>
             </li>
           ))}
@@ -124,11 +112,12 @@ export default function Propuestas() {
 
         {/* CTA */}
         <div style={{ marginBottom: '4rem' }}>
-          
-          <a href="https://forms.gle/SKB7J1o7beuXAsGz5"
+          <a
+            href={CONGRESO.formularioResumenes}
             className="btn btn--primary"
             style={{ display: 'inline-block', background: 'var(--c-dark)', borderColor: 'var(--c-dark)', color: 'var(--c-white)' }}
             target="_blank"
+            rel="noopener noreferrer"
           >
             Formulario de envío →
           </a>

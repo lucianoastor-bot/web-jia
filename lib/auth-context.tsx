@@ -31,14 +31,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 useEffect(() => {
   const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-    console.log('firebaseUser:', firebaseUser?.email)
     setUser(firebaseUser)
 
     if (firebaseUser?.email) {
       const ref  = doc(db, 'usuarios', firebaseUser.email)
       const snap = await getDoc(ref)
-      console.log('snap exists:', snap.exists())
-      console.log('snap data:', snap.data())
 
       if (snap.exists()) {
         setUsuario(snap.data() as Usuario)

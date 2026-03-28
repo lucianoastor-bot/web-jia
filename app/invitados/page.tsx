@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import SpeakersPage from '@/components/SpeakersPage'
+import InvitadosLista from '@/components/InvitadosLista'
 
 export const metadata: Metadata = {
   title: 'Invitados — Jornadas: La IA en Debate',
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function Invitados() {
   return (
     <main className="page">
-      <SpeakersPage />
+      <InvitadosLista />
     </main>
   )
 }

@@ -1,4 +1,5 @@
 // components/admin/AdminBienvenida.tsx
+'use client'
 
 import { useAuth } from '@/lib/auth-context'
 

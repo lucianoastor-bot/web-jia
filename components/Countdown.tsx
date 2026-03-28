@@ -1,15 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-const TARGET = new Date('2026-06-10T09:00:00-03:00')
+import { CONGRESO } from '@/congreso.config'
 
 function calcTime() {
-  const diff = TARGET.getTime() - Date.now()
-  if (diff <= 0) return { days: 0, hours: 0, mins: 0 }
+  const diff = CONGRESO.fechaInicio.getTime() - Date.now()
+  if (diff <= 0) return { dias: 0, horas: 0, mins: 0 }
   return {
-    days:  Math.floor(diff / 86400000),
-    hours: Math.floor((diff % 86400000) / 3600000),
+    dias:  Math.floor(diff / 86400000),
+    horas: Math.floor((diff % 86400000) / 3600000),
     mins:  Math.floor((diff % 3600000) / 60000),
   }
 }
@@ -19,7 +18,7 @@ function pad(n: number) {
 }
 
 export default function Countdown() {
-  const [time, setTime] = useState({ days: 0, hours: 0, mins: 0 })
+  const [time, setTime]       = useState({ dias: 0, horas: 0, mins: 0 })
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -35,12 +34,12 @@ export default function Countdown() {
         <span className="countdown__label">Faltan:</span>
         <div className="countdown__units">
           <div className="countdown__unit">
-            <span className="countdown__num">{mounted ? pad(time.days) : '--'}</span>
+            <span className="countdown__num">{mounted ? pad(time.dias) : '--'}</span>
             <span className="countdown__label-unit">días</span>
           </div>
           <span className="countdown__sep">/</span>
           <div className="countdown__unit">
-            <span className="countdown__num">{mounted ? pad(time.hours) : '--'}</span>
+            <span className="countdown__num">{mounted ? pad(time.horas) : '--'}</span>
             <span className="countdown__label-unit">horas</span>
           </div>
           <span className="countdown__sep">/</span>

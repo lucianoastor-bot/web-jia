@@ -1,45 +1,36 @@
 // components/admin/AdminInvitados.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
-import {
-  collection, addDoc, updateDoc, deleteDoc,
-  doc, onSnapshot, serverTimestamp
-} from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { useState } from 'react'
+import { useInvitados } from '@/lib/hooks/useInvitados'
+import { agregarInvitado, actualizarInvitado, eliminarInvitado } from '@/lib/services/invitados'
+import type { Invitado } from '@/types'
 
-type Invitado = {
-  id?: string
-  nombre: string
-  rol: string
-  institucion: string
-  bio: string
-  foto: string
-  titulo: string
-  fecha: string
-  hora: string
-  lugar: string
-}
+type DatosInvitado = Omit<Invitado, 'id'>
 
-const EMPTY: Invitado = {
+const VACIO: DatosInvitado = {
   nombre: '', rol: '', institucion: '', bio: '',
-  foto: '/speakers/', titulo: '', fecha: '', hora: '', lugar: ''
+  foto: '/invitados/', email: '', titulo: '', fecha: '', hora: '', lugar: '',
 }
+
+const campos: { nombre: keyof DatosInvitado; etiqueta: string }[] = [
+  { nombre: 'nombre',      etiqueta: 'Nombre' },
+  { nombre: 'rol',         etiqueta: 'Rol / Cargo' },
+  { nombre: 'institucion', etiqueta: 'Institución' },
+  { nombre: 'email',       etiqueta: 'Email' },
+  { nombre: 'titulo',      etiqueta: 'Título de la conferencia' },
+  { nombre: 'fecha',       etiqueta: 'Fecha' },
+  { nombre: 'hora',        etiqueta: 'Hora' },
+  { nombre: 'lugar',       etiqueta: 'Lugar' },
+  { nombre: 'foto',        etiqueta: 'Ruta de foto' },
+]
 
 export default function AdminInvitados() {
-  const [invitados, setInvitados] = useState<Invitado[]>([])
-  const [form, setForm]           = useState<Invitado>(EMPTY)
-  const [editing, setEditing]     = useState<string | null>(null)
-  const [loading, setLoading]     = useState(false)
-  const [msg, setMsg]             = useState<string | null>(null)
-
-  // Escuchar cambios en tiempo real
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'invitados'), snap => {
-      setInvitados(snap.docs.map(d => ({ id: d.id, ...d.data() } as Invitado)))
-    })
-    return () => unsub()
-  }, [])
+  const { invitados } = useInvitados()
+  const [form, setForm]         = useState<DatosInvitado>(VACIO)
+  const [editando, setEditando] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const [mensaje, setMensaje]   = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -47,72 +38,62 @@ export default function AdminInvitados() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setMsg(null)
+    setCargando(true)
+    setMensaje(null)
     try {
-      if (editing) {
-        await updateDoc(doc(db, 'invitados', editing), { ...form })
-        setMsg('Invitado actualizado.')
+      if (editando) {
+        await actualizarInvitado(editando, form)
+        setMensaje('Invitado actualizado.')
       } else {
-        await addDoc(collection(db, 'invitados'), { ...form, creado: serverTimestamp() })
-        setMsg('Invitado agregado.')
+        await agregarInvitado(form)
+        setMensaje('Invitado agregado.')
       }
-      setForm(EMPTY)
-      setEditing(null)
-    } catch (e) {
-      setMsg('Error al guardar.')
+      setForm(VACIO)
+      setEditando(null)
+    } catch {
+      setMensaje('Error al guardar.')
     } finally {
-      setLoading(false)
+      setCargando(false)
     }
   }
 
-  const handleEdit = (inv: Invitado) => {
-    setForm(inv)
-    setEditing(inv.id!)
+  const handleEditar = (inv: Invitado) => {
+    const { id, ...datos } = inv
+    setForm({ ...VACIO, ...datos })
+    setEditando(id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = async (id: string) => {
+  const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar este invitado?')) return
-    await deleteDoc(doc(db, 'invitados', id))
-    setMsg('Invitado eliminado.')
+    await eliminarInvitado(id)
+    setMensaje('Invitado eliminado.')
   }
 
-  const handleCancel = () => {
-    setForm(EMPTY)
-    setEditing(null)
-    setMsg(null)
+  const handleCancelar = () => {
+    setForm(VACIO)
+    setEditando(null)
+    setMensaje(null)
   }
-
-  const fields: { name: keyof Invitado; label: string; type?: string }[] = [
-    { name: 'nombre',     label: 'Nombre' },
-    { name: 'rol',        label: 'Rol / Cargo' },
-    { name: 'institucion',label: 'Institución' },
-    { name: 'titulo',     label: 'Título de la conferencia' },
-    { name: 'fecha',      label: 'Fecha' },
-    { name: 'hora',       label: 'Hora' },
-    { name: 'lugar',      label: 'Lugar' },
-    { name: 'foto',       label: 'URL de foto' },
-  ]
 
   return (
     <div className="admin-module">
       <h2 className="admin-module__title">
-        {editing ? 'Editar invitado' : 'Agregar invitado'}
+        {editando ? 'Editar invitado' : 'Agregar invitado'}
       </h2>
 
       {/* Formulario */}
       <form className="admin-form" onSubmit={handleSubmit}>
         <div className="admin-form__grid">
-          {fields.map(f => (
-            <div key={f.name} className="admin-form__field">
-              <label className="admin-form__label">{f.label}</label>
+          {campos.map(c => (
+            <div key={c.nombre} className="admin-form__field">
+              <label className="admin-form__label">{c.etiqueta}</label>
               <input
                 className="admin-form__input"
-                name={f.name}
-                value={form[f.name] as string}
+                name={c.nombre}
+                value={(form[c.nombre] as string) ?? ''}
                 onChange={handleChange}
-                required={['nombre','rol','institucion'].includes(f.name)}
+                required={['nombre', 'rol', 'institucion'].includes(c.nombre)}
               />
             </div>
           ))}
@@ -130,21 +111,21 @@ export default function AdminInvitados() {
           />
         </div>
 
-        {msg && <p className="admin-form__msg">{msg}</p>}
+        {mensaje && <p className="admin-form__msg">{mensaje}</p>}
 
         <div className="admin-form__actions">
           <button
             type="submit"
             className="admin-btn admin-btn--primary"
-            disabled={loading}
+            disabled={cargando}
           >
-            {loading ? 'Guardando...' : editing ? 'Actualizar' : 'Agregar'}
+            {cargando ? 'Guardando...' : editando ? 'Actualizar' : 'Agregar'}
           </button>
-          {editing && (
+          {editando && (
             <button
               type="button"
               className="admin-btn admin-btn--ghost"
-              onClick={handleCancel}
+              onClick={handleCancelar}
             >
               Cancelar
             </button>
@@ -166,18 +147,20 @@ export default function AdminInvitados() {
             <div className="admin-list__item-info">
               <p className="admin-list__item-name">{inv.nombre}</p>
               <p className="admin-list__item-sub">{inv.rol} · {inv.institucion}</p>
-              <p className="admin-list__item-sub">{inv.fecha} {inv.hora} · {inv.lugar}</p>
+              {(inv.fecha || inv.hora || inv.lugar) && (
+                <p className="admin-list__item-sub">{inv.fecha} {inv.hora} · {inv.lugar}</p>
+              )}
             </div>
             <div className="admin-list__item-actions">
               <button
                 className="admin-btn admin-btn--small"
-                onClick={() => handleEdit(inv)}
+                onClick={() => handleEditar(inv)}
               >
                 Editar
               </button>
               <button
                 className="admin-btn admin-btn--small admin-btn--danger"
-                onClick={() => handleDelete(inv.id!)}
+                onClick={() => handleEliminar(inv.id)}
               >
                 Eliminar
               </button>

@@ -1,6 +1,6 @@
 import Hero from '@/components/Hero'
 import Ejes from '@/components/Ejes'
-import Speakers from '@/components/Speakers'
+import InvitadosCarrusel from '@/components/InvitadosCarrusel'
 import Noticias from '@/components/Noticias'
 
 export default function Home() {
@@ -8,7 +8,7 @@ export default function Home() {
     <main>
       <Hero />
       <div className="content" id="contenido">
-        <Speakers />
+        <InvitadosCarrusel />
         <Ejes />
         <Noticias />
       </div>

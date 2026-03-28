@@ -1,22 +1,10 @@
-// lib/useInvitados.ts
+// lib/hooks/useInvitados.ts
 'use client'
 
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot } from 'firebase/firestore'
-import { db } from './firebase'
-
-export type Invitado = {
-  id: string
-  nombre: string
-  rol: string
-  institucion: string
-  bio: string
-  foto: string
-  titulo: string
-  fecha: string
-  hora: string
-  lugar: string
-}
+import { db } from '@/lib/firebase'
+import type { Invitado } from '@/types'
 
 export function useInvitados() {
   const [invitados, setInvitados] = useState<Invitado[]>([])
