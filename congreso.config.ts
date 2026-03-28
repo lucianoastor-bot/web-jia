@@ -68,18 +68,14 @@ export const EJES: Eje[] = [
 
 export const NOTICIAS_DEFECTO: Noticia[] = [
   {
-    fecha: '10 mar 2026',
+    fecha: '2026-03-10',
     titulo: 'Abrimos la convocatoria para el envío de resúmenes',
     resumen: 'Ya está disponible el formulario para presentar ponencias, paneles, relatos de experiencias y pósters. El plazo cierra el 20 de abril.',
     enlace: '/propuestas',
   },
+
   {
-    fecha: '',
-    titulo: '',
-    resumen: '',
-  },
-  {
-    fecha: '1 mar 2026',
+    fecha: '2026-03-01',
     titulo: 'Las jornadas se realizarán los días 10, 11 y 12 de junio',
     resumen: 'La Facultad de Humanidades y Artes de la UNR será sede de las primeras Jornadas La Inteligencia Artificial en Debate.',
     enlace: '/contacto',

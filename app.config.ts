@@ -9,6 +9,7 @@ export const IDIOMA = 'es' as const
 // y seleccionarlo con IDIOMA. Las rutas (href) no cambian.
 export const NAVEGACION = [
   { href: '/invitados',    etiqueta: 'Invitados' },
+  /*{ href: '/programa',    etiqueta: 'Programa' },*/
   { href: '/propuestas',   etiqueta: 'Envío de resúmenes' },
   { href: '/organizacion', etiqueta: 'Organización' },
   { href: '/contacto',     etiqueta: 'Contacto' },

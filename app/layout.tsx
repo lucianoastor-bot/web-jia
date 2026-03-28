@@ -22,7 +22,7 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: `${CONGRESO.nombreCorto} — ${CONGRESO.siglas} ${CONGRESO.anio}`,
+  title: `${CONGRESO.nombreCorto} — ${CONGRESO.siglas} — ${CONGRESO.anio}`,
   description: `${CONGRESO.nombre} — ${CONGRESO.institucion}, ${CONGRESO.universidad} - ${CONGRESO.fechaTexto} - ${CONGRESO.ciudad}, ${CONGRESO.pais}.`,
   openGraph: {
     title: CONGRESO.nombre,
