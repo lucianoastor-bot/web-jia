@@ -2,6 +2,7 @@
 
 import type { Metadata } from 'next'
 import { CONGRESO, EJES } from '@/congreso.config'
+import PlazoTimeline from '@/components/PlazoTimeline'
 
 export const metadata: Metadata = {
   title: `Propuestas — ${CONGRESO.nombreCorto}`,
@@ -12,8 +13,7 @@ export default function Propuestas() {
   return (
     <main className="page">
       <div className="section">
-
-        <div className="section__eyebrow">Convocatoria</div>
+        <div className="section__eyebrow">Call for Papers</div>
         <h1 className="section__title">Envío de resúmenes</h1>
 
         <p className="section__body">
@@ -24,13 +24,11 @@ export default function Propuestas() {
         </p>
 
         {/* Plazo */}
-        <div style={{ margin: '3rem 0', padding: '2rem', background: 'rgba(35,22,81,0.04)', borderLeft: '3px solid var(--c-turq)' }}>
-          <p style={{ fontSize: '1.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 500, marginBottom: '0.5rem' }}>
+        <div style={{ margin: '3rem 0' }}>
+          <p style={{ fontSize: '0.68rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 500, marginBottom: '1.5rem' }}>
             Plazo para el envío de resúmenes
           </p>
-          <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--c-dark)', fontFamily: 'var(--font-sans)' }}>
-            {CONGRESO.plazoResumenes}
-          </p>
+          <PlazoTimeline />
         </div>
 
         {/* Ejes */}
@@ -60,7 +58,6 @@ export default function Propuestas() {
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
-
           <div>
             <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
               Ponencias · Relatos de experiencias · Pósters
