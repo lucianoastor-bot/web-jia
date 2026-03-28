@@ -16,6 +16,16 @@ export function formatearFecha(iso: string): string {
 }
 
 /**
+ * Valida que una ruta de foto sea un archivo de imagen.
+ * Devuelve el fallback si el path está vacío o no termina en extensión de imagen.
+ * Evita que next/image reciba paths inválidos como '/invitados/' en producción.
+ */
+export function validarFoto(foto: string | undefined, fallback = '/invitados/placeholder.jpg'): string {
+  if (!foto || !/\.(jpg|jpeg|png|gif|webp|avif|svg)$/i.test(foto)) return fallback
+  return foto
+}
+
+/**
  * Convierte una hora HH:MM (input time) a texto legible.
  * Ejemplo: '14:30' → '14:30 hs'
  */

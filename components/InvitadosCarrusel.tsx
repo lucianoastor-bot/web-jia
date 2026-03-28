@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useInvitados } from '@/lib/hooks/useInvitados'
+import { validarFoto } from '@/lib/utils/formato'
 
 export default function InvitadosCarrusel() {
   const { invitados: todos, loading } = useInvitados()
@@ -87,11 +88,10 @@ export default function InvitadosCarrusel() {
                 <div className="invitado-card__foto-wrap">
                   <Image
                     className="invitado-card__foto"
-                    src={inv.foto || '/invitados/placeholder.jpg'}
+                    src={validarFoto(inv.foto)}
                     alt={inv.nombre}
                     width={400}
                     height={400}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/invitados/placeholder.jpg' }}
                   />
                 </div>
                 <div className="invitado-card__info">

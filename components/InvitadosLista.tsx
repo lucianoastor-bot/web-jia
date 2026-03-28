@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useInvitados } from '@/lib/hooks/useInvitados'
-import { formatearFecha, formatearHora } from '@/lib/utils/formato'
+import { formatearFecha, formatearHora, validarFoto } from '@/lib/utils/formato'
 
 export default function InvitadosLista() {
   const { invitados: todos, loading } = useInvitados()
@@ -30,11 +30,10 @@ export default function InvitadosLista() {
               <div className="invitado-completo__foto-wrap">
                 <Image
                   className="invitado-completo__foto"
-                  src={inv.foto || '/invitados/placeholder.jpg'}
+                  src={validarFoto(inv.foto)}
                   alt={inv.nombre}
                   width={300}
                   height={300}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/invitados/placeholder.jpg' }}
                 />
               </div>
 
