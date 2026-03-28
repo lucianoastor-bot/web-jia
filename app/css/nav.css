@@ -27,7 +27,6 @@
 .nav__brand-logo {
   height: 34px;
   width: auto;
-  /*filter: brightness(10);*/
   opacity: 1;
 }
 .nav__brand-text {
