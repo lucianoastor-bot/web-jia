@@ -5,8 +5,8 @@
 import type { Eje, Noticia } from '@/types'
 
 export const CONGRESO = {
-  nombre:       'Jornadas: La Inteligencia Artificial en Debate',
-  nombreCorto:  'La IA en Debate',
+  nombre:       'Jornadas: La Inteligencia Artificial en debate',
+  nombreCorto:  'La IA en debate',
   institucion:  'Facultad de Humanidades y Artes',
   universidad:  'Universidad Nacional de Rosario',
   siglas:       'FHyA · UNR',
@@ -15,7 +15,7 @@ export const CONGRESO = {
   pais:         'Argentina',
   fechaInicio:  new Date('2026-06-10T09:00:00-03:00'),
   fechaTexto:   '10 · 11 · 12 de junio de 2026',
-  url:          'https://iajornadas.vercel.app',
+  url:          'https://jornadas-ia.site',
   urlInstitucion: 'https://fhumyar.unr.edu.ar',
   logoPath:     '/logo-hya.png',
   formularioResumenes: 'https://forms.gle/SKB7J1o7beuXAsGz5',
@@ -24,7 +24,7 @@ export const CONGRESO = {
 
 export const ENLACES_NAV = [
   { href: '/invitados',    etiqueta: 'Invitados' },
-  { href: '/programa',     etiqueta: 'Programa' },
+  /*{ href: '/programa',     etiqueta: 'Programa' },*/
   { href: '/propuestas',   etiqueta: 'Envío de resúmenes' },
   { href: '/organizacion', etiqueta: 'Organización' },
   { href: '/contacto',     etiqueta: 'Contacto' },
