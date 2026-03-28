@@ -10,13 +10,11 @@ export const metadata: Metadata = {
 export default function Invitados() {
   return (
     <main className="page">
-      <section className="invitados-pagina">
-        <div className="invitados-pagina__inner">
-          <div className="section__eyebrow">Keynote Speakers</div>
-          <h1 className="section__title">Invitados</h1>
-          <InvitadosLista />
-        </div>
-      </section>
+      <div className="section">
+        <div className="section__eyebrow">Keynote Speakers</div>
+        <h1 className="section__title">Invitados</h1>
+        <InvitadosLista />
+      </div>
     </main>
   )
 }

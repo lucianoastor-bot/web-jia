@@ -184,16 +184,6 @@
    INVITADOS — Página completa
 ══════════════════════════════════════ */
 
-.invitados-pagina {
-  background: var(--content-bg);
-}
-
-.invitados-pagina__inner {
-  padding: 2rem var(--pad-x);
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
 .invitados-pagina__grilla {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -288,9 +278,6 @@
 }
 
 @media (max-width: 900px) {
-  .invitados-pagina__inner {
-    padding: 3.5rem 6vw;
-  }
   .invitado-completo {
     grid-template-columns: 140px 1fr;
     gap: 1.2rem;
