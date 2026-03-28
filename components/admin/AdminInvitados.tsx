@@ -26,7 +26,7 @@ const campos: { nombre: keyof DatosInvitado; etiqueta: string; tipo?: string }[]
 ]
 
 export default function AdminInvitados() {
-  const { invitados } = useInvitados()
+  const { invitados, cargar } = useInvitados()
   const [form, setForm]         = useState<DatosInvitado>(VACIO)
   const [editando, setEditando] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
@@ -54,6 +54,7 @@ export default function AdminInvitados() {
       }
       setForm(VACIO)
       setEditando(null)
+      await cargar()
     } catch {
       setMensaje('Error al guardar.')
     } finally {
@@ -72,6 +73,7 @@ export default function AdminInvitados() {
     if (!confirm('¿Eliminar este invitado?')) return
     await eliminarInvitado(id)
     setMensaje('Invitado eliminado.')
+    await cargar()
   }
 
   const handleCancelar = () => {

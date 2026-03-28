@@ -16,7 +16,7 @@ const VACIO: DatosNoticia = {
 }
 
 export default function AdminNovedades() {
-  const { noticias } = useNoticias()
+  const { noticias, cargar } = useNoticias()
   const [form, setForm]         = useState<DatosNoticia>(VACIO)
   const [editando, setEditando] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
@@ -40,6 +40,7 @@ export default function AdminNovedades() {
       }
       setForm(VACIO)
       setEditando(null)
+      await cargar()
     } catch {
       setMensaje('Error al guardar.')
     } finally {
@@ -58,6 +59,7 @@ export default function AdminNovedades() {
     if (!confirm('¿Eliminar esta novedad?')) return
     await eliminarNoticia(id)
     setMensaje('Novedad eliminada.')
+    await cargar()
   }
 
   const handleCancelar = () => {
