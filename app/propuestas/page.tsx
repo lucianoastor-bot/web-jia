@@ -44,8 +44,11 @@ export default function Propuestas() {
               <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em' }}>
                 {eje.num}
               </span>
-              <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6 }}>
-                {eje.titulo}
+              <span style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6 }}>{eje.titulo}</span>
+                {eje.descripcion && (
+                  <span style={{ fontSize: '0.82rem', color: '#888', lineHeight: 1.5 }}>{eje.descripcion}</span>
+                )}
               </span>
             </li>
           ))}
