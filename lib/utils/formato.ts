@@ -1,0 +1,27 @@
+// lib/utils/formato.ts
+// Funciones de formateo de fechas y horas.
+// El formato de salida se configura en app.config.ts (FORMATO).
+
+import { FORMATO } from '@/app.config'
+
+/**
+ * Convierte una fecha ISO (YYYY-MM-DD) a texto legible.
+ * Ejemplo: '2026-06-15' → '15 de junio de 2026'
+ */
+export function formatearFecha(iso: string): string {
+  if (!iso) return ''
+  const [anio, mes, dia] = iso.split('-').map(Number)
+  const fecha = new Date(anio, mes - 1, dia)
+  return fecha.toLocaleDateString(FORMATO.locale, FORMATO.fecha)
+}
+
+/**
+ * Convierte una hora HH:MM (input time) a texto legible.
+ * Ejemplo: '14:30' → '14:30 hs'
+ */
+export function formatearHora(hhmm: string): string {
+  if (!hhmm) return ''
+  const [h, m] = hhmm.split(':').map(Number)
+  const d = new Date(2000, 0, 1, h, m)
+  return d.toLocaleTimeString(FORMATO.locale, FORMATO.hora) + ' hs'
+}

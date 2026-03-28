@@ -13,14 +13,14 @@ const VACIO: DatosInvitado = {
   foto: '/invitados/', confirmado: false, email: '', titulo: '', fecha: '', hora: '', lugar: '',
 }
 
-const campos: { nombre: keyof DatosInvitado; etiqueta: string }[] = [
+const campos: { nombre: keyof DatosInvitado; etiqueta: string; tipo?: string }[] = [
   { nombre: 'nombre',      etiqueta: 'Nombre' },
   { nombre: 'rol',         etiqueta: 'Rol / Cargo' },
   { nombre: 'institucion', etiqueta: 'Institución' },
   { nombre: 'email',       etiqueta: 'Email' },
   { nombre: 'titulo',      etiqueta: 'Título de la conferencia' },
-  { nombre: 'fecha',       etiqueta: 'Fecha' },
-  { nombre: 'hora',        etiqueta: 'Hora' },
+  { nombre: 'fecha',       etiqueta: 'Fecha',  tipo: 'date' },
+  { nombre: 'hora',        etiqueta: 'Hora',   tipo: 'time' },
   { nombre: 'lugar',       etiqueta: 'Lugar' },
   { nombre: 'foto',        etiqueta: 'Ruta de foto' },
 ]
@@ -94,6 +94,7 @@ export default function AdminInvitados() {
               <label className="admin-form__label">{c.etiqueta}</label>
               <input
                 className="admin-form__input"
+                type={c.tipo ?? 'text'}
                 name={c.nombre}
                 value={(form[c.nombre] as string) ?? ''}
                 onChange={handleChange}

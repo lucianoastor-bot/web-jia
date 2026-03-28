@@ -1,14 +1,7 @@
 'use client'
 
 import { useNoticias } from '@/lib/hooks/useNoticias'
-
-const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-
-function formatearFecha(iso: string): string {
-  if (!iso) return ''
-  const [anio, mes, dia] = iso.split('-')
-  return `${parseInt(dia)} ${MESES[parseInt(mes) - 1]} ${anio}`
-}
+import { formatearFecha } from '@/lib/utils/formato'
 
 export default function Noticias() {
   const { noticias } = useNoticias()

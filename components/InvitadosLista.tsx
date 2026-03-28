@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useInvitados } from '@/lib/hooks/useInvitados'
+import { formatearFecha, formatearHora } from '@/lib/utils/formato'
 
 export default function InvitadosLista() {
   const { invitados: todos, loading } = useInvitados()
@@ -45,8 +46,8 @@ export default function InvitadosLista() {
                 <p className="invitado-completo__bio">{inv.bio}</p>
                 {(inv.fecha || inv.hora || inv.lugar) && (
                   <div className="invitado-completo__meta">
-                    {inv.fecha  && <span className="invitado-completo__meta-item">📅 {inv.fecha}</span>}
-                    {inv.hora   && <span className="invitado-completo__meta-item">🕐 {inv.hora}</span>}
+                    {inv.fecha  && <span className="invitado-completo__meta-item">📅 {formatearFecha(inv.fecha)}</span>}
+                    {inv.hora   && <span className="invitado-completo__meta-item">🕐 {formatearHora(inv.hora)}</span>}
                     {inv.lugar  && <span className="invitado-completo__meta-item">📍 {inv.lugar}</span>}
                   </div>
                 )}
