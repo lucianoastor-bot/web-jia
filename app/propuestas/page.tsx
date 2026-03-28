@@ -5,7 +5,7 @@ import { CONGRESO, EJES } from '@/congreso.config'
 
 export const metadata: Metadata = {
   title: `Propuestas — ${CONGRESO.nombreCorto}`,
-  description: `Convocatoria y pautas para el envío de resúmenes. ${CONGRESO.nombre}, ${CONGRESO.siglas} ${CONGRESO.anio}.`,
+  description: `Convocatoria y pautas para el envío de resúmenes. ${CONGRESO.nombre} — ${CONGRESO.siglas} — ${CONGRESO.anio}.`,
 }
 
 export default function Propuestas() {

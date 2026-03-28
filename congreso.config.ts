@@ -32,12 +32,12 @@ export const EJES: Eje[] = [
   {
     num: '02',
     titulo: 'IA y producción artística y cultural',
-    descripcion: 'Análisis de las tensiones y posibilidades que la IA introduce en la creación artística, la industria cultural y los procesos de producción simbólica.',
+    descripcion: 'Análisis de las tensiones y posibilidades que la IA introduce en la creación artística, las industrias culturales y los procesos de producción simbólica.',
   },
   {
     num: '03',
     titulo: 'IA, escritura y traducción',
-    descripcion: 'Exploración del rol de la IA en la producción textual, la traducción automática y sus consecuencias para la escritura académica y literaria.',
+    descripcion: 'Exploración del impacto de la IA en la producción académica y en las prácticas de traducción: sus herramientas, sus límites y las preguntas que abre sobre autoría, estilo y fidelidad.',
   },
   {
     num: '04',

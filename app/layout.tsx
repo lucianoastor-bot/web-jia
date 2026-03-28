@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description: `${CONGRESO.nombre} — ${CONGRESO.institucion}, ${CONGRESO.universidad} - ${CONGRESO.fechaTexto} - ${CONGRESO.ciudad}, ${CONGRESO.pais}.`,
   openGraph: {
     title: CONGRESO.nombre,
-    description: `Jornadas académicas · ${CONGRESO.siglas} · ${CONGRESO.anio} · ${CONGRESO.ciudad}`,
+    description: `Jornadas académicas · ${CONGRESO.nombreCorto}  · ${CONGRESO.siglas} · ${CONGRESO.anio} · ${CONGRESO.ciudad}, ${CONGRESO.pais}.`,
     url: CONGRESO.url,
     siteName: CONGRESO.nombre,
     locale: 'es_AR',

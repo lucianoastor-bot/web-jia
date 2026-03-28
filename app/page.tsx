@@ -9,8 +9,8 @@ export default function Home() {
       <Hero />
       <div className="content" id="contenido">
         <InvitadosCarrusel />
-        <Ejes />
         <Noticias />
+        <Ejes />
       </div>
     </main>
   )
