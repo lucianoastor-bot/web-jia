@@ -2,13 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 import { validarFoto } from '@/lib/utils/formato'
 
 export default function InvitadosCarrusel() {
   const { invitados: todos, loading } = useInvitados()
-  const invitados = todos.filter(inv => inv.confirmado)
+  const invitados = useMemo(() => todos.filter(inv => inv.confirmado), [todos])
   const [current, setCurrent]  = useState(0)
   const [visible, setVisible]  = useState(4)
 
