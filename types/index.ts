@@ -10,6 +10,8 @@ export type Invitado = {
   foto: string
   confirmado: boolean
   email?: string
+  mostrarEnPagina?:    boolean   // aparece en /invitados
+  mostrarEnCarrusel?:  boolean   // aparece en el carrusel de inicio
 }
 
 export type Eje = {

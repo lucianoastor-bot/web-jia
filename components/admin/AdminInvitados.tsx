@@ -27,6 +27,7 @@ type DatosActividad = {
 const VACIO_INVITADO: DatosInvitado = {
   nombre: '', rol: '', institucion: '', bio: '',
   foto: '/invitados/', confirmado: false, email: '',
+  mostrarEnPagina: false, mostrarEnCarrusel: false,
 }
 
 
@@ -75,8 +76,8 @@ export default function AdminInvitados() {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
   }
 
-  const handleConfirmado = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm(f => ({ ...f, confirmado: e.target.checked }))
+  const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.checked }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -242,15 +243,18 @@ export default function AdminInvitados() {
           ))}
         </div>
 
-        <div className="admin-form__field admin-form__field--full">
+        <div className="admin-form__field admin-form__field--full" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
           <label className="admin-form__checkbox">
-            <input
-              type="checkbox"
-              name="confirmado"
-              checked={form.confirmado}
-              onChange={handleConfirmado}
-            />
+            <input type="checkbox" name="confirmado" checked={!!form.confirmado} onChange={handleCheck} />
             Participación confirmada
+          </label>
+          <label className="admin-form__checkbox">
+            <input type="checkbox" name="mostrarEnPagina" checked={!!form.mostrarEnPagina} onChange={handleCheck} />
+            Mostrar en página
+          </label>
+          <label className="admin-form__checkbox">
+            <input type="checkbox" name="mostrarEnCarrusel" checked={!!form.mostrarEnCarrusel} onChange={handleCheck} />
+            Mostrar en carrusel
           </label>
         </div>
 

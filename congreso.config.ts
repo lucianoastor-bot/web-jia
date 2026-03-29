@@ -72,7 +72,6 @@ export const TIPOS_PROPUESTA = [
   { valor: 'relato',   etiqueta: 'Relato de experiencia' },
   { valor: 'poster',   etiqueta: 'Póster' },
   { valor: 'panel',    etiqueta: 'Panel' },
-  { valor: 'otro',     etiqueta: 'Otro' },
 ] as const
 
 export const TIPOS_ACTIVIDAD = [
@@ -97,9 +96,9 @@ export const ESTADOS_PROPUESTA = [
 ] as const
 
 export const RESTRICCIONES_ACTIVIDAD = {
-  mesa:    { minPropuestas: 3, maxPropuestas: 5 },
-  pósters: { minPropuestas: 6, maxPropuestas: 15 },
-  panel:   { minParticipantes: 2, maxParticipantes: 6 },
+  mesa:    { minPropuestas: 2, maxPropuestas: 4 },
+  pósters: { minPropuestas: 4, maxPropuestas: 15 },
+  panel:   { minParticipantes: 2, maxParticipantes: 7 },
   otro:    { minPropuestas: 1, maxPropuestas: 10 },
 } as const
 

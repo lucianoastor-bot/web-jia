@@ -247,21 +247,6 @@ export default function AdminPropuestas() {
             />
           </div>
 
-          {/* Descriptor — solo para tipo 'otro' */}
-          {form.tipo === 'otro' && (
-            <div className="admin-form__field">
-              <label className="admin-form__label">Descriptor <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación)</span></label>
-              <input
-                className="admin-form__input"
-                type="text"
-                name="descriptor"
-                value={form.descriptor}
-                onChange={handleChange}
-                placeholder="taller, workshop, presentación..."
-              />
-            </div>
-          )}
-
         </div>
 
         {/* Autor */}
