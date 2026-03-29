@@ -524,9 +524,8 @@
 
 .plazo-timeline__cuenta {
   position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 20px;
+  right: 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--c-coral);

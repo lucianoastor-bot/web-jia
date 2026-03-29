@@ -55,23 +55,21 @@ export default function AdminActividades() {
     setCargando(true)
     setMensaje(null)
     try {
-      // Armar objeto limpio según tipo
+      // Armar objeto limpio según tipo (Firestore no acepta undefined)
       const datos: Omit<Actividad, 'id'> = {
-        tipo:       form.tipo,
-        titulo:     form.titulo,
-        resumen:    form.resumen || undefined,
-        fecha:      form.fecha   || undefined,
-        horaInicio: form.horaInicio || undefined,
-        horaFin:    form.horaFin    || undefined,
-        sala:       form.sala       || undefined,
-        ...((['conferencia', 'panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && {
-          moderador: form.moderador || undefined,
+        tipo:   form.tipo,
+        titulo: form.titulo,
+        ...(form.resumen    && { resumen:    form.resumen }),
+        ...(form.fecha      && { fecha:      form.fecha }),
+        ...(form.horaInicio && { horaInicio: form.horaInicio }),
+        ...(form.horaFin    && { horaFin:    form.horaFin }),
+        ...(form.sala       && { sala:       form.sala }),
+        ...( (['conferencia', 'panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && form.moderador && {
+          moderador: form.moderador,
         }),
-        ...(form.tipo === 'otro' && {
-          descriptor:  form.descriptor  || undefined,
-          descripcion: form.descripcion || undefined,
-        }),
-        ...(form.tipo === 'panel' && !editando && { invitadosIds: [] }),
+        ...(form.tipo === 'otro' && form.descriptor  && { descriptor:  form.descriptor }),
+        ...(form.tipo === 'otro' && form.descripcion && { descripcion: form.descripcion }),
+        ...(form.tipo === 'panel' && !editando && { invitadosIds: [] as string[] }),
       }
       if (editando) {
         await actualizarActividad(editando, datos)

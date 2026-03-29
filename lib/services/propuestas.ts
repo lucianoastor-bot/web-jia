@@ -16,8 +16,10 @@ export async function obtenerPropuestas(): Promise<Propuesta[]> {
 }
 
 export async function agregarPropuesta(datos: DatosPropuesta): Promise<string> {
+  // Firestore no acepta valores undefined — filtrar antes de guardar
+  const limpio = Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined))
   const ref = await addDoc(collection(db, 'propuestas'), {
-    ...datos,
+    ...limpio,
     creado: serverTimestamp(),
   })
   return ref.id
