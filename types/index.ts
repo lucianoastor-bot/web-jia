@@ -38,13 +38,14 @@ export type Usuario = {
 // Objeto embebido dentro de Propuesta. Incluye datos personales completos.
 
 export type Participante = {
-  nombre:        string
-  institucion:   string
-  email:         string
-  documento:     string   // DNI / Pasaporte
-  celularCodigo: string   // ej: '+54'
-  celular:       string   // número sin código de país
-  pertenencia:   typeof PERTENENCIAS[number]['valor']
+  nombre:          string
+  institucion:     string
+  email:           string
+  documento:       string   // DNI / Pasaporte
+  celularCodigo:   string   // ej: '+54'
+  celular:         string   // número sin código de país
+  pertenencia:     typeof PERTENENCIAS[number]['valor']
+  tituloPonencia?: string   // panel: título de la ponencia individual
 }
 
 // ─── ParticipantePanel ───────────────────────────────────────

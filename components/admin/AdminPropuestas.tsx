@@ -11,13 +11,14 @@ import type { Propuesta, TipoPropuesta, EstadoPropuesta, Participante } from '@/
 // ── Tipos locales ─────────────────────────────────────────────
 
 type DatosAutor = {
-  nombre:        string
-  institucion:   string
-  email:         string
-  documento:     string
-  celularCodigo: string
-  celular:       string
-  pertenencia:   Participante['pertenencia']
+  nombre:          string
+  institucion:     string
+  email:           string
+  documento:       string
+  celularCodigo:   string
+  celular:         string
+  pertenencia:     Participante['pertenencia']
+  tituloPonencia?: string
 }
 
 
@@ -36,7 +37,7 @@ type DatosPropuesta = {
 
 const VACIO_AUTOR: DatosAutor = {
   nombre: '', institucion: '', email: '', documento: '',
-  celularCodigo: '+54', celular: '', pertenencia: 'externo',
+  celularCodigo: '+54', celular: '', pertenencia: 'externo', tituloPonencia: '',
 }
 
 const VACIO: DatosPropuesta = {
@@ -125,13 +126,14 @@ export default function AdminPropuestas() {
       estado:  p.estado,
       descriptor:    p.descriptor ?? '',
       participantes: (p.participantes ?? []).map(pa => ({
-        nombre:        pa.nombre,
-        institucion:   pa.institucion,
-        email:         pa.email,
-        documento:     pa.documento ?? '',
-        celularCodigo: pa.celularCodigo ?? '+54',
-        celular:       pa.celular ?? '',
-        pertenencia:   pa.pertenencia,
+        nombre:          pa.nombre,
+        institucion:     pa.institucion,
+        email:           pa.email,
+        documento:       pa.documento ?? '',
+        celularCodigo:   pa.celularCodigo ?? '+54',
+        celular:         pa.celular ?? '',
+        pertenencia:     pa.pertenencia,
+        tituloPonencia:  pa.tituloPonencia ?? '',
       })),
       autor: {
         nombre:        p.autor.nombre,
@@ -375,6 +377,10 @@ export default function AdminPropuestas() {
                   <div className="admin-form__field">
                     <label className="admin-form__label">Nombre</label>
                     <input className="admin-form__input" type="text" name="nombre" value={p.nombre} onChange={e => handleParticipanteChange(idx, e)} required />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Título de ponencia</label>
+                    <input className="admin-form__input" type="text" name="tituloPonencia" value={p.tituloPonencia ?? ''} onChange={e => handleParticipanteChange(idx, e)} />
                   </div>
                   <div className="admin-form__field">
                     <label className="admin-form__label">Institución</label>
