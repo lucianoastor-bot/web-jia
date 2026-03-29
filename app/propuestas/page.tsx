@@ -40,14 +40,18 @@ export default function Propuestas() {
 
         <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '720px', counterReset: 'none' }}>
           {EJES.map((eje, i) => (
-            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'baseline', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em' }}>
+            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'flex-start', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em', paddingTop: '0.2rem' }}>
                 {eje.num}
               </span>
               <span style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6 }}>{eje.titulo}</span>
+                <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6, fontWeight: 600 }}>
+                  {eje.titulo}
+                </span>
                 {eje.descripcion && (
-                  <span style={{ fontSize: '0.82rem', color: '#888', lineHeight: 1.5 }}>{eje.descripcion}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#777', lineHeight: 1.6 }}>
+                    {eje.descripcion}
+                  </span>
                 )}
               </span>
             </li>
@@ -75,10 +79,11 @@ export default function Propuestas() {
               Pósters
             </p>
             <p className="section__body">
-              Se debe enviar un resumen de hasta 400 palabras siguiendo las pautas generales.
-              La evaluación se realizará sobre el resumen. De resultar seleccionado, se deberá
-              presentar el póster en formato impreso (A0 o A1, orientación vertical) durante
-              la sesión de pósters del programa.
+              Los pósters son una modalidad orientada a trabajos en curso, avances de investigación
+              o propuestas exploratorias. Se debe enviar un resumen de hasta 400 palabras siguiendo
+              las pautas generales. La evaluación se realiza sobre el resumen. De resultar
+              seleccionado, se debe presentar el póster en formato impreso (A0 o A1, orientación
+              vertical) durante la sesión de pósters del programa.
             </p>
           </div>
 
