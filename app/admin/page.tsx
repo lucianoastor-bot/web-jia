@@ -21,7 +21,6 @@ const MENU = [
   { id: 'propuestas',   label: 'Propuestas' },
   { id: 'actividades',  label: 'Actividades' },
   { id: 'embeddings',   label: 'Generar Embeddings' },
-  { id: 'restricciones',label: 'Restricciones' },
   { id: 'distribuir-ia',label: 'Distribuir con IA' },
   { id: 'distribuir',   label: 'Distribución manual' },
 ]
