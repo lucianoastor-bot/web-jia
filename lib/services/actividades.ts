@@ -3,7 +3,7 @@
 
 import {
   collection, addDoc, updateDoc, deleteDoc,
-  getDocs, query, where, doc, arrayUnion, arrayRemove,
+  getDocs, query, where, doc, arrayUnion, arrayRemove, deleteField,
 } from 'firebase/firestore/lite'
 import { db } from '@/lib/firebase'
 import type { Actividad, TipoActividad } from '@/types'
@@ -85,4 +85,14 @@ export async function actualizarActividad(id: string, datos: Partial<Omit<Activi
 
 export async function eliminarActividad(id: string) {
   return deleteDoc(doc(db, 'actividades', id))
+}
+
+// ── Vinculación invitado ↔ actividad ─────────────────────────
+
+export async function asignarInvitado(actividadId: string, invitadoId: string) {
+  return updateDoc(doc(db, 'actividades', actividadId), { invitadoId })
+}
+
+export async function desasignarInvitado(actividadId: string) {
+  return updateDoc(doc(db, 'actividades', actividadId), { invitadoId: deleteField() })
 }

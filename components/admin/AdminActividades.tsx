@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
-import { crearActividad, actualizarActividad, eliminarActividad, quitarInvitadoDePanel } from '@/lib/services/actividades'
+import { crearActividad, actualizarActividad, eliminarActividad, quitarInvitadoDePanel, asignarInvitado, desasignarInvitado } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
 import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD } from '@/congreso.config'
 import type { Actividad, TipoActividad, TipoPropuesta } from '@/types'
@@ -191,6 +191,35 @@ export default function AdminActividades() {
     await cargarP()
   }
 
+  // Invitado asignado a esta conferencia
+  const invitadoActual = useMemo(() =>
+    actividades.find(a => a.id === editando)?.invitadoId
+      ? invitados.find(i => i.id === actividades.find(a => a.id === editando)?.invitadoId) ?? null
+      : null,
+    [actividades, editando, invitados]
+  )
+
+  // Invitados no asignados a ninguna conferencia (excluye el actual para no ocultarlo)
+  const invitadosDisponibles = useMemo(() => {
+    const asignados = new Set(
+      actividades.filter(a => a.tipo === 'conferencia' && a.invitadoId && a.id !== editando)
+        .map(a => a.invitadoId!)
+    )
+    return invitados.filter(i => !asignados.has(i.id))
+  }, [actividades, invitados, editando])
+
+  const handleAsignarInvitado = async (invitadoId: string) => {
+    if (!editando) return
+    await asignarInvitado(editando, invitadoId)
+    await cargar()
+  }
+
+  const handleDesasignarInvitado = async () => {
+    if (!editando) return
+    await desasignarInvitado(editando)
+    await cargar()
+  }
+
   const tipoEtiqueta = (tipo: TipoActividad) =>
     TIPOS_ACTIVIDAD.find(t => t.valor === tipo)?.etiqueta ?? tipo
 
@@ -290,6 +319,51 @@ export default function AdminActividades() {
           )}
         </div>
       </form>
+
+      {/* ── Conferencista (solo conferencia al editar) ── */}
+      {editando && form.tipo === 'conferencia' && (
+        <>
+          <h2 className="admin-module__title" style={{ marginTop: '2.5rem' }}>
+            Conferencista
+          </h2>
+
+          {invitadoActual ? (
+            <div className="admin-list">
+              <div className="admin-list__item">
+                <div className="admin-list__item-info">
+                  <p className="admin-list__item-name">{invitadoActual.nombre}</p>
+                  <p className="admin-list__item-sub">{invitadoActual.rol} · {invitadoActual.institucion}</p>
+                </div>
+                <div className="admin-list__item-actions">
+                  <button
+                    className="admin-btn admin-btn--small admin-btn--danger"
+                    onClick={handleDesasignarInvitado}
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="admin-list__empty" style={{ marginBottom: '0.75rem' }}>Sin conferencista asignado.</p>
+              <select
+                className="admin-form__input"
+                style={{ maxWidth: '420px' }}
+                defaultValue=""
+                onChange={e => e.target.value && handleAsignarInvitado(e.target.value)}
+              >
+                <option value="" disabled>Seleccionar invitado...</option>
+                {invitadosDisponibles.map(inv => (
+                  <option key={inv.id} value={inv.id}>
+                    {inv.nombre} · {inv.rol}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+        </>
+      )}
 
       {/* ── Participantes (solo panel al editar) ── */}
       {editando && actividadActual?.tipo === 'panel' && (
