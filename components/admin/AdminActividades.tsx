@@ -10,15 +10,8 @@ import {
   actualizarParticipantesPanel, asignarInvitado, desasignarInvitado,
 } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD } from '@/congreso.config'
+import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES } from '@/congreso.config'
 import type { Actividad, TipoActividad, TipoPropuesta, ParticipantePanel } from '@/types'
-
-// Qué tipos de propuesta acepta cada tipo de actividad
-const PROPUESTAS_COMPATIBLES: Partial<Record<TipoActividad, TipoPropuesta[]>> = {
-  mesa:    ['ponencia', 'relato'],
-  pósters: ['poster'],
-  panel:   ['panel'],
-}
 
 type DatosActividad = {
   tipo:        TipoActividad
@@ -199,7 +192,7 @@ export default function AdminActividades() {
 
   // ── Propuestas ─────────────────────────────────────────────
 
-  const tiposCompatibles = editando ? (PROPUESTAS_COMPATIBLES[form.tipo] ?? []) : []
+  const tiposCompatibles = editando ? (PROPUESTAS_COMPATIBLES[form.tipo]?.tipos ?? []) : []
 
   const propuestasAsignadas = useMemo(() =>
     propuestas.filter(p => p.actividadId === editando),
@@ -694,20 +687,19 @@ export default function AdminActividades() {
                   {act.tipo === 'conferencia' && invitado && (
                     <p className="admin-list__item-sub">{invitado.nombre}</p>
                   )}
-                  {act.tipo === 'mesa' && (() => {
-                    const ejes = [...new Set(propAct.map(p => p.eje))].sort().join(', ')
+                  {(() => {
+                    const cfg = PROPUESTAS_COMPATIBLES[act.tipo]
+                    if (!cfg?.etiqueta) return null
+                    const ejes = cfg.mostrarEje
+                      ? [...new Set(propAct.map(p => p.eje))].sort().join(', ')
+                      : ''
                     return (
                       <p className="admin-list__item-sub">
-                        {propAct.length} ponencia{propAct.length !== 1 ? 's' : ''}
+                        {propAct.length} {cfg.etiqueta}{propAct.length !== 1 ? 's' : ''}
                         {ejes && ` · Eje ${ejes}`}
                       </p>
                     )
                   })()}
-                  {act.tipo === 'pósters' && (
-                    <p className="admin-list__item-sub">
-                      {propAct.length} póster{propAct.length !== 1 ? 's' : ''}
-                    </p>
-                  )}
                 </div>
                 <div className="admin-list__item-actions" style={{ flexShrink: 0 }}>
                   <button
@@ -767,19 +759,21 @@ export default function AdminActividades() {
                     </>
                   )}
 
-                  {/* Mesa / Pósters: lista de propuestas */}
-                  {(act.tipo === 'mesa' || act.tipo === 'pósters') && propAct.length > 0 && (
+                  {/* Actividades que agrupan propuestas (mesa, pósters, y cualquier tipo futuro con etiqueta) */}
+                  {PROPUESTAS_COMPATIBLES[act.tipo]?.etiqueta && propAct.length > 0 && (
                     <ul style={{ margin: '0.25rem 0 0.25rem 1rem', padding: 0 }}>
                       {propAct.map(p => (
                         <li key={p.id}>
                           <span style={{ fontWeight: 500 }}>{p.titulo}</span>
                           <span style={{ color: '#666' }}> · {p.autor.nombre}</span>
-                          {act.tipo === 'mesa' && <span style={{ color: '#999' }}> · Eje {p.eje}</span>}
+                          {PROPUESTAS_COMPATIBLES[act.tipo]?.mostrarEje && (
+                            <span style={{ color: '#999' }}> · Eje {p.eje}</span>
+                          )}
                         </li>
                       ))}
                     </ul>
                   )}
-                  {act.tipo === 'mesa' && act.moderador && (
+                  {act.moderador && PROPUESTAS_COMPATIBLES[act.tipo]?.etiqueta && (
                     <p><span style={{ color: '#888', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Moderador </span>{act.moderador}</p>
                   )}
 

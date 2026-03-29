@@ -95,6 +95,19 @@ export const ESTADOS_PROPUESTA = [
   { valor: 'rechazada', etiqueta: 'Rechazada' },
 ] as const
 
+// Qué propuestas acepta cada tipo de actividad y cómo mostrarlas en el listado.
+// etiqueta: si está presente, se muestra el conteo de propuestas (ej. "3 ponencias").
+// mostrarEje: si true, agrega el eje al conteo (ej. "3 ponencias · Eje 03").
+export const PROPUESTAS_COMPATIBLES: Record<string, {
+  tipos:       string[]
+  etiqueta?:   string
+  mostrarEje?: boolean
+}> = {
+  mesa:    { tipos: ['ponencia', 'relato'], etiqueta: 'ponencia', mostrarEje: true  },
+  pósters: { tipos: ['poster'],            etiqueta: 'póster',   mostrarEje: false },
+  panel:   { tipos: ['panel'] },
+}
+
 export const RESTRICCIONES_ACTIVIDAD = {
   conferencia: { minInvitados: 1, maxInvitados: 1 },
   mesa:        { minPropuestas: 2, maxPropuestas: 4 },
