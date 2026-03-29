@@ -444,6 +444,24 @@ export default function AdminActividades() {
                   {invitados.find(i => i.id === act.invitadoId)?.nombre ?? act.invitadoId}
                 </p>
               )}
+              {act.tipo === 'mesa' && (() => {
+                const pp = propuestas.filter(p => p.actividadId === act.id)
+                const ejes = [...new Set(pp.map(p => p.eje))].sort().join(', ')
+                return (
+                  <p className="admin-list__item-sub">
+                    {pp.length} ponencia{pp.length !== 1 ? 's' : ''}
+                    {ejes && ` · Eje ${ejes}`}
+                  </p>
+                )
+              })()}
+              {act.tipo === 'pósters' && (() => {
+                const pp = propuestas.filter(p => p.actividadId === act.id)
+                return (
+                  <p className="admin-list__item-sub">
+                    {pp.length} póster{pp.length !== 1 ? 's' : ''}
+                  </p>
+                )
+              })()}
             </div>
             <div className="admin-list__item-actions">
               <button className="admin-btn admin-btn--small" onClick={() => handleEditar(act)}>
