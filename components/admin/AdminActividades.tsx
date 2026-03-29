@@ -61,7 +61,8 @@ export default function AdminActividades() {
   const [editando, setEditando] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
   const [mensaje, setMensaje]   = useState<string | null>(null)
-  const [filtro, setFiltro]     = useState<TipoActividad | 'todas'>('todas')
+  const [filtro, setFiltro]       = useState<TipoActividad | 'todas'>('todas')
+  const [expandida, setExpandida] = useState<string | null>(null)
 
   // Filtros propuestas disponibles
   const [filtroPTipo,  setFiltroPTipo]  = useState<TipoPropuesta | 'todos'>('todos')
@@ -664,62 +665,136 @@ export default function AdminActividades() {
         {actividadesFiltradas.length === 0 && (
           <p className="admin-list__empty">No hay actividades cargadas.</p>
         )}
-        {actividadesFiltradas.map(act => (
-          <div key={act.id} className="admin-list__item">
-            <div className="admin-list__item-info">
-              <p className="admin-list__item-name">
-                {act.titulo || '(sin título)'}
-                <span className="admin-badge admin-badge--pending" style={{ marginLeft: '0.5rem' }}>
-                  {tipoEtiqueta(act.tipo)}
-                </span>
-              </p>
-              <p className="admin-list__item-sub">
-                {[act.fecha, act.horaInicio && `${act.horaInicio}–${act.horaFin}`, act.sala]
-                  .filter(Boolean).join(' · ')}
-              </p>
-              {act.tipo === 'panel' && (
-                <p className="admin-list__item-sub">
-                  {act.coordinador && `Coord.: ${act.coordinador} · `}
-                  {act.participantes?.length ?? 0} participante{(act.participantes?.length ?? 0) !== 1 ? 's' : ''}
-                </p>
-              )}
-              {act.tipo === 'conferencia' && act.invitadoId && (
-                <p className="admin-list__item-sub">
-                  {invitados.find(i => i.id === act.invitadoId)?.nombre ?? act.invitadoId}
-                </p>
-              )}
-              {act.tipo === 'mesa' && (() => {
-                const pp = propuestas.filter(p => p.actividadId === act.id)
-                const ejes = [...new Set(pp.map(p => p.eje))].sort().join(', ')
-                return (
-                  <p className="admin-list__item-sub">
-                    {pp.length} ponencia{pp.length !== 1 ? 's' : ''}
-                    {ejes && ` · Eje ${ejes}`}
+        {actividadesFiltradas.map(act => {
+          const propAct   = propuestas.filter(p => p.actividadId === act.id)
+          const invitado  = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+          const abierta   = expandida === act.id
+          return (
+            <div key={act.id} className="admin-list__item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.4rem' }}>
+
+              {/* Fila principal */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                <div className="admin-list__item-info" style={{ flex: 1 }}>
+                  <p className="admin-list__item-name">
+                    {act.titulo || '(sin título)'}
+                    <span className="admin-badge admin-badge--pending" style={{ marginLeft: '0.5rem' }}>
+                      {tipoEtiqueta(act.tipo)}
+                    </span>
                   </p>
-                )
-              })()}
-              {act.tipo === 'pósters' && (() => {
-                const pp = propuestas.filter(p => p.actividadId === act.id)
-                return (
                   <p className="admin-list__item-sub">
-                    {pp.length} póster{pp.length !== 1 ? 's' : ''}
+                    {[act.fecha, act.horaInicio && `${act.horaInicio}–${act.horaFin}`, act.sala]
+                      .filter(Boolean).join(' · ')}
                   </p>
-                )
-              })()}
+                  {act.tipo === 'panel' && (
+                    <p className="admin-list__item-sub">
+                      {act.coordinador && `Coord.: ${act.coordinador} · `}
+                      {act.participantes?.length ?? 0} participante{(act.participantes?.length ?? 0) !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                  {act.tipo === 'conferencia' && invitado && (
+                    <p className="admin-list__item-sub">{invitado.nombre}</p>
+                  )}
+                  {act.tipo === 'mesa' && (() => {
+                    const ejes = [...new Set(propAct.map(p => p.eje))].sort().join(', ')
+                    return (
+                      <p className="admin-list__item-sub">
+                        {propAct.length} ponencia{propAct.length !== 1 ? 's' : ''}
+                        {ejes && ` · Eje ${ejes}`}
+                      </p>
+                    )
+                  })()}
+                  {act.tipo === 'pósters' && (
+                    <p className="admin-list__item-sub">
+                      {propAct.length} póster{propAct.length !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+                <div className="admin-list__item-actions" style={{ flexShrink: 0 }}>
+                  <button
+                    className="admin-btn admin-btn--small"
+                    onClick={() => setExpandida(abierta ? null : act.id)}
+                  >
+                    {abierta ? 'Cerrar' : 'Ver'}
+                  </button>
+                  <button className="admin-btn admin-btn--small" onClick={() => handleEditar(act)}>
+                    Editar
+                  </button>
+                  <button
+                    className="admin-btn admin-btn--small admin-btn--danger"
+                    onClick={() => handleEliminar(act.id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+
+              {/* Detalle expandible */}
+              {abierta && (
+                <div style={{ padding: '0.75rem', background: 'rgba(35,22,81,0.04)', borderRadius: '4px', fontSize: '0.86rem', color: '#444', lineHeight: 1.7 }}>
+
+                  {/* Conferencia */}
+                  {act.tipo === 'conferencia' && invitado && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <span style={{ fontWeight: 600 }}>{invitado.nombre}</span>
+                      {invitado.rol && <span> · {invitado.rol}</span>}
+                      {invitado.institucion && <span> · {invitado.institucion}</span>}
+                    </div>
+                  )}
+                  {act.moderador && (
+                    <p><span style={{ color: '#888', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Moderador </span>{act.moderador}</p>
+                  )}
+
+                  {/* Panel */}
+                  {act.tipo === 'panel' && (
+                    <>
+                      {act.coordinador && (
+                        <p style={{ marginBottom: '0.35rem' }}>
+                          <span style={{ color: '#888', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Coordinador </span>
+                          {act.coordinador}
+                        </p>
+                      )}
+                      {(act.participantes ?? []).length > 0 && (
+                        <ul style={{ margin: '0.25rem 0 0.25rem 1rem', padding: 0 }}>
+                          {(act.participantes ?? []).map((p, i) => (
+                            <li key={i}>
+                              <span style={{ fontWeight: 500 }}>{p.nombre}</span>
+                              {p.institucion && <span style={{ color: '#666' }}> · {p.institucion}</span>}
+                              {p.tituloPonencia && <span style={{ fontStyle: 'italic', color: '#555' }}> — "{p.tituloPonencia}"</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+
+                  {/* Mesa / Pósters: lista de propuestas */}
+                  {(act.tipo === 'mesa' || act.tipo === 'pósters') && propAct.length > 0 && (
+                    <ul style={{ margin: '0.25rem 0 0.25rem 1rem', padding: 0 }}>
+                      {propAct.map(p => (
+                        <li key={p.id}>
+                          <span style={{ fontWeight: 500 }}>{p.titulo}</span>
+                          <span style={{ color: '#666' }}> · {p.autor.nombre}</span>
+                          {act.tipo === 'mesa' && <span style={{ color: '#999' }}> · Eje {p.eje}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {act.tipo === 'mesa' && act.moderador && (
+                    <p><span style={{ color: '#888', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Moderador </span>{act.moderador}</p>
+                  )}
+
+                  {/* Resumen */}
+                  {act.resumen && (
+                    <p style={{ marginTop: '0.5rem', color: '#555', borderTop: '1px solid rgba(35,22,81,0.08)', paddingTop: '0.5rem' }}>
+                      {act.resumen}
+                    </p>
+                  )}
+                </div>
+              )}
+
             </div>
-            <div className="admin-list__item-actions">
-              <button className="admin-btn admin-btn--small" onClick={() => handleEditar(act)}>
-                Editar
-              </button>
-              <button
-                className="admin-btn admin-btn--small admin-btn--danger"
-                onClick={() => handleEliminar(act.id)}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
     </div>
