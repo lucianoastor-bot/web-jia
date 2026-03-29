@@ -40,12 +40,17 @@ export default function Propuestas() {
 
         <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '720px', counterReset: 'none' }}>
           {EJES.map((eje, i) => (
-            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'baseline', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em' }}>
+            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'flex-start', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em', paddingTop: '0.2rem' }}>
                 {eje.num}
               </span>
-              <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6 }}>
-                {eje.titulo}
+              <span style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <span style={{ fontSize: '0.95rem', color: '#444', lineHeight: 1.6, fontWeight: 600 }}>
+                  {eje.titulo}
+                </span>
+                <span style={{ fontSize: '0.85rem', color: '#777', lineHeight: 1.6 }}>
+                  {eje.descripcion}
+                </span>
               </span>
             </li>
           ))}
@@ -60,11 +65,24 @@ export default function Propuestas() {
 
           <div>
             <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Ponencias · Relatos de experiencias · Pósters
+              Ponencias · Relatos de experiencias
             </p>
             <p className="section__body">
               Se debe enviar un resumen de hasta 400 palabras siguiendo las pautas
               generales para la presentación de resúmenes.
+            </p>
+          </div>
+
+          <div>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Pósters
+            </p>
+            <p className="section__body">
+              Los pósters son una modalidad orientada a trabajos en curso, avances de investigación
+              o propuestas exploratorias. Se debe enviar un resumen de hasta 400 palabras siguiendo
+              las pautas generales. La evaluación se realiza sobre el resumen. De resultar
+              seleccionado, se debe presentar el póster en formato impreso (A0 o A1, orientación
+              vertical) durante la sesión de pósters del programa.
             </p>
           </div>
 

@@ -37,7 +37,7 @@ export const EJES: Eje[] = [
   {
     num: '03',
     titulo: 'IA, escritura y traducción',
-    descripcion: 'Exploración del rol de la IA en la producción textual, la traducción automática y sus consecuencias para la escritura académica y literaria.',
+    descripcion: 'Exploración del impacto de la IA en la producción textual y académica, y en las prácticas de traducción: sus herramientas, sus límites y las preguntas que abre sobre autoría, estilo y fidelidad.',
   },
   {
     num: '04',
