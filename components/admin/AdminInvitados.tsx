@@ -7,7 +7,7 @@ import { TIPOS_ACTIVIDAD } from '@/congreso.config'
 import { agregarInvitado, actualizarInvitado, eliminarInvitado } from '@/lib/services/invitados'
 import {
   obtenerActividadDeInvitado, guardarActividad,
-  obtenerPaneles, crearActividad, actualizarActividad, actualizarParticipantesPanel,
+  obtenerActividadesPorTipo, actualizarActividad, actualizarParticipantesPanel,
 } from '@/lib/services/actividades'
 import type { Invitado, Actividad, TipoActividad, ParticipantePanel } from '@/types'
 
@@ -68,9 +68,9 @@ export default function AdminInvitados() {
   const [cargandoK, setCargandoK]     = useState(false)
   const [mensajeK, setMensajeK]       = useState<string | null>(null)
 
-  // Panel
-  const [paneles, setPaneles]           = useState<Actividad[]>([])
-  const [panelSeleccionado, setPanelSel] = useState<string>('nuevo')
+  // Actividades seleccionables (panel / otro)
+  const [actividadesGrupo, setActividadesGrupo]   = useState<Actividad[]>([])
+  const [actividadGrupoId, setActividadGrupoId]   = useState<string>('')
 
   // ── Invitado ──────────────────────────────────────────────
 
@@ -148,41 +148,42 @@ export default function AdminInvitados() {
     setActividad(VACIO_ACTIVIDAD)
     setActividadId(null)
     setMensajeK(null)
-    setPaneles([])
-    setPanelSel('nuevo')
+    setActividadesGrupo([])
+    setActividadGrupoId('')
   }
 
   // ── Keynote ───────────────────────────────────────────────
 
+  const TIPOS_INVITADO = ['conferencia', 'panel', 'otro'] as const
+  type TipoInvitado   = typeof TIPOS_INVITADO[number]
+
   const handleChangeK = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setActividad(a => ({ ...a, [name]: value }))
-    if (name === 'tipo' && value === 'panel') {
-      const lista = await obtenerPaneles()
-      setPaneles(lista)
-      setPanelSel('nuevo')
+    if (name === 'tipo' && (value === 'panel' || value === 'otro')) {
+      const lista = await obtenerActividadesPorTipo(value)
+      setActividadesGrupo(lista)
+      setActividadGrupoId(lista[0]?.id ?? '')
+    } else if (name === 'tipo') {
+      setActividadesGrupo([])
+      setActividadGrupoId('')
     }
   }
 
-  const handleSeleccionarPanel = (panelId: string) => {
-    setPanelSel(panelId)
-    if (panelId === 'nuevo') {
-      setActividad(a => ({ ...VACIO_ACTIVIDAD, tipo: 'panel' }))
-    } else {
-      const panel = paneles.find(p => p.id === panelId)
-      if (panel) {
-        setActividad({
-          tipo:        'panel',
-          titulo:      panel.titulo ?? '',
-          resumen:     panel.resumen ?? '',
-          fecha:       panel.fecha ?? '',
-          horaInicio:  panel.horaInicio ?? '',
-          horaFin:     panel.horaFin ?? '',
-          sala:        panel.sala ?? '',
-          moderador:   '',
-          coordinador: panel.coordinador ?? '',
-        })
-      }
+  const handleSeleccionarGrupo = (actividadId: string) => {
+    setActividadGrupoId(actividadId)
+    const act = actividadesGrupo.find(a => a.id === actividadId)
+    if (act) {
+      setActividad(a => ({
+        ...a,
+        titulo:      act.titulo ?? '',
+        resumen:     act.resumen ?? '',
+        fecha:       act.fecha ?? '',
+        horaInicio:  act.horaInicio ?? '',
+        horaFin:     act.horaFin ?? '',
+        sala:        act.sala ?? '',
+        coordinador: act.coordinador ?? '',
+      }))
     }
   }
 
@@ -192,42 +193,23 @@ export default function AdminInvitados() {
     setCargandoK(true)
     setMensajeK(null)
     try {
-      if (actividad.tipo === 'panel') {
+      if (actividad.tipo === 'panel' || actividad.tipo === 'otro') {
+        if (!actividadGrupoId) {
+          setMensajeK('Seleccioná una actividad existente.')
+          return
+        }
         const nuevoParticipante: ParticipantePanel = {
           nombre:      form.nombre,
           institucion: form.institucion,
           invitadoId:  editando,
         }
-        if (panelSeleccionado === 'nuevo') {
-          // Crear panel nuevo y agregar invitado como primer participante
-          const { resumen, coordinador, moderador: _m, ...resto } = actividad
-          const id = await crearActividad({
-            ...resto,
-            tipo: 'panel',
-            ...(resumen     && { resumen }),
-            ...(coordinador && { coordinador }),
-            participantes: [nuevoParticipante],
-          })
-          setActividadId(id)
-          setPaneles(ps => [...ps, { id, ...actividad, participantes: [nuevoParticipante] }])
-          setPanelSel(id)
-        } else {
-          // Agregar invitado a panel existente y actualizar datos del panel
-          const panelExistente = paneles.find(p => p.id === panelSeleccionado)
-          const participantesActuales = panelExistente?.participantes ?? []
-          const yaEsta = participantesActuales.some(p => p.invitadoId === editando)
-          if (!yaEsta) {
-            await actualizarParticipantesPanel(panelSeleccionado, [...participantesActuales, nuevoParticipante])
-          }
-          const { resumen, coordinador, moderador: _m2, ...restoDatos } = actividad
-          await actualizarActividad(panelSeleccionado, {
-            ...restoDatos,
-            tipo: 'panel',
-            ...(resumen     && { resumen }),
-            ...(coordinador && { coordinador }),
-          })
-          setActividadId(panelSeleccionado)
+        const actExistente = actividadesGrupo.find(a => a.id === actividadGrupoId)
+        const participantesActuales = actExistente?.participantes ?? []
+        const yaEsta = participantesActuales.some(p => p.invitadoId === editando)
+        if (!yaEsta) {
+          await actualizarParticipantesPanel(actividadGrupoId, [...participantesActuales, nuevoParticipante])
         }
+        setActividadId(actividadGrupoId)
       } else {
         await guardarActividad(editando, actividad, actividadId ?? undefined)
         if (!actividadId) {
@@ -319,7 +301,7 @@ export default function AdminInvitados() {
 
           <form className="admin-form" onSubmit={handleSubmitActividad}>
 
-            {/* Tipo */}
+            {/* Tipo — solo conferencia, panel, otro */}
             <div className="admin-form__field admin-form__field--full">
               <label className="admin-form__label">Tipo de actividad</label>
               <select
@@ -328,28 +310,34 @@ export default function AdminInvitados() {
                 value={actividad.tipo}
                 onChange={handleChangeK}
               >
-                {TIPOS_ACTIVIDAD.map(t => (
+                {TIPOS_ACTIVIDAD.filter(t => TIPOS_INVITADO.includes(t.valor as TipoInvitado)).map(t => (
                   <option key={t.valor} value={t.valor}>{t.etiqueta}</option>
                 ))}
               </select>
             </div>
 
-            {/* Selector de panel existente */}
-            {actividad.tipo === 'panel' && (
+            {/* Selector de actividad grupal (panel / otro) */}
+            {(actividad.tipo === 'panel' || actividad.tipo === 'otro') && (
               <div className="admin-form__field admin-form__field--full">
-                <label className="admin-form__label">Panel</label>
-                <select
-                  className="admin-form__input"
-                  value={panelSeleccionado}
-                  onChange={e => handleSeleccionarPanel(e.target.value)}
-                >
-                  <option value="nuevo">— Crear nuevo panel —</option>
-                  {paneles.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.titulo || '(sin título)'} · {p.participantes?.length ?? 0} participantes
-                    </option>
-                  ))}
-                </select>
+                <label className="admin-form__label">
+                  {actividad.tipo === 'panel' ? 'Panel existente' : 'Actividad existente'}
+                </label>
+                {actividadesGrupo.length === 0
+                  ? <p style={{ fontSize: '0.82rem', color: '#999' }}>
+                      No hay actividades de este tipo creadas todavía. Creá una desde el módulo Actividades.
+                    </p>
+                  : <select
+                      className="admin-form__input"
+                      value={actividadGrupoId}
+                      onChange={e => handleSeleccionarGrupo(e.target.value)}
+                    >
+                      {actividadesGrupo.map(a => (
+                        <option key={a.id} value={a.id}>
+                          {a.titulo || '(sin título)'} · {a.participantes?.length ?? 0} participantes
+                        </option>
+                      ))}
+                    </select>
+                }
               </div>
             )}
 

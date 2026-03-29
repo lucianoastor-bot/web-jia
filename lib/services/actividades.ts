@@ -29,12 +29,15 @@ export async function guardarActividad(
   return addDoc(collection(db, 'actividades'), { invitadoId, ...datos })
 }
 
-// Paneles existentes (para selector en AdminInvitados)
-export async function obtenerPaneles(): Promise<Actividad[]> {
-  const q = query(collection(db, 'actividades'), where('tipo', '==', 'panel'))
+// Actividades existentes filtradas por tipo (para selectores en AdminInvitados)
+export async function obtenerActividadesPorTipo(tipo: string): Promise<Actividad[]> {
+  const q = query(collection(db, 'actividades'), where('tipo', '==', tipo))
   const snap = await getDocs(q)
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as Actividad))
 }
+
+// Alias para compatibilidad con código existente
+export const obtenerPaneles = () => obtenerActividadesPorTipo('panel')
 
 // Todas las actividades
 export async function obtenerActividades(): Promise<Actividad[]> {
