@@ -8,7 +8,7 @@ import {
 import { db } from '@/lib/firebase'
 import type { Actividad, TipoActividad } from '@/types'
 
-// Actividad individual (keynote, otro) — un solo invitado
+// Actividad individual (conferencia, otro) — un solo invitado
 export async function obtenerActividadDeInvitado(invitadoId: string): Promise<Actividad | null> {
   const q = query(collection(db, 'actividades'), where('invitadoId', '==', invitadoId))
   const snap = await getDocs(q)
@@ -17,7 +17,7 @@ export async function obtenerActividadDeInvitado(invitadoId: string): Promise<Ac
   return { id: d.id, ...d.data() } as Actividad
 }
 
-// Guardar actividad individual (keynote, otro, mesa, pósters)
+// Guardar actividad individual (conferencia, otro, mesa, pósters)
 export async function guardarActividad(
   invitadoId: string,
   datos: Omit<Actividad, 'id' | 'propuestasIds' | 'invitadosIds'>,
@@ -65,6 +65,12 @@ export async function actualizarPanel(
   datos: Omit<Actividad, 'id' | 'tipo' | 'invitadoId' | 'propuestasIds' | 'invitadosIds'>,
 ) {
   return updateDoc(doc(db, 'actividades', panelId), { ...datos })
+}
+
+// Todas las actividades
+export async function obtenerActividades(): Promise<Actividad[]> {
+  const snap = await getDocs(collection(db, 'actividades'))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Actividad))
 }
 
 // Crear / actualizar actividad genérica (sin invitadoId)

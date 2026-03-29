@@ -75,7 +75,7 @@ export const TIPOS_PROPUESTA = [
 ] as const
 
 export const TIPOS_ACTIVIDAD = [
-  { valor: 'keynote',  etiqueta: 'Keynote' },
+  { valor: 'conferencia', etiqueta: 'Conferencia' },
   { valor: 'panel',    etiqueta: 'Panel' },
   { valor: 'mesa',     etiqueta: 'Mesa de ponencias' },
   { valor: 'pósters',  etiqueta: 'Sesión de pósters' },

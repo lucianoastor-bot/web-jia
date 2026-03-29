@@ -31,7 +31,7 @@ const VACIO_INVITADO: DatosInvitado = {
 
 
 const VACIO_ACTIVIDAD: DatosActividad = {
-  tipo: 'keynote', titulo: '', resumen: '',
+  tipo: 'conferencia', titulo: '', resumen: '',
   fecha: '', horaInicio: '', horaFin: '', sala: '', moderador: '',
 }
 
@@ -111,7 +111,7 @@ export default function AdminInvitados() {
     const act = await obtenerActividadDeInvitado(id)
     if (act) {
       setActividad({
-        tipo:       (act.tipo as TipoActividad) ?? 'keynote',
+        tipo:       (act.tipo as TipoActividad) ?? 'conferencia',
         titulo:     act.titulo ?? '',
         resumen:    act.resumen ?? '',
         fecha:      act.fecha ?? '',
@@ -324,7 +324,7 @@ export default function AdminInvitados() {
 
             <div className="admin-form__grid">
               {camposActividad
-                .filter(c => c.nombre !== 'moderador' || actividad.tipo === 'panel' || actividad.tipo === 'mesa')
+                .filter(c => c.nombre !== 'moderador' || actividad.tipo === 'conferencia' || actividad.tipo === 'panel' || actividad.tipo === 'mesa')
                 .map(c => (
                   <div key={c.nombre} className="admin-form__field">
                     <label className="admin-form__label">{c.etiqueta}</label>

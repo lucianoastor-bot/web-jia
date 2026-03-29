@@ -1,0 +1,317 @@
+// components/admin/AdminActividades.tsx
+'use client'
+
+import { useState } from 'react'
+import { useActividades } from '@/lib/hooks/useActividades'
+import { useInvitados } from '@/lib/hooks/useInvitados'
+import { crearActividad, actualizarActividad, eliminarActividad, quitarInvitadoDePanel } from '@/lib/services/actividades'
+import { TIPOS_ACTIVIDAD } from '@/congreso.config'
+import type { Actividad, TipoActividad } from '@/types'
+
+type DatosActividad = {
+  tipo:        TipoActividad
+  titulo:      string
+  resumen:     string
+  fecha:       string
+  horaInicio:  string
+  horaFin:     string
+  sala:        string
+  moderador:   string
+  descripcion: string
+}
+
+const VACIO: DatosActividad = {
+  tipo: 'conferencia', titulo: '', resumen: '',
+  fecha: '', horaInicio: '', horaFin: '',
+  sala: '', moderador: '', descripcion: '',
+}
+
+const camposComunes: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string }[] = [
+  { nombre: 'titulo',     etiqueta: 'Título' },
+  { nombre: 'fecha',      etiqueta: 'Fecha',       tipo: 'date' },
+  { nombre: 'horaInicio', etiqueta: 'Hora inicio',  tipo: 'time' },
+  { nombre: 'horaFin',    etiqueta: 'Hora fin',     tipo: 'time' },
+  { nombre: 'sala',       etiqueta: 'Sala / Lugar' },
+]
+
+export default function AdminActividades() {
+  const { actividades, cargar } = useActividades()
+  const { invitados }           = useInvitados()
+
+  const [form, setForm]               = useState<DatosActividad>(VACIO)
+  const [editando, setEditando]       = useState<string | null>(null)
+  const [actividadActual, setActual]  = useState<Actividad | null>(null)
+  const [cargando, setCargando]       = useState(false)
+  const [mensaje, setMensaje]         = useState<string | null>(null)
+  const [filtro, setFiltro]           = useState<TipoActividad | 'todas'>('todas')
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCargando(true)
+    setMensaje(null)
+    try {
+      // Armar objeto limpio según tipo
+      const datos: Omit<Actividad, 'id'> = {
+        tipo:       form.tipo,
+        titulo:     form.titulo,
+        resumen:    form.resumen || undefined,
+        fecha:      form.fecha   || undefined,
+        horaInicio: form.horaInicio || undefined,
+        horaFin:    form.horaFin    || undefined,
+        sala:       form.sala       || undefined,
+        ...((['panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && {
+          moderador: form.moderador || undefined,
+        }),
+        ...(form.tipo === 'otro' && {
+          descripcion: form.descripcion || undefined,
+        }),
+        ...(form.tipo === 'panel' && !editando && { invitadosIds: [] }),
+      }
+      if (editando) {
+        await actualizarActividad(editando, datos)
+        setMensaje('Actividad actualizada.')
+      } else {
+        await crearActividad(datos)
+        setMensaje('Actividad creada.')
+      }
+      setForm(VACIO)
+      setEditando(null)
+      setActual(null)
+      await cargar()
+    } catch {
+      setMensaje('Error al guardar.')
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  const handleEditar = (act: Actividad) => {
+    setForm({
+      tipo:        act.tipo,
+      titulo:      act.titulo      ?? '',
+      resumen:     act.resumen     ?? '',
+      fecha:       act.fecha       ?? '',
+      horaInicio:  act.horaInicio  ?? '',
+      horaFin:     act.horaFin     ?? '',
+      sala:        act.sala        ?? '',
+      moderador:   act.moderador   ?? '',
+      descripcion: act.descripcion ?? '',
+    })
+    setEditando(act.id)
+    setActual(act)
+    setMensaje(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleEliminar = async (id: string) => {
+    if (!confirm('¿Eliminar esta actividad?')) return
+    await eliminarActividad(id)
+    setMensaje('Actividad eliminada.')
+    if (editando === id) handleCancelar()
+    await cargar()
+  }
+
+  const handleCancelar = () => {
+    setForm(VACIO)
+    setEditando(null)
+    setActual(null)
+    setMensaje(null)
+  }
+
+  const handleQuitarInvitado = async (invitadoId: string) => {
+    if (!editando || !actividadActual) return
+    await quitarInvitadoDePanel(editando, invitadoId)
+    setActual(a => a ? {
+      ...a,
+      invitadosIds: (a.invitadosIds ?? []).filter(id => id !== invitadoId),
+    } : null)
+    await cargar()
+  }
+
+  const tipoEtiqueta = (tipo: TipoActividad) =>
+    TIPOS_ACTIVIDAD.find(t => t.valor === tipo)?.etiqueta ?? tipo
+
+  const actividadesFiltradas = filtro === 'todas'
+    ? actividades
+    : actividades.filter(a => a.tipo === filtro)
+
+  return (
+    <div className="admin-module">
+
+      {/* ── Formulario ── */}
+      <h2 className="admin-module__title">
+        {editando ? 'Editar actividad' : 'Nueva actividad'}
+      </h2>
+
+      <form className="admin-form" onSubmit={handleSubmit}>
+
+        {/* Tipo */}
+        <div className="admin-form__field admin-form__field--full">
+          <label className="admin-form__label">Tipo</label>
+          <select className="admin-form__input" name="tipo" value={form.tipo} onChange={handleChange}>
+            {TIPOS_ACTIVIDAD.map(t => (
+              <option key={t.valor} value={t.valor}>{t.etiqueta}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="admin-form__grid">
+          {camposComunes.map(c => (
+            <div key={c.nombre} className="admin-form__field">
+              <label className="admin-form__label">{c.etiqueta}</label>
+              <input
+                className="admin-form__input"
+                type={c.tipo ?? 'text'}
+                name={c.nombre}
+                value={form[c.nombre] as string}
+                onChange={handleChange}
+                required={c.nombre === 'titulo'}
+              />
+            </div>
+          ))}
+
+          {/* Moderador — para panel, mesa y conferencia */}
+          {(['conferencia', 'panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && (
+            <div className="admin-form__field">
+              <label className="admin-form__label">Moderador</label>
+              <input
+                className="admin-form__input"
+                type="text"
+                name="moderador"
+                value={form.moderador}
+                onChange={handleChange}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Resumen */}
+        <div className="admin-form__field admin-form__field--full">
+          <label className="admin-form__label">
+            {form.tipo === 'otro' ? 'Descripción' : 'Resumen'}
+          </label>
+          <textarea
+            className="admin-form__textarea"
+            name={form.tipo === 'otro' ? 'descripcion' : 'resumen'}
+            value={form.tipo === 'otro' ? form.descripcion : form.resumen}
+            onChange={handleChange}
+            rows={3}
+          />
+        </div>
+
+        {mensaje && <p className="admin-form__msg">{mensaje}</p>}
+
+        <div className="admin-form__actions">
+          <button type="submit" className="admin-btn admin-btn--primary" disabled={cargando}>
+            {cargando ? 'Guardando...' : editando ? 'Actualizar' : 'Crear'}
+          </button>
+          {editando && (
+            <button type="button" className="admin-btn admin-btn--ghost" onClick={handleCancelar}>
+              Cancelar
+            </button>
+          )}
+        </div>
+      </form>
+
+      {/* ── Participantes (solo panel al editar) ── */}
+      {editando && actividadActual?.tipo === 'panel' && (
+        <>
+          <h2 className="admin-module__title" style={{ marginTop: '2.5rem' }}>
+            Participantes ({actividadActual.invitadosIds?.length ?? 0})
+          </h2>
+          <div className="admin-list">
+            {(actividadActual.invitadosIds ?? []).length === 0 && (
+              <p className="admin-list__empty">Sin participantes asignados.</p>
+            )}
+            {(actividadActual.invitadosIds ?? []).map(id => {
+              const inv = invitados.find(i => i.id === id)
+              return (
+                <div key={id} className="admin-list__item">
+                  <div className="admin-list__item-info">
+                    <p className="admin-list__item-name">{inv?.nombre ?? id}</p>
+                    {inv && <p className="admin-list__item-sub">{inv.rol} · {inv.institucion}</p>}
+                  </div>
+                  <div className="admin-list__item-actions">
+                    <button
+                      className="admin-btn admin-btn--small admin-btn--danger"
+                      onClick={() => handleQuitarInvitado(id)}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ── Lista ── */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
+        <h2 className="admin-module__title" style={{ margin: 0 }}>
+          Actividades ({actividadesFiltradas.length})
+        </h2>
+        <select
+          className="admin-form__input"
+          style={{ width: 'auto', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+          value={filtro}
+          onChange={e => setFiltro(e.target.value as TipoActividad | 'todas')}
+        >
+          <option value="todas">Todas</option>
+          {TIPOS_ACTIVIDAD.map(t => (
+            <option key={t.valor} value={t.valor}>{t.etiqueta}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="admin-list">
+        {actividadesFiltradas.length === 0 && (
+          <p className="admin-list__empty">No hay actividades cargadas.</p>
+        )}
+        {actividadesFiltradas.map(act => (
+          <div key={act.id} className="admin-list__item">
+            <div className="admin-list__item-info">
+              <p className="admin-list__item-name">
+                {act.titulo || '(sin título)'}
+                <span className="admin-badge admin-badge--pending" style={{ marginLeft: '0.5rem' }}>
+                  {tipoEtiqueta(act.tipo)}
+                </span>
+              </p>
+              <p className="admin-list__item-sub">
+                {[act.fecha, act.horaInicio && `${act.horaInicio}–${act.horaFin}`, act.sala]
+                  .filter(Boolean).join(' · ')}
+              </p>
+              {act.tipo === 'panel' && (
+                <p className="admin-list__item-sub">
+                  {act.moderador && `Moderador: ${act.moderador} · `}
+                  {act.invitadosIds?.length ?? 0} participante{(act.invitadosIds?.length ?? 0) !== 1 ? 's' : ''}
+                </p>
+              )}
+              {act.tipo === 'conferencia' && act.invitadoId && (
+                <p className="admin-list__item-sub">
+                  {invitados.find(i => i.id === act.invitadoId)?.nombre ?? act.invitadoId}
+                </p>
+              )}
+            </div>
+            <div className="admin-list__item-actions">
+              <button className="admin-btn admin-btn--small" onClick={() => handleEditar(act)}>
+                Editar
+              </button>
+              <button
+                className="admin-btn admin-btn--small admin-btn--danger"
+                onClick={() => handleEliminar(act.id)}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  )
+}
