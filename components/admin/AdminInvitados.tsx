@@ -7,9 +7,9 @@ import { TIPOS_ACTIVIDAD } from '@/congreso.config'
 import { agregarInvitado, actualizarInvitado, eliminarInvitado } from '@/lib/services/invitados'
 import {
   obtenerActividadDeInvitado, guardarActividad,
-  obtenerPaneles, crearPanel, agregarInvitadoAPanel, actualizarPanel,
+  obtenerPaneles, crearActividad, actualizarActividad, actualizarParticipantesPanel,
 } from '@/lib/services/actividades'
-import type { Invitado, Actividad, TipoActividad } from '@/types'
+import type { Invitado, Actividad, TipoActividad, ParticipantePanel } from '@/types'
 
 type DatosInvitado = Omit<Invitado, 'id'>
 
@@ -22,6 +22,7 @@ type DatosActividad = {
   horaFin:     string
   sala:        string
   moderador:   string
+  coordinador: string
 }
 
 const VACIO_INVITADO: DatosInvitado = {
@@ -33,7 +34,7 @@ const VACIO_INVITADO: DatosInvitado = {
 
 const VACIO_ACTIVIDAD: DatosActividad = {
   tipo: 'conferencia', titulo: '', resumen: '',
-  fecha: '', horaInicio: '', horaFin: '', sala: '', moderador: '',
+  fecha: '', horaInicio: '', horaFin: '', sala: '', moderador: '', coordinador: '',
 }
 
 const camposInvitado: { nombre: keyof DatosInvitado; etiqueta: string }[] = [
@@ -44,13 +45,14 @@ const camposInvitado: { nombre: keyof DatosInvitado; etiqueta: string }[] = [
   { nombre: 'foto',        etiqueta: 'Ruta de foto' },
 ]
 
-const camposActividad: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string }[] = [
-  { nombre: 'titulo',     etiqueta: 'Título' },
-  { nombre: 'fecha',      etiqueta: 'Fecha',       tipo: 'date' },
-  { nombre: 'horaInicio', etiqueta: 'Hora inicio',  tipo: 'time' },
-  { nombre: 'horaFin',    etiqueta: 'Hora fin',     tipo: 'time' },
-  { nombre: 'sala',       etiqueta: 'Sala / Lugar' },
-  { nombre: 'moderador',  etiqueta: 'Moderador' },
+const camposActividad: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string; soloTipo?: TipoActividad[] }[] = [
+  { nombre: 'titulo',      etiqueta: 'Título' },
+  { nombre: 'fecha',       etiqueta: 'Fecha',       tipo: 'date' },
+  { nombre: 'horaInicio',  etiqueta: 'Hora inicio',  tipo: 'time' },
+  { nombre: 'horaFin',     etiqueta: 'Hora fin',     tipo: 'time' },
+  { nombre: 'sala',        etiqueta: 'Sala / Lugar' },
+  { nombre: 'moderador',   etiqueta: 'Moderador',   soloTipo: ['conferencia', 'mesa'] },
+  { nombre: 'coordinador', etiqueta: 'Coordinador', soloTipo: ['panel'] },
 ]
 
 export default function AdminInvitados() {
@@ -112,14 +114,15 @@ export default function AdminInvitados() {
     const act = await obtenerActividadDeInvitado(id)
     if (act) {
       setActividad({
-        tipo:       (act.tipo as TipoActividad) ?? 'conferencia',
-        titulo:     act.titulo ?? '',
-        resumen:    act.resumen ?? '',
-        fecha:      act.fecha ?? '',
-        horaInicio: act.horaInicio ?? '',
-        horaFin:    act.horaFin ?? '',
-        sala:       act.sala ?? '',
-        moderador:  act.moderador ?? '',
+        tipo:        (act.tipo as TipoActividad) ?? 'conferencia',
+        titulo:      act.titulo ?? '',
+        resumen:     act.resumen ?? '',
+        fecha:       act.fecha ?? '',
+        horaInicio:  act.horaInicio ?? '',
+        horaFin:     act.horaFin ?? '',
+        sala:        act.sala ?? '',
+        moderador:   act.moderador ?? '',
+        coordinador: act.coordinador ?? '',
       })
       setActividadId(act.id)
     } else {
@@ -169,14 +172,15 @@ export default function AdminInvitados() {
       const panel = paneles.find(p => p.id === panelId)
       if (panel) {
         setActividad({
-          tipo:       'panel',
-          titulo:     panel.titulo ?? '',
-          resumen:    panel.resumen ?? '',
-          fecha:      panel.fecha ?? '',
-          horaInicio: panel.horaInicio ?? '',
-          horaFin:    panel.horaFin ?? '',
-          sala:       panel.sala ?? '',
-          moderador:  panel.moderador ?? '',
+          tipo:        'panel',
+          titulo:      panel.titulo ?? '',
+          resumen:     panel.resumen ?? '',
+          fecha:       panel.fecha ?? '',
+          horaInicio:  panel.horaInicio ?? '',
+          horaFin:     panel.horaFin ?? '',
+          sala:        panel.sala ?? '',
+          moderador:   '',
+          coordinador: panel.coordinador ?? '',
         })
       }
     }
@@ -189,16 +193,39 @@ export default function AdminInvitados() {
     setMensajeK(null)
     try {
       if (actividad.tipo === 'panel') {
+        const nuevoParticipante: ParticipantePanel = {
+          nombre:      form.nombre,
+          institucion: form.institucion,
+          invitadoId:  editando,
+        }
         if (panelSeleccionado === 'nuevo') {
-          // Crear panel nuevo con este invitado como primero
-          const id = await crearPanel(actividad, editando)
+          // Crear panel nuevo y agregar invitado como primer participante
+          const { resumen, coordinador, moderador: _m, ...resto } = actividad
+          const id = await crearActividad({
+            ...resto,
+            tipo: 'panel',
+            ...(resumen     && { resumen }),
+            ...(coordinador && { coordinador }),
+            participantes: [nuevoParticipante],
+          })
           setActividadId(id)
-          setPaneles(ps => [...ps, { id, ...actividad, invitadosIds: [editando] }])
+          setPaneles(ps => [...ps, { id, ...actividad, participantes: [nuevoParticipante] }])
           setPanelSel(id)
         } else {
-          // Agregar invitado a panel existente y actualizar sus datos
-          await agregarInvitadoAPanel(panelSeleccionado, editando)
-          await actualizarPanel(panelSeleccionado, actividad)
+          // Agregar invitado a panel existente y actualizar datos del panel
+          const panelExistente = paneles.find(p => p.id === panelSeleccionado)
+          const participantesActuales = panelExistente?.participantes ?? []
+          const yaEsta = participantesActuales.some(p => p.invitadoId === editando)
+          if (!yaEsta) {
+            await actualizarParticipantesPanel(panelSeleccionado, [...participantesActuales, nuevoParticipante])
+          }
+          const { resumen, coordinador, moderador: _m2, ...restoDatos } = actividad
+          await actualizarActividad(panelSeleccionado, {
+            ...restoDatos,
+            tipo: 'panel',
+            ...(resumen     && { resumen }),
+            ...(coordinador && { coordinador }),
+          })
           setActividadId(panelSeleccionado)
         }
       } else {
@@ -319,7 +346,7 @@ export default function AdminInvitados() {
                   <option value="nuevo">— Crear nuevo panel —</option>
                   {paneles.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.titulo || '(sin título)'} · {p.invitadosIds?.length ?? 0} invitados
+                      {p.titulo || '(sin título)'} · {p.participantes?.length ?? 0} participantes
                     </option>
                   ))}
                 </select>
@@ -328,7 +355,7 @@ export default function AdminInvitados() {
 
             <div className="admin-form__grid">
               {camposActividad
-                .filter(c => c.nombre !== 'moderador' || actividad.tipo === 'conferencia' || actividad.tipo === 'panel' || actividad.tipo === 'mesa')
+                .filter(c => !c.soloTipo || c.soloTipo.includes(actividad.tipo))
                 .map(c => (
                   <div key={c.nombre} className="admin-form__field">
                     <label className="admin-form__label">{c.etiqueta}</label>

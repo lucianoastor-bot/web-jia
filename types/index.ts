@@ -35,16 +35,27 @@ export type Usuario = {
 }
 
 // ─── Participante ────────────────────────────────────────────
-// Objeto embebido dentro de Propuesta. No tiene colección propia.
+// Objeto embebido dentro de Propuesta. Incluye datos personales completos.
 
 export type Participante = {
-  nombre:      string
-  institucion: string
-  email:       string
+  nombre:        string
+  institucion:   string
+  email:         string
   documento:     string   // DNI / Pasaporte
   celularCodigo: string   // ej: '+54'
   celular:       string   // número sin código de país
   pertenencia:   typeof PERTENENCIAS[number]['valor']
+}
+
+// ─── ParticipantePanel ───────────────────────────────────────
+// Participante dentro de una actividad tipo panel.
+// Sin datos personales sensibles — solo lo necesario para el programa.
+
+export type ParticipantePanel = {
+  nombre:          string
+  institucion?:    string
+  tituloPonencia?: string
+  invitadoId?:     string   // link a Invitado (para bio/foto en difusión)
 }
 
 // ─── Propuesta ───────────────────────────────────────────────
@@ -61,10 +72,8 @@ export type Propuesta = {
   estado:          typeof ESTADOS_PROPUESTA[number]['valor']
   actividadId?:    string          // se asigna al armar el programa
   embeddings?:     number[]        // para uso futuro (similitud semántica)
-  // Panel: participantes adicionales al autor/coordinador
-  participantes?:  Participante[]
-  // Otro: descriptor corto del tipo de actividad (ej: 'taller', 'presentación')
-  descriptor?:     string
+  participantes?:  Participante[]  // panel: integrantes adicionales al coordinador
+  descriptor?:     string          // otro: etiqueta corta
 }
 
 // ─── Actividad ───────────────────────────────────────────────
@@ -87,18 +96,17 @@ export type Actividad = {
   horaFin?:      string
   sala?:         string
 
-  // Mesa / Pósters → agrupan propuestas aceptadas
-  propuestasIds?: string[]
+  // Conferencia / Mesa — quien modera
+  moderador?:    string
 
-  // Keynote → referencia a Invitado existente
+  // Panel — quien coordina (también es participante)
+  coordinador?:  string
+  participantes?: ParticipantePanel[]
+
+  // Conferencia — invitado único
   invitadoId?:   string
 
-  // Panel → participantes propios o invitados registrados
-  participantes?: Participante[]
-  invitadosIds?:  string[]
-  moderador?:     string
-
-  // Otro (taller, presentación de libro, etc.)
-  descriptor?:   string    // etiqueta corta: 'taller', 'presentación', etc.
+  // Otro
+  descriptor?:   string
   descripcion?:  string
 }

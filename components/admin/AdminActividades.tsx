@@ -5,10 +5,13 @@ import { useState, useMemo } from 'react'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
-import { crearActividad, actualizarActividad, eliminarActividad, quitarInvitadoDePanel, asignarInvitado, desasignarInvitado } from '@/lib/services/actividades'
+import {
+  crearActividad, actualizarActividad, eliminarActividad,
+  actualizarParticipantesPanel, asignarInvitado, desasignarInvitado,
+} from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
 import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD } from '@/congreso.config'
-import type { Actividad, TipoActividad, TipoPropuesta } from '@/types'
+import type { Actividad, TipoActividad, TipoPropuesta, ParticipantePanel } from '@/types'
 
 // Qué tipos de propuesta acepta cada tipo de actividad
 const PROPUESTAS_COMPATIBLES: Partial<Record<TipoActividad, TipoPropuesta[]>> = {
@@ -25,7 +28,8 @@ type DatosActividad = {
   horaInicio:  string
   horaFin:     string
   sala:        string
-  moderador:   string
+  moderador:   string   // conferencia, mesa
+  coordinador: string   // panel
   descriptor:  string
   descripcion: string
 }
@@ -33,33 +37,41 @@ type DatosActividad = {
 const VACIO: DatosActividad = {
   tipo: 'conferencia', titulo: '', resumen: '',
   fecha: '', horaInicio: '', horaFin: '',
-  sala: '', moderador: '', descriptor: '', descripcion: '',
+  sala: '', moderador: '', coordinador: '', descriptor: '', descripcion: '',
+}
+
+const VACIO_PARTICIPANTE: ParticipantePanel = {
+  nombre: '', institucion: '', tituloPonencia: '', invitadoId: '',
 }
 
 const camposComunes: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string }[] = [
   { nombre: 'titulo',     etiqueta: 'Título' },
-  { nombre: 'fecha',      etiqueta: 'Fecha',       tipo: 'date' },
-  { nombre: 'horaInicio', etiqueta: 'Hora inicio',  tipo: 'time' },
-  { nombre: 'horaFin',    etiqueta: 'Hora fin',     tipo: 'time' },
+  { nombre: 'fecha',      etiqueta: 'Fecha',      tipo: 'date' },
+  { nombre: 'horaInicio', etiqueta: 'Hora inicio', tipo: 'time' },
+  { nombre: 'horaFin',    etiqueta: 'Hora fin',    tipo: 'time' },
   { nombre: 'sala',       etiqueta: 'Sala / Lugar' },
 ]
 
 export default function AdminActividades() {
-  const { actividades, cargar }          = useActividades()
-  const { invitados }                    = useInvitados()
-  const { propuestas, cargar: cargarP }  = usePropuestas()
+  const { actividades, cargar }         = useActividades()
+  const { invitados }                   = useInvitados()
+  const { propuestas, cargar: cargarP } = usePropuestas()
 
-  const [form, setForm]               = useState<DatosActividad>(VACIO)
-  const [editando, setEditando]       = useState<string | null>(null)
-  const [actividadActual, setActual]  = useState<Actividad | null>(null)
-  const [cargando, setCargando]       = useState(false)
-  const [mensaje, setMensaje]         = useState<string | null>(null)
-  const [filtro, setFiltro]           = useState<TipoActividad | 'todas'>('todas')
+  const [form, setForm]         = useState<DatosActividad>(VACIO)
+  const [editando, setEditando] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const [mensaje, setMensaje]   = useState<string | null>(null)
+  const [filtro, setFiltro]     = useState<TipoActividad | 'todas'>('todas')
 
-  // Filtros para propuestas disponibles
+  // Filtros propuestas disponibles
   const [filtroPTipo,  setFiltroPTipo]  = useState<TipoPropuesta | 'todos'>('todos')
   const [filtroPEje,   setFiltroPEje]   = useState<string>('todos')
   const [filtroPBusca, setFiltroPBusca] = useState<string>('')
+
+  // Nuevo participante (panel)
+  const [nuevoP, setNuevoP] = useState<ParticipantePanel>(VACIO_PARTICIPANTE)
+
+  // ── Handlers form ──────────────────────────────────────────
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -70,7 +82,6 @@ export default function AdminActividades() {
     setCargando(true)
     setMensaje(null)
     try {
-      // Armar objeto limpio según tipo (Firestore no acepta undefined)
       const datos: Omit<Actividad, 'id'> = {
         tipo:   form.tipo,
         titulo: form.titulo,
@@ -79,12 +90,11 @@ export default function AdminActividades() {
         ...(form.horaInicio && { horaInicio: form.horaInicio }),
         ...(form.horaFin    && { horaFin:    form.horaFin }),
         ...(form.sala       && { sala:       form.sala }),
-        ...( (['conferencia', 'panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && form.moderador && {
-          moderador: form.moderador,
-        }),
-        ...(form.tipo === 'otro' && form.descriptor  && { descriptor:  form.descriptor }),
-        ...(form.tipo === 'otro' && form.descripcion && { descripcion: form.descripcion }),
-        ...(form.tipo === 'panel' && !editando && { invitadosIds: [] as string[] }),
+        ...(['conferencia', 'mesa'] as TipoActividad[]).includes(form.tipo) && form.moderador
+          ? { moderador: form.moderador } : {},
+        ...(form.tipo === 'panel' && form.coordinador && { coordinador: form.coordinador }),
+        ...(form.tipo === 'otro'  && form.descriptor  && { descriptor:  form.descriptor }),
+        ...(form.tipo === 'otro'  && form.descripcion && { descripcion: form.descripcion }),
       }
       if (editando) {
         await actualizarActividad(editando, datos)
@@ -95,7 +105,6 @@ export default function AdminActividades() {
       }
       setForm(VACIO)
       setEditando(null)
-      setActual(null)
       await cargar()
     } catch {
       setMensaje('Error al guardar.')
@@ -114,12 +123,16 @@ export default function AdminActividades() {
       horaFin:     act.horaFin     ?? '',
       sala:        act.sala        ?? '',
       moderador:   act.moderador   ?? '',
+      coordinador: act.coordinador ?? '',
       descriptor:  act.descriptor  ?? '',
       descripcion: act.descripcion ?? '',
     })
     setEditando(act.id)
-    setActual(act)
     setMensaje(null)
+    setNuevoP(VACIO_PARTICIPANTE)
+    setFiltroPTipo('todos')
+    setFiltroPEje('todos')
+    setFiltroPBusca('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -134,24 +147,56 @@ export default function AdminActividades() {
   const handleCancelar = () => {
     setForm(VACIO)
     setEditando(null)
-    setActual(null)
     setMensaje(null)
+    setNuevoP(VACIO_PARTICIPANTE)
     setFiltroPTipo('todos')
     setFiltroPEje('todos')
     setFiltroPBusca('')
   }
 
-  const handleQuitarInvitado = async (invitadoId: string) => {
-    if (!editando || !actividadActual) return
-    await quitarInvitadoDePanel(editando, invitadoId)
-    setActual(a => a ? {
-      ...a,
-      invitadosIds: (a.invitadosIds ?? []).filter(id => id !== invitadoId),
-    } : null)
+  // ── Participantes de panel ─────────────────────────────────
+
+  // Siempre derivados del estado de actividades (se actualiza con cargar())
+  const participantesPanel = useMemo(() =>
+    actividades.find(a => a.id === editando)?.participantes ?? [],
+    [actividades, editando]
+  )
+
+  const handleAgregarParticipante = async () => {
+    if (!editando || !nuevoP.nombre.trim()) return
+    const limpio: ParticipantePanel = {
+      nombre: nuevoP.nombre.trim(),
+      ...(nuevoP.institucion   && { institucion:   nuevoP.institucion.trim() }),
+      ...(nuevoP.tituloPonencia && { tituloPonencia: nuevoP.tituloPonencia.trim() }),
+      ...(nuevoP.invitadoId    && { invitadoId:    nuevoP.invitadoId }),
+    }
+    await actualizarParticipantesPanel(editando, [...participantesPanel, limpio])
+    setNuevoP(VACIO_PARTICIPANTE)
     await cargar()
   }
 
-  // ── Propuestas ───────────────────────────────────────────────
+  const handleQuitarParticipante = async (idx: number) => {
+    if (!editando) return
+    await actualizarParticipantesPanel(
+      editando,
+      participantesPanel.filter((_, i) => i !== idx)
+    )
+    await cargar()
+  }
+
+  // Cuando se selecciona un invitado del dropdown, auto-llena el form
+  const handleSeleccionarInvitadoPanel = (invitadoId: string) => {
+    const inv = invitados.find(i => i.id === invitadoId)
+    if (!inv) return
+    setNuevoP(p => ({
+      ...p,
+      nombre:     inv.nombre,
+      institucion: inv.institucion,
+      invitadoId: inv.id,
+    }))
+  }
+
+  // ── Propuestas ─────────────────────────────────────────────
 
   const tiposCompatibles = editando ? (PROPUESTAS_COMPATIBLES[form.tipo] ?? []) : []
 
@@ -176,13 +221,30 @@ export default function AdminActividades() {
   const restriccion = form.tipo in RESTRICCIONES_ACTIVIDAD
     ? RESTRICCIONES_ACTIVIDAD[form.tipo as keyof typeof RESTRICCIONES_ACTIVIDAD]
     : null
-
   const maxPropuestas = restriccion && 'maxPropuestas' in restriccion ? restriccion.maxPropuestas : null
   const minPropuestas = restriccion && 'minPropuestas' in restriccion ? restriccion.minPropuestas : null
 
+  // Al asignar propuesta de panel → auto-poblar coordinador y participantes
   const handleAsignar = async (propuestaId: string) => {
     if (!editando) return
+    const propuesta = propuestas.find(p => p.id === propuestaId)
     await asignarPropuesta(propuestaId, editando)
+    if (propuesta?.tipo === 'panel') {
+      const participantes: ParticipantePanel[] = [
+        { nombre: propuesta.autor.nombre, institucion: propuesta.autor.institucion },
+        ...(propuesta.participantes ?? []).map(p => ({
+          nombre:      p.nombre,
+          institucion: p.institucion,
+        })),
+      ]
+      await actualizarActividad(editando, {
+        titulo:       propuesta.titulo,
+        coordinador:  propuesta.autor.nombre,
+        participantes,
+      })
+      setForm(f => ({ ...f, titulo: propuesta.titulo, coordinador: propuesta.autor.nombre }))
+      await cargar()
+    }
     await cargarP()
   }
 
@@ -191,18 +253,17 @@ export default function AdminActividades() {
     await cargarP()
   }
 
-  // Invitado asignado a esta conferencia
-  const invitadoActual = useMemo(() =>
-    actividades.find(a => a.id === editando)?.invitadoId
-      ? invitados.find(i => i.id === actividades.find(a => a.id === editando)?.invitadoId) ?? null
-      : null,
-    [actividades, editando, invitados]
-  )
+  // ── Conferencista ──────────────────────────────────────────
 
-  // Invitados no asignados a ninguna conferencia (excluye el actual para no ocultarlo)
+  const invitadoActual = useMemo(() => {
+    const invitadoId = actividades.find(a => a.id === editando)?.invitadoId
+    return invitadoId ? invitados.find(i => i.id === invitadoId) ?? null : null
+  }, [actividades, editando, invitados])
+
   const invitadosDisponibles = useMemo(() => {
     const asignados = new Set(
-      actividades.filter(a => a.tipo === 'conferencia' && a.invitadoId && a.id !== editando)
+      actividades
+        .filter(a => a.tipo === 'conferencia' && a.invitadoId && a.id !== editando)
         .map(a => a.invitadoId!)
     )
     return invitados.filter(i => !asignados.has(i.id))
@@ -220,12 +281,16 @@ export default function AdminActividades() {
     await cargar()
   }
 
+  // ── Helpers ────────────────────────────────────────────────
+
   const tipoEtiqueta = (tipo: TipoActividad) =>
     TIPOS_ACTIVIDAD.find(t => t.valor === tipo)?.etiqueta ?? tipo
 
   const actividadesFiltradas = filtro === 'todas'
     ? actividades
     : actividades.filter(a => a.tipo === filtro)
+
+  // ── Render ─────────────────────────────────────────────────
 
   return (
     <div className="admin-module">
@@ -237,7 +302,6 @@ export default function AdminActividades() {
 
       <form className="admin-form" onSubmit={handleSubmit}>
 
-        {/* Tipo */}
         <div className="admin-form__field admin-form__field--full">
           <label className="admin-form__label">Tipo</label>
           <select className="admin-form__input" name="tipo" value={form.tipo} onChange={handleChange}>
@@ -262,25 +326,29 @@ export default function AdminActividades() {
             </div>
           ))}
 
-          {/* Moderador — para panel, mesa y conferencia */}
-          {(['conferencia', 'panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && (
+          {/* Moderador — conferencia y mesa */}
+          {(['conferencia', 'mesa'] as TipoActividad[]).includes(form.tipo) && (
             <div className="admin-form__field">
               <label className="admin-form__label">Moderador</label>
-              <input
-                className="admin-form__input"
-                type="text"
-                name="moderador"
-                value={form.moderador}
-                onChange={handleChange}
-              />
+              <input className="admin-form__input" type="text" name="moderador" value={form.moderador} onChange={handleChange} />
+            </div>
+          )}
+
+          {/* Coordinador — panel */}
+          {form.tipo === 'panel' && (
+            <div className="admin-form__field">
+              <label className="admin-form__label">Coordinador</label>
+              <input className="admin-form__input" type="text" name="coordinador" value={form.coordinador} onChange={handleChange} />
             </div>
           )}
         </div>
 
-        {/* Descriptor — solo para 'otro' */}
+        {/* Descriptor — otro */}
         {form.tipo === 'otro' && (
           <div className="admin-form__field admin-form__field--full">
-            <label className="admin-form__label">Descriptor <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación de libro)</span></label>
+            <label className="admin-form__label">
+              Descriptor <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación de libro)</span>
+            </label>
             <input
               className="admin-form__input"
               type="text"
@@ -320,7 +388,7 @@ export default function AdminActividades() {
         </div>
       </form>
 
-      {/* ── Conferencista (solo conferencia al editar) ── */}
+      {/* ── Conferencista ── */}
       {editando && form.tipo === 'conferencia' && (
         <>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
@@ -340,10 +408,7 @@ export default function AdminActividades() {
                   <p className="admin-list__item-sub">{invitadoActual.rol} · {invitadoActual.institucion}</p>
                 </div>
                 <div className="admin-list__item-actions">
-                  <button
-                    className="admin-btn admin-btn--small admin-btn--danger"
-                    onClick={handleDesasignarInvitado}
-                  >
+                  <button className="admin-btn admin-btn--small admin-btn--danger" onClick={handleDesasignarInvitado}>
                     Quitar
                   </button>
                 </div>
@@ -360,9 +425,7 @@ export default function AdminActividades() {
               >
                 <option value="" disabled>Seleccionar invitado...</option>
                 {invitadosDisponibles.map(inv => (
-                  <option key={inv.id} value={inv.id}>
-                    {inv.nombre} · {inv.rol}
-                  </option>
+                  <option key={inv.id} value={inv.id}>{inv.nombre} · {inv.rol}</option>
                 ))}
               </select>
             </>
@@ -370,35 +433,103 @@ export default function AdminActividades() {
         </>
       )}
 
-      {/* ── Participantes (solo panel al editar) ── */}
-      {editando && actividadActual?.tipo === 'panel' && (
+      {/* ── Participantes del panel ── */}
+      {editando && form.tipo === 'panel' && (
         <>
-          <h2 className="admin-module__title" style={{ marginTop: '2.5rem' }}>
-            Participantes ({actividadActual.invitadosIds?.length ?? 0})
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
+            <h2 className="admin-module__title" style={{ margin: 0 }}>
+              Participantes ({participantesPanel.length})
+            </h2>
+          </div>
+
+          {/* Lista de participantes */}
           <div className="admin-list">
-            {(actividadActual.invitadosIds ?? []).length === 0 && (
-              <p className="admin-list__empty">Sin participantes asignados.</p>
+            {participantesPanel.length === 0 && (
+              <p className="admin-list__empty">Sin participantes asignados aún.</p>
             )}
-            {(actividadActual.invitadosIds ?? []).map(id => {
-              const inv = invitados.find(i => i.id === id)
-              return (
-                <div key={id} className="admin-list__item">
+            {participantesPanel.map((p, idx) => (
+              <div key={idx} className="admin-list__item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div className="admin-list__item-info">
-                    <p className="admin-list__item-name">{inv?.nombre ?? id}</p>
-                    {inv && <p className="admin-list__item-sub">{inv.rol} · {inv.institucion}</p>}
+                    <p className="admin-list__item-name">{p.nombre}</p>
+                    {p.institucion && <p className="admin-list__item-sub">{p.institucion}</p>}
+                    {p.tituloPonencia && (
+                      <p className="admin-list__item-sub" style={{ fontStyle: 'italic' }}>
+                        "{p.tituloPonencia}"
+                      </p>
+                    )}
                   </div>
                   <div className="admin-list__item-actions">
                     <button
                       className="admin-btn admin-btn--small admin-btn--danger"
-                      onClick={() => handleQuitarInvitado(id)}
+                      onClick={() => handleQuitarParticipante(idx)}
                     >
                       Quitar
                     </button>
                   </div>
                 </div>
-              )
-            })}
+              </div>
+            ))}
+          </div>
+
+          {/* Agregar participante */}
+          <p className="admin-form__label" style={{ marginTop: '1.25rem', marginBottom: '0.5rem', opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+            Agregar participante
+          </p>
+          <div style={{ border: '1px solid rgba(35,22,81,0.1)', borderRadius: '4px', padding: '0.75rem' }}>
+            {/* Selector rápido desde invitados */}
+            <div className="admin-form__field" style={{ marginBottom: '0.5rem' }}>
+              <label className="admin-form__label">Desde invitados (opcional)</label>
+              <select
+                className="admin-form__input"
+                value={nuevoP.invitadoId ?? ''}
+                onChange={e => handleSeleccionarInvitadoPanel(e.target.value)}
+              >
+                <option value="">— Cargar desde invitados —</option>
+                {invitados.map(inv => (
+                  <option key={inv.id} value={inv.id}>{inv.nombre} · {inv.institucion}</option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-form__grid">
+              <div className="admin-form__field">
+                <label className="admin-form__label">Nombre *</label>
+                <input
+                  className="admin-form__input"
+                  type="text"
+                  value={nuevoP.nombre}
+                  onChange={e => setNuevoP(p => ({ ...p, nombre: e.target.value }))}
+                  placeholder="Nombre completo"
+                />
+              </div>
+              <div className="admin-form__field">
+                <label className="admin-form__label">Institución</label>
+                <input
+                  className="admin-form__input"
+                  type="text"
+                  value={nuevoP.institucion ?? ''}
+                  onChange={e => setNuevoP(p => ({ ...p, institucion: e.target.value }))}
+                />
+              </div>
+              <div className="admin-form__field admin-form__field--full">
+                <label className="admin-form__label">Título de la ponencia</label>
+                <input
+                  className="admin-form__input"
+                  type="text"
+                  value={nuevoP.tituloPonencia ?? ''}
+                  onChange={e => setNuevoP(p => ({ ...p, tituloPonencia: e.target.value }))}
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              className="admin-btn admin-btn--small"
+              onClick={handleAgregarParticipante}
+              disabled={!nuevoP.nombre.trim()}
+              style={{ marginTop: '0.5rem' }}
+            >
+              + Agregar
+            </button>
           </div>
         </>
       )}
@@ -406,24 +537,18 @@ export default function AdminActividades() {
       {/* ── Propuestas (mesa, pósters, panel) ── */}
       {editando && tiposCompatibles.length > 0 && (
         <>
-          {/* Cabecera con conteo y restricción */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
             <h2 className="admin-module__title" style={{ margin: 0 }}>
               Propuestas asignadas ({propuestasAsignadas.length}{maxPropuestas ? `/${maxPropuestas}` : ''})
             </h2>
             {minPropuestas !== null && propuestasAsignadas.length < minPropuestas && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>
-                mínimo {minPropuestas}
-              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>mínimo {minPropuestas}</span>
             )}
             {maxPropuestas !== null && propuestasAsignadas.length >= maxPropuestas && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>
-                máximo alcanzado
-              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>máximo alcanzado</span>
             )}
           </div>
 
-          {/* Asignadas */}
           <div className="admin-list">
             {propuestasAsignadas.length === 0 && (
               <p className="admin-list__empty">Sin propuestas asignadas aún.</p>
@@ -439,10 +564,7 @@ export default function AdminActividades() {
                   </p>
                 </div>
                 <div className="admin-list__item-actions">
-                  <button
-                    className="admin-btn admin-btn--small admin-btn--danger"
-                    onClick={() => handleDesasignar(p.id)}
-                  >
+                  <button className="admin-btn admin-btn--small admin-btn--danger" onClick={() => handleDesasignar(p.id)}>
                     Quitar
                   </button>
                 </div>
@@ -450,8 +572,7 @@ export default function AdminActividades() {
             ))}
           </div>
 
-          {/* Disponibles */}
-          {/* Filtros de disponibles */}
+          {/* Filtros disponibles */}
           <div style={{ marginTop: '1.25rem', marginBottom: '0.5rem' }}>
             <p className="admin-form__label" style={{ opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
               Disponibles para agregar
@@ -503,7 +624,7 @@ export default function AdminActividades() {
                   <p className="admin-list__item-sub">
                     {p.autor.nombre}
                     {p.autor.institucion && ` · ${p.autor.institucion}`}
-                    {' · '}Eje {p.eje}
+                    {form.tipo !== 'panel' && ` · Eje ${p.eje}`}
                   </p>
                 </div>
                 <div className="admin-list__item-actions">
@@ -518,15 +639,10 @@ export default function AdminActividades() {
               </div>
             ))}
           </div>
-          {propuestasDisponibles.length === 0 && propuestasAsignadas.length === 0 && (
-            <p className="admin-list__empty" style={{ marginTop: '0.5rem' }}>
-              No hay propuestas aceptadas disponibles de este tipo.
-            </p>
-          )}
         </>
       )}
 
-      {/* ── Lista ── */}
+      {/* ── Lista de actividades ── */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginTop: '3rem', marginBottom: '0.5rem' }}>
         <h2 className="admin-module__title" style={{ margin: 0 }}>
           Actividades ({actividadesFiltradas.length})
@@ -563,8 +679,8 @@ export default function AdminActividades() {
               </p>
               {act.tipo === 'panel' && (
                 <p className="admin-list__item-sub">
-                  {act.moderador && `Moderador: ${act.moderador} · `}
-                  {act.invitadosIds?.length ?? 0} participante{(act.invitadosIds?.length ?? 0) !== 1 ? 's' : ''}
+                  {act.coordinador && `Coord.: ${act.coordinador} · `}
+                  {act.participantes?.length ?? 0} participante{(act.participantes?.length ?? 0) !== 1 ? 's' : ''}
                 </p>
               )}
               {act.tipo === 'conferencia' && act.invitadoId && (
