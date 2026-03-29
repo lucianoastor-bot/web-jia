@@ -66,6 +66,34 @@ export const EJES: Eje[] = [
   },
 ]
 
+export const TIPOS_PROPUESTA = [
+  { valor: 'ponencia', etiqueta: 'Ponencia' },
+  { valor: 'relato',   etiqueta: 'Relato de experiencia' },
+  { valor: 'poster',   etiqueta: 'Póster' },
+  { valor: 'panel',    etiqueta: 'Panel' },
+] as const
+
+export const TIPOS_ACTIVIDAD = [
+  { valor: 'keynote',  etiqueta: 'Keynote' },
+  { valor: 'panel',    etiqueta: 'Panel' },
+  { valor: 'mesa',     etiqueta: 'Mesa de ponencias' },
+  { valor: 'pósters',  etiqueta: 'Sesión de pósters' },
+  { valor: 'otro',     etiqueta: 'Otro' },
+] as const
+
+export const PERTENENCIAS = [
+  { valor: 'externo',    etiqueta: 'Externo' },
+  { valor: 'comunidad',  etiqueta: 'Comunidad FHyA' },
+  { valor: 'estudiante', etiqueta: 'Estudiante' },
+] as const
+
+export const ESTADOS_PROPUESTA = [
+  { valor: 'pendiente', etiqueta: 'Pendiente' },
+  { valor: 'revisión',  etiqueta: 'En revisión' },
+  { valor: 'aceptada',  etiqueta: 'Aceptada' },
+  { valor: 'rechazada', etiqueta: 'Rechazada' },
+] as const
+
 export const COORDINADORES: string[] = [
   'Tomás Giroud Guillet',
   'Magalí Gómez Castillo',
@@ -76,6 +104,7 @@ export const COMITE_ORGANIZADOR: string[] = [
   'Lucio Braida',
   'Carlos Galassi',
   'Luz Jovine',
+  'Lucas Martino',
   'Lorena Pafumi',
   'Adelina Pasalagua',
   'Luis Rodríguez',

@@ -11,12 +11,12 @@ import { auth } from '@/lib/firebase'
 import AdminBienvenida from '@/components/admin/AdminBienvenida'
 import AdminInvitados from '@/components/admin/AdminInvitados'
 import AdminNovedades from '@/components/admin/AdminNovedades'
+import AdminPaneles from '@/components/admin/AdminPaneles'
 
 const MENU = [
   { id: 'bienvenida',   label: 'Bienvenida' },
   { id: 'novedades',    label: 'Novedades' },
   { id: 'invitados',    label: 'Invitados' },
-  { id: 'modalidades',  label: 'Modalidades' },
   { id: 'propuestas',   label: 'Propuestas' },
   { id: 'paneles',      label: 'Paneles' },
   { id: 'embeddings',   label: 'Generar Embeddings' },
@@ -49,6 +49,7 @@ export default function Admin() {
       case 'bienvenida': return <AdminBienvenida />
       case 'invitados':  return <AdminInvitados />
       case 'novedades':  return <AdminNovedades />
+      case 'paneles':    return <AdminPaneles />
       default:             return (
         <div className="admin-placeholder">
           <p>Módulo <strong>{active}</strong> — próximamente</p>
