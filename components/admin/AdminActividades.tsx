@@ -1,12 +1,21 @@
 // components/admin/AdminActividades.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { useInvitados } from '@/lib/hooks/useInvitados'
+import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { crearActividad, actualizarActividad, eliminarActividad, quitarInvitadoDePanel } from '@/lib/services/actividades'
-import { TIPOS_ACTIVIDAD } from '@/congreso.config'
-import type { Actividad, TipoActividad } from '@/types'
+import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
+import { TIPOS_ACTIVIDAD, RESTRICCIONES_ACTIVIDAD } from '@/congreso.config'
+import type { Actividad, TipoActividad, TipoPropuesta } from '@/types'
+
+// Qué tipos de propuesta acepta cada tipo de actividad
+const PROPUESTAS_COMPATIBLES: Partial<Record<TipoActividad, TipoPropuesta[]>> = {
+  mesa:    ['ponencia', 'relato'],
+  pósters: ['poster'],
+  panel:   ['panel'],
+}
 
 type DatosActividad = {
   tipo:        TipoActividad
@@ -36,8 +45,9 @@ const camposComunes: { nombre: keyof DatosActividad; etiqueta: string; tipo?: st
 ]
 
 export default function AdminActividades() {
-  const { actividades, cargar } = useActividades()
-  const { invitados }           = useInvitados()
+  const { actividades, cargar }          = useActividades()
+  const { invitados }                    = useInvitados()
+  const { propuestas, cargar: cargarP }  = usePropuestas()
 
   const [form, setForm]               = useState<DatosActividad>(VACIO)
   const [editando, setEditando]       = useState<string | null>(null)
@@ -131,6 +141,42 @@ export default function AdminActividades() {
       invitadosIds: (a.invitadosIds ?? []).filter(id => id !== invitadoId),
     } : null)
     await cargar()
+  }
+
+  // ── Propuestas ───────────────────────────────────────────────
+
+  const tiposCompatibles = editando ? (PROPUESTAS_COMPATIBLES[form.tipo] ?? []) : []
+
+  const propuestasAsignadas = useMemo(() =>
+    propuestas.filter(p => p.actividadId === editando),
+    [propuestas, editando]
+  )
+
+  const propuestasDisponibles = useMemo(() =>
+    propuestas.filter(p =>
+      p.estado === 'aceptada' &&
+      !p.actividadId &&
+      (tiposCompatibles as string[]).includes(p.tipo)
+    ).sort((a, b) => a.eje.localeCompare(b.eje)),
+    [propuestas, editando, form.tipo] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const restriccion = form.tipo in RESTRICCIONES_ACTIVIDAD
+    ? RESTRICCIONES_ACTIVIDAD[form.tipo as keyof typeof RESTRICCIONES_ACTIVIDAD]
+    : null
+
+  const maxPropuestas = restriccion && 'maxPropuestas' in restriccion ? restriccion.maxPropuestas : null
+  const minPropuestas = restriccion && 'minPropuestas' in restriccion ? restriccion.minPropuestas : null
+
+  const handleAsignar = async (propuestaId: string) => {
+    if (!editando) return
+    await asignarPropuesta(propuestaId, editando)
+    await cargarP()
+  }
+
+  const handleDesasignar = async (propuestaId: string) => {
+    await desasignarPropuesta(propuestaId)
+    await cargarP()
   }
 
   const tipoEtiqueta = (tipo: TipoActividad) =>
@@ -263,6 +309,92 @@ export default function AdminActividades() {
               )
             })}
           </div>
+        </>
+      )}
+
+      {/* ── Propuestas (mesa, pósters, panel) ── */}
+      {editando && tiposCompatibles.length > 0 && (
+        <>
+          {/* Cabecera con conteo y restricción */}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
+            <h2 className="admin-module__title" style={{ margin: 0 }}>
+              Propuestas asignadas ({propuestasAsignadas.length}{maxPropuestas ? `/${maxPropuestas}` : ''})
+            </h2>
+            {minPropuestas !== null && propuestasAsignadas.length < minPropuestas && (
+              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>
+                mínimo {minPropuestas}
+              </span>
+            )}
+            {maxPropuestas !== null && propuestasAsignadas.length >= maxPropuestas && (
+              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>
+                máximo alcanzado
+              </span>
+            )}
+          </div>
+
+          {/* Asignadas */}
+          <div className="admin-list">
+            {propuestasAsignadas.length === 0 && (
+              <p className="admin-list__empty">Sin propuestas asignadas aún.</p>
+            )}
+            {propuestasAsignadas.map(p => (
+              <div key={p.id} className="admin-list__item">
+                <div className="admin-list__item-info">
+                  <p className="admin-list__item-name">{p.titulo}</p>
+                  <p className="admin-list__item-sub">
+                    {p.autor.nombre}
+                    {p.autor.institucion && ` · ${p.autor.institucion}`}
+                    {' · '}Eje {p.eje}
+                  </p>
+                </div>
+                <div className="admin-list__item-actions">
+                  <button
+                    className="admin-btn admin-btn--small admin-btn--danger"
+                    onClick={() => handleDesasignar(p.id)}
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Disponibles */}
+          {propuestasDisponibles.length > 0 && (
+            <>
+              <p className="admin-form__label" style={{ marginTop: '1.25rem', marginBottom: '0.5rem', opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                Disponibles para agregar ({propuestasDisponibles.length})
+              </p>
+              <div className="admin-list">
+                {propuestasDisponibles.map(p => (
+                  <div key={p.id} className="admin-list__item">
+                    <div className="admin-list__item-info">
+                      <p className="admin-list__item-name">{p.titulo}</p>
+                      <p className="admin-list__item-sub">
+                        {p.autor.nombre}
+                        {p.autor.institucion && ` · ${p.autor.institucion}`}
+                        {' · '}Eje {p.eje}
+                      </p>
+                    </div>
+                    <div className="admin-list__item-actions">
+                      <button
+                        className="admin-btn admin-btn--small"
+                        onClick={() => handleAsignar(p.id)}
+                        disabled={maxPropuestas !== null && propuestasAsignadas.length >= maxPropuestas}
+                      >
+                        Agregar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {propuestasDisponibles.length === 0 && propuestasAsignadas.length === 0 && (
+            <p className="admin-list__empty" style={{ marginTop: '0.5rem' }}>
+              No hay propuestas aceptadas disponibles de este tipo.
+            </p>
+          )}
         </>
       )}
 

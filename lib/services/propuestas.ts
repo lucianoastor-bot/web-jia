@@ -3,7 +3,7 @@
 
 import {
   collection, addDoc, updateDoc, deleteDoc,
-  getDocs, doc, serverTimestamp,
+  getDocs, doc, serverTimestamp, deleteField,
 } from 'firebase/firestore/lite'
 import { db } from '@/lib/firebase'
 import type { Propuesta, EstadoPropuesta } from '@/types'
@@ -35,4 +35,14 @@ export async function actualizarEstado(id: string, estado: EstadoPropuesta) {
 
 export async function eliminarPropuesta(id: string) {
   return deleteDoc(doc(db, 'propuestas', id))
+}
+
+// ── Vinculación con Actividad ─────────────────────────────────
+
+export async function asignarPropuesta(propuestaId: string, actividadId: string) {
+  return updateDoc(doc(db, 'propuestas', propuestaId), { actividadId })
+}
+
+export async function desasignarPropuesta(propuestaId: string) {
+  return updateDoc(doc(db, 'propuestas', propuestaId), { actividadId: deleteField() })
 }
