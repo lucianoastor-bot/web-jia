@@ -346,6 +346,18 @@
   background: rgba(200, 150, 50, 0.12);
   color: #8c6520;
 }
+.admin-badge--aceptada {
+  background: rgba(77, 204, 189, 0.15);
+  color: #1a8c7e;
+}
+.admin-badge--revision {
+  background: rgba(100, 100, 220, 0.12);
+  color: #3a3ab0;
+}
+.admin-badge--rechazada {
+  background: rgba(220, 80, 60, 0.12);
+  color: #b03020;
+}
 
 /* ── Bienvenida ── */
 .admin-bienvenida {

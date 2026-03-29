@@ -32,12 +32,12 @@ export const EJES: Eje[] = [
   },
   {
     num: '02',
-    titulo: 'IA y producción artística y cultural',
+    titulo: 'Inteligencia Artificial y producción artística y cultural',
     descripcion: 'Análisis de las tensiones y posibilidades que la IA introduce en la creación artística, las industrias culturales y los procesos de producción simbólica.',
   },
   {
     num: '03',
-    titulo: 'IA, escritura y traducción',
+    titulo: 'Inteligencia Artificial, escritura y traducción',
     descripcion: 'Exploración del impacto de la IA en la producción textual y académica, y en las prácticas de traducción: sus herramientas, sus límites y las preguntas que abre sobre autoría, estilo y fidelidad.',
   },
   {
@@ -47,7 +47,7 @@ export const EJES: Eje[] = [
   },
   {
     num: '05',
-    titulo: 'Problemas éticos del uso de la IA',
+    titulo: 'Problemas éticos del uso de la Inteligencia Artificial',
     descripcion: 'Discusión sobre los dilemas éticos que plantea el desarrollo y uso de la IA: sesgos, responsabilidad, transparencia y derechos digitales.',
   },
   {
@@ -57,7 +57,7 @@ export const EJES: Eje[] = [
   },
   {
     num: '07',
-    titulo: 'IA, vínculos, salud mental y redes sociales',
+    titulo: 'Inteligencia Artificial, vínculos, salud mental y redes sociales',
     descripcion: 'Análisis de los efectos de la IA en las relaciones interpersonales, la salud mental, el bienestar y el uso de plataformas digitales.',
   },
   {

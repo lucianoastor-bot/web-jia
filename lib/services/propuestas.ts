@@ -1,0 +1,36 @@
+// lib/services/propuestas.ts
+// Operaciones sobre la colección 'propuestas' en Firestore.
+
+import {
+  collection, addDoc, updateDoc, deleteDoc,
+  getDocs, doc, serverTimestamp,
+} from 'firebase/firestore/lite'
+import { db } from '@/lib/firebase'
+import type { Propuesta, EstadoPropuesta } from '@/types'
+
+type DatosPropuesta = Omit<Propuesta, 'id' | 'embeddings'>
+
+export async function obtenerPropuestas(): Promise<Propuesta[]> {
+  const snap = await getDocs(collection(db, 'propuestas'))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Propuesta))
+}
+
+export async function agregarPropuesta(datos: DatosPropuesta): Promise<string> {
+  const ref = await addDoc(collection(db, 'propuestas'), {
+    ...datos,
+    creado: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function actualizarPropuesta(id: string, datos: Partial<DatosPropuesta>) {
+  return updateDoc(doc(db, 'propuestas', id), { ...datos })
+}
+
+export async function actualizarEstado(id: string, estado: EstadoPropuesta) {
+  return updateDoc(doc(db, 'propuestas', id), { estado })
+}
+
+export async function eliminarPropuesta(id: string) {
+  return deleteDoc(doc(db, 'propuestas', id))
+}

@@ -39,6 +39,7 @@ export type Participante = {
   nombre:      string
   institucion: string
   email:       string
+  documento:  string   // DNI / Pasaporte
   pertenencia: typeof PERTENENCIAS[number]['valor']
 }
 
