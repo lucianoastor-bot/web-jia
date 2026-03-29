@@ -1,8 +1,15 @@
 // congreso.config.ts
-// Toda la configuración específica del congreso vive aquí.
-// Para adaptar el sistema a un nuevo evento, solo se modifica este archivo.
+// ─────────────────────────────────────────────────────────────────────────────
+// Configuración central del sistema de gestión de jornadas/congresos.
+// Para adaptar el sistema a un nuevo evento basta con modificar este archivo.
+// Los componentes leen todo desde acá: formularios, filtros, listados y reglas.
+// ─────────────────────────────────────────────────────────────────────────────
 
 import type { Eje, Noticia } from '@/types'
+
+
+// ─── Datos del evento ────────────────────────────────────────────────────────
+// Información general que aparece en encabezados, metadatos y textos del sitio.
 
 export const CONGRESO = {
   nombre:       'Jornadas: La Inteligencia Artificial en debate',
@@ -23,6 +30,11 @@ export const CONGRESO = {
   plazoResumenes: '20 de abril de 2026',
 } as const
 
+
+// ─── Ejes temáticos ──────────────────────────────────────────────────────────
+// Cada eje tiene un número de dos dígitos ('01'…'08'), un título y una
+// descripción. Se usan en el formulario de propuestas y en los filtros del panel
+// de administración.
 
 export const EJES: Eje[] = [
   {
@@ -67,6 +79,13 @@ export const EJES: Eje[] = [
   },
 ]
 
+
+// ─── Tipos de propuesta ──────────────────────────────────────────────────────
+// Lo que puede enviar un participante a través del formulario de convocatoria.
+// Cada tipo genera su propio flujo de evaluación y asignación a actividades.
+// Para agregar un tipo nuevo también hay que agregarlo en TIPOS_ACTIVIDAD y
+// PROPUESTAS_COMPATIBLES si va a tener una actividad que lo agrupe.
+
 export const TIPOS_PROPUESTA = [
   { valor: 'ponencia', etiqueta: 'Ponencia' },
   { valor: 'relato',   etiqueta: 'Relato de experiencia' },
@@ -74,19 +93,36 @@ export const TIPOS_PROPUESTA = [
   { valor: 'panel',    etiqueta: 'Panel' },
 ] as const
 
+
+// ─── Tipos de actividad ──────────────────────────────────────────────────────
+// Lo que aparece en el programa del evento.
+// Tipos con modelo especial:
+//   conferencia → se vincula a un Invitado (invitadoId)
+//   panel       → tiene coordinador y lista de ParticipantePanel[]
+// El resto agrupa propuestas según PROPUESTAS_COMPATIBLES.
+
 export const TIPOS_ACTIVIDAD = [
   { valor: 'conferencia', etiqueta: 'Conferencia' },
-  { valor: 'panel',    etiqueta: 'Panel' },
-  { valor: 'mesa',     etiqueta: 'Mesa de ponencias' },
-  { valor: 'pósters',  etiqueta: 'Sesión de pósters' },
-  { valor: 'otro',     etiqueta: 'Otro' },
+  { valor: 'panel',       etiqueta: 'Panel' },
+  { valor: 'mesa',        etiqueta: 'Mesa de ponencias' },
+  { valor: 'pósters',     etiqueta: 'Sesión de pósters' },
+  { valor: 'otro',        etiqueta: 'Otro' },
 ] as const
+
+
+// ─── Pertenencias institucionales ────────────────────────────────────────────
+// Clasificación del vínculo del participante con la institución organizadora.
+// Se usa en el formulario de propuestas y en los datos de invitados.
 
 export const PERTENENCIAS = [
   { valor: 'externo',    etiqueta: 'Externo' },
   { valor: 'comunidad',  etiqueta: 'Comunidad FHyA' },
   { valor: 'estudiante', etiqueta: 'Estudiante' },
 ] as const
+
+
+// ─── Estados de propuesta ────────────────────────────────────────────────────
+// Ciclo de vida de una propuesta desde que se recibe hasta que se resuelve.
 
 export const ESTADOS_PROPUESTA = [
   { valor: 'pendiente', etiqueta: 'Pendiente' },
@@ -95,9 +131,20 @@ export const ESTADOS_PROPUESTA = [
   { valor: 'rechazada', etiqueta: 'Rechazada' },
 ] as const
 
-// Qué propuestas acepta cada tipo de actividad y cómo mostrarlas en el listado.
-// etiqueta: si está presente, se muestra el conteo de propuestas (ej. "3 ponencias").
-// mostrarEje: si true, agrega el eje al conteo (ej. "3 ponencias · Eje 03").
+
+// ─── Compatibilidad propuesta ↔ actividad ────────────────────────────────────
+// Define qué tipos de propuesta puede recibir cada tipo de actividad, y cómo
+// mostrar el conteo en el listado del panel de administración.
+//
+//   tipos:      propuestas que se pueden asignar a esta actividad
+//   etiqueta:   nombre singular para el conteo (ej. "ponencia" → "3 ponencias")
+//               si está ausente, la actividad no muestra conteo de propuestas
+//               (caso panel: usa su propio modelo de participantes)
+//   mostrarEje: si true, el conteo incluye los ejes (ej. "3 ponencias · Eje 03, 05")
+//
+// Para agregar un nuevo tipo de actividad que agrupe propuestas, alcanza con
+// agregar una entrada acá (más el tipo en TIPOS_ACTIVIDAD y TIPOS_PROPUESTA).
+
 export const PROPUESTAS_COMPATIBLES: Record<string, {
   tipos:       string[]
   etiqueta?:   string
@@ -108,13 +155,25 @@ export const PROPUESTAS_COMPATIBLES: Record<string, {
   panel:   { tipos: ['panel'] },
 }
 
+
+// ─── Restricciones por tipo de actividad ────────────────────────────────────
+// Límites mínimos y máximos según el modelo de cada tipo:
+//   conferencia → invitados (siempre exactamente 1)
+//   panel       → participantes (ParticipantePanel[])
+//   resto       → propuestas asignadas
+// Estas restricciones se usan para validar y orientar al organizador en el
+// panel de administración; no bloquean el guardado a nivel de base de datos.
+
 export const RESTRICCIONES_ACTIVIDAD = {
-  conferencia: { minInvitados: 1, maxInvitados: 1 },
-  mesa:        { minPropuestas: 2, maxPropuestas: 4 },
-  pósters:     { minPropuestas: 4, maxPropuestas: 15 },
+  conferencia: { minInvitados:     1, maxInvitados:     1 },
+  mesa:        { minPropuestas:    2, maxPropuestas:    4 },
+  pósters:     { minPropuestas:    4, maxPropuestas:   15 },
   panel:       { minParticipantes: 2, maxParticipantes: 7 },
-  otro:        { minPropuestas: 1, maxPropuestas: 10 },
+  otro:        { minPropuestas:    1, maxPropuestas:   10 },
 } as const
+
+
+// ─── Autoridades ─────────────────────────────────────────────────────────────
 
 export const COORDINADORES: string[] = [
   'Tomás Giroud Guillet',
@@ -156,6 +215,11 @@ export const COMITE_ACADEMICO: string[] = [
   'Gina Valenti',*/
 ]
 
+
+// ─── Noticias por defecto ────────────────────────────────────────────────────
+// Se muestran si no hay noticias cargadas en Firestore.
+// Útil para tener contenido visible desde el primer deploy.
+
 export const NOTICIAS_DEFECTO: Noticia[] = [
   {
     fecha: '2026-03-25',
@@ -163,7 +227,6 @@ export const NOTICIAS_DEFECTO: Noticia[] = [
     resumen: 'Ya está disponible el formulario para presentar ponencias, paneles, relatos de experiencias y pósters. El plazo es hasta el 20 de abril.',
     enlace: '/propuestas',
   },
-
   {
     fecha: '2026-03-25',
     titulo: 'Las jornadas se realizarán los días 10, 11 y 12 de junio de 2026',
