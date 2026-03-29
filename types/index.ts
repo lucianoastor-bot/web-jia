@@ -49,16 +49,20 @@ export type Participante = {
 // Lo que envía un participante. Se evalúa individualmente.
 
 export type Propuesta = {
-  id:           string
-  tipo:         typeof TIPOS_PROPUESTA[number]['valor']
-  titulo:       string
-  resumen:      string          // máx 400 palabras
-  eje:          string          // '01' … '08'
-  autor:        Participante
-  coautores?:   Participante[]
-  estado:       typeof ESTADOS_PROPUESTA[number]['valor']
-  actividadId?: string          // se asigna al armar el programa
-  embeddings?:  number[]        // para uso futuro (similitud semántica)
+  id:              string
+  tipo:            typeof TIPOS_PROPUESTA[number]['valor']
+  titulo:          string
+  resumen:         string          // máx 400 palabras
+  eje:             string          // '01' … '08'
+  autor:           Participante
+  coautores?:      Participante[]
+  estado:          typeof ESTADOS_PROPUESTA[number]['valor']
+  actividadId?:    string          // se asigna al armar el programa
+  embeddings?:     number[]        // para uso futuro (similitud semántica)
+  // Panel: participantes adicionales al autor/coordinador
+  participantes?:  Participante[]
+  // Otro: descriptor corto del tipo de actividad (ej: 'taller', 'presentación')
+  descriptor?:     string
 }
 
 // ─── Actividad ───────────────────────────────────────────────
@@ -93,5 +97,6 @@ export type Actividad = {
   moderador?:     string
 
   // Otro (taller, presentación de libro, etc.)
+  descriptor?:   string    // etiqueta corta: 'taller', 'presentación', etc.
   descripcion?:  string
 }

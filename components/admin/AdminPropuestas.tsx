@@ -22,12 +22,14 @@ type DatosAutor = {
 
 
 type DatosPropuesta = {
-  tipo:    TipoPropuesta
-  titulo:  string
-  resumen: string
-  eje:     string
-  estado:  EstadoPropuesta
-  autor:   DatosAutor
+  tipo:          TipoPropuesta
+  titulo:        string
+  resumen:       string
+  eje:           string
+  estado:        EstadoPropuesta
+  autor:         DatosAutor
+  descriptor:    string        // solo para tipo 'otro'
+  participantes: DatosAutor[]  // solo para tipo 'panel'
 }
 
 // ── Constantes ────────────────────────────────────────────────
@@ -40,6 +42,7 @@ const VACIO_AUTOR: DatosAutor = {
 const VACIO: DatosPropuesta = {
   tipo: 'ponencia', titulo: '', resumen: '',
   eje: '01', estado: 'pendiente', autor: VACIO_AUTOR,
+  descriptor: '', participantes: [],
 }
 
 const BADGE_ESTADO: Record<EstadoPropuesta, string> = {
@@ -75,6 +78,22 @@ export default function AdminPropuestas() {
     setForm(f => ({ ...f, autor: { ...f.autor, [e.target.name]: e.target.value } }))
   }
 
+  const handleParticipanteChange = (idx: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm(f => {
+      const participantes = [...f.participantes]
+      participantes[idx] = { ...participantes[idx], [e.target.name]: e.target.value }
+      return { ...f, participantes }
+    })
+  }
+
+  const agregarParticipante = () => {
+    setForm(f => ({ ...f, participantes: [...f.participantes, { ...VACIO_AUTOR }] }))
+  }
+
+  const quitarParticipante = (idx: number) => {
+    setForm(f => ({ ...f, participantes: f.participantes.filter((_, i) => i !== idx) }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setCargando(true)
@@ -104,6 +123,16 @@ export default function AdminPropuestas() {
       resumen: p.resumen,
       eje:     p.eje,
       estado:  p.estado,
+      descriptor:    p.descriptor ?? '',
+      participantes: (p.participantes ?? []).map(pa => ({
+        nombre:        pa.nombre,
+        institucion:   pa.institucion,
+        email:         pa.email,
+        documento:     pa.documento ?? '',
+        celularCodigo: pa.celularCodigo ?? '+54',
+        celular:       pa.celular ?? '',
+        pertenencia:   pa.pertenencia,
+      })),
       autor: {
         nombre:        p.autor.nombre,
         institucion:   p.autor.institucion,
@@ -218,6 +247,21 @@ export default function AdminPropuestas() {
             />
           </div>
 
+          {/* Descriptor — solo para tipo 'otro' */}
+          {form.tipo === 'otro' && (
+            <div className="admin-form__field">
+              <label className="admin-form__label">Descriptor <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación)</span></label>
+              <input
+                className="admin-form__input"
+                type="text"
+                name="descriptor"
+                value={form.descriptor}
+                onChange={handleChange}
+                placeholder="taller, workshop, presentación..."
+              />
+            </div>
+          )}
+
         </div>
 
         {/* Autor */}
@@ -320,6 +364,62 @@ export default function AdminPropuestas() {
           </div>
 
         </div>
+
+        {/* Participantes del panel */}
+        {form.tipo === 'panel' && (
+          <div style={{ marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '0.75rem' }}>
+              <p className="admin-form__label" style={{ opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
+                Participantes del panel
+              </p>
+              <button type="button" className="admin-btn admin-btn--small" onClick={agregarParticipante}>
+                + Agregar
+              </button>
+            </div>
+            {form.participantes.length === 0 && (
+              <p style={{ fontSize: '0.82rem', color: '#999', marginBottom: '0.75rem' }}>
+                El autor/a es el coordinador del panel. Agregá los demás participantes.
+              </p>
+            )}
+            {form.participantes.map((p, idx) => (
+              <div key={idx} style={{ border: '1px solid rgba(35,22,81,0.1)', borderRadius: '4px', padding: '0.75rem', marginBottom: '0.75rem', position: 'relative' }}>
+                <p style={{ fontSize: '0.68rem', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  Participante {idx + 1}
+                </p>
+                <div className="admin-form__grid">
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Nombre</label>
+                    <input className="admin-form__input" type="text" name="nombre" value={p.nombre} onChange={e => handleParticipanteChange(idx, e)} required />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Institución</label>
+                    <input className="admin-form__input" type="text" name="institucion" value={p.institucion} onChange={e => handleParticipanteChange(idx, e)} />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Email</label>
+                    <input className="admin-form__input" type="email" name="email" value={p.email} onChange={e => handleParticipanteChange(idx, e)} />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Pertenencia</label>
+                    <select className="admin-form__input" name="pertenencia" value={p.pertenencia} onChange={e => handleParticipanteChange(idx, e)}>
+                      {PERTENENCIAS.map(per => (
+                        <option key={per.valor} value={per.valor}>{per.etiqueta}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--small admin-btn--danger"
+                  style={{ marginTop: '0.5rem' }}
+                  onClick={() => quitarParticipante(idx)}
+                >
+                  Quitar
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Resumen */}
         <div className="admin-form__field admin-form__field--full" style={{ marginTop: '0.5rem' }}>

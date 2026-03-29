@@ -17,13 +17,14 @@ type DatosActividad = {
   horaFin:     string
   sala:        string
   moderador:   string
+  descriptor:  string
   descripcion: string
 }
 
 const VACIO: DatosActividad = {
   tipo: 'conferencia', titulo: '', resumen: '',
   fecha: '', horaInicio: '', horaFin: '',
-  sala: '', moderador: '', descripcion: '',
+  sala: '', moderador: '', descriptor: '', descripcion: '',
 }
 
 const camposComunes: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string }[] = [
@@ -63,10 +64,11 @@ export default function AdminActividades() {
         horaInicio: form.horaInicio || undefined,
         horaFin:    form.horaFin    || undefined,
         sala:       form.sala       || undefined,
-        ...((['panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && {
+        ...((['conferencia', 'panel', 'mesa'] as TipoActividad[]).includes(form.tipo) && {
           moderador: form.moderador || undefined,
         }),
         ...(form.tipo === 'otro' && {
+          descriptor:  form.descriptor  || undefined,
           descripcion: form.descripcion || undefined,
         }),
         ...(form.tipo === 'panel' && !editando && { invitadosIds: [] }),
@@ -99,6 +101,7 @@ export default function AdminActividades() {
       horaFin:     act.horaFin     ?? '',
       sala:        act.sala        ?? '',
       moderador:   act.moderador   ?? '',
+      descriptor:  act.descriptor  ?? '',
       descripcion: act.descripcion ?? '',
     })
     setEditando(act.id)
@@ -189,7 +192,22 @@ export default function AdminActividades() {
           )}
         </div>
 
-        {/* Resumen */}
+        {/* Descriptor — solo para 'otro' */}
+        {form.tipo === 'otro' && (
+          <div className="admin-form__field admin-form__field--full">
+            <label className="admin-form__label">Descriptor <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación de libro)</span></label>
+            <input
+              className="admin-form__input"
+              type="text"
+              name="descriptor"
+              value={form.descriptor}
+              onChange={handleChange}
+              placeholder="taller, workshop, presentación..."
+            />
+          </div>
+        )}
+
+        {/* Resumen / Descripción */}
         <div className="admin-form__field admin-form__field--full">
           <label className="admin-form__label">
             {form.tipo === 'otro' ? 'Descripción' : 'Resumen'}

@@ -11,7 +11,6 @@ import { auth } from '@/lib/firebase'
 import AdminBienvenida from '@/components/admin/AdminBienvenida'
 import AdminInvitados from '@/components/admin/AdminInvitados'
 import AdminNovedades from '@/components/admin/AdminNovedades'
-import AdminPaneles from '@/components/admin/AdminPaneles'
 import AdminActividades from '@/components/admin/AdminActividades'
 import AdminPropuestas from '@/components/admin/AdminPropuestas'
 
@@ -21,7 +20,6 @@ const MENU = [
   { id: 'invitados',    label: 'Invitados' },
   { id: 'propuestas',   label: 'Propuestas' },
   { id: 'actividades',  label: 'Actividades' },
-  { id: 'paneles',      label: 'Paneles' },
   { id: 'embeddings',   label: 'Generar Embeddings' },
   { id: 'restricciones',label: 'Restricciones' },
   { id: 'distribuir-ia',label: 'Distribuir con IA' },
@@ -52,7 +50,6 @@ export default function Admin() {
       case 'bienvenida': return <AdminBienvenida />
       case 'invitados':  return <AdminInvitados />
       case 'novedades':  return <AdminNovedades />
-      case 'paneles':      return <AdminPaneles />
       case 'propuestas':   return <AdminPropuestas />
       case 'actividades':  return <AdminActividades />
       default:             return (
