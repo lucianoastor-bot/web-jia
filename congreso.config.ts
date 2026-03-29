@@ -18,6 +18,7 @@ export const CONGRESO = {
   url:          'https://jornadas-ia.site',
   urlInstitucion: 'https://fhumyar.unr.edu.ar',
   logoPath:     '/logo-hya.png',
+  instagram:           'https://www.instagram.com/jornadas.ia/',
   formularioResumenes: 'https://forms.gle/SKB7J1o7beuXAsGz5',
   plazoResumenes: '20 de abril de 2026',
 } as const

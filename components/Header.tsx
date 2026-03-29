@@ -43,6 +43,21 @@ export default function Header() {
             </React.Fragment>
           ))}
           <li>
+            <a
+              href={CONGRESO.instagram}
+              className="nav__link nav__link--icon"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram de las Jornadas"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+              </svg>
+            </a>
+          </li>
+          <li>
             <Link href="/login" className="nav__link nav__link--login">
               Login
             </Link>
@@ -75,6 +90,21 @@ export default function Header() {
             {enlace.etiqueta}
           </Link>
         ))}
+        <a
+          href={CONGRESO.instagram}
+          className="nav__link nav__link--icon"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram de las Jornadas"
+          onClick={() => setOpen(false)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+          </svg>
+          Instagram
+        </a>
         <Link
           href="/login"
           className="nav__link nav__link--login"

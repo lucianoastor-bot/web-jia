@@ -75,6 +75,18 @@
   padding: 0 0.1rem;
   user-select: none;
 }
+.nav__link--icon {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.5;
+  padding: 0 0.2rem;
+}
+.nav__link--icon:hover {
+  opacity: 1;
+  color: var(--c-turq);
+}
+
 .nav__link--login {
   margin-left: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.15);
