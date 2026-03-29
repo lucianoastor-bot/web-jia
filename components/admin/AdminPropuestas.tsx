@@ -5,17 +5,21 @@ import { useState } from 'react'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { agregarPropuesta, actualizarPropuesta, actualizarEstado, eliminarPropuesta } from '@/lib/services/propuestas'
 import { TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, EJES } from '@/congreso.config'
+import { CODIGOS_PRIORITARIOS, CODIGOS_RESTO } from '@/lib/data/codigosPais'
 import type { Propuesta, TipoPropuesta, EstadoPropuesta, Participante } from '@/types'
 
 // ── Tipos locales ─────────────────────────────────────────────
 
 type DatosAutor = {
-  nombre:      string
-  institucion: string
-  email:       string
-  documento:   string
-  pertenencia: Participante['pertenencia']
+  nombre:        string
+  institucion:   string
+  email:         string
+  documento:     string
+  celularCodigo: string
+  celular:       string
+  pertenencia:   Participante['pertenencia']
 }
+
 
 type DatosPropuesta = {
   tipo:    TipoPropuesta
@@ -29,7 +33,8 @@ type DatosPropuesta = {
 // ── Constantes ────────────────────────────────────────────────
 
 const VACIO_AUTOR: DatosAutor = {
-  nombre: '', institucion: '', email: '', documento: '', pertenencia: 'externo',
+  nombre: '', institucion: '', email: '', documento: '',
+  celularCodigo: '+54', celular: '', pertenencia: 'externo',
 }
 
 const VACIO: DatosPropuesta = {
@@ -100,11 +105,13 @@ export default function AdminPropuestas() {
       eje:     p.eje,
       estado:  p.estado,
       autor: {
-        nombre:      p.autor.nombre,
-        institucion: p.autor.institucion,
-        email:       p.autor.email,
-        documento:   p.autor.documento ?? '',
-        pertenencia: p.autor.pertenencia,
+        nombre:        p.autor.nombre,
+        institucion:   p.autor.institucion,
+        email:         p.autor.email,
+        documento:     p.autor.documento,
+        celularCodigo: p.autor.celularCodigo ?? '+54',
+        celular:       p.autor.celular ?? '',
+        pertenencia:   p.autor.pertenencia,
       },
     })
     setEditando(p.id)
@@ -251,6 +258,40 @@ export default function AdminPropuestas() {
               value={form.autor.email}
               onChange={handleAutorChange}
             />
+          </div>
+
+          <div className="admin-form__field">
+            <label className="admin-form__label">Celular</label>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <select
+                className="admin-form__input"
+                style={{ width: '130px', flexShrink: 0 }}
+                name="celularCodigo"
+                value={form.autor.celularCodigo}
+                onChange={handleAutorChange}
+              >
+                <optgroup label="- · -">
+                  {CODIGOS_PRIORITARIOS.map(c => (
+                    <option key={c.codigo} value={c.codigo}>{c.codigo} {c.pais}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="- ·· -">
+                  {CODIGOS_RESTO.map(c => (
+                    <option key={c.codigo} value={c.codigo}>{c.codigo} {c.pais}</option>
+                  ))}
+                </optgroup>
+              </select>
+              <input
+                className="admin-form__input"
+                type="tel"
+                name="celular"
+                value={form.autor.celular}
+                onChange={handleAutorChange}
+                placeholder="341 5551234"
+                pattern="[\d\s\-\(\)]{6,20}"
+                title="Solo números, espacios y los caracteres - ( )"
+              />
+            </div>
           </div>
 
           <div className="admin-form__field">

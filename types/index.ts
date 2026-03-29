@@ -39,8 +39,10 @@ export type Participante = {
   nombre:      string
   institucion: string
   email:       string
-  documento:  string   // DNI / Pasaporte
-  pertenencia: typeof PERTENENCIAS[number]['valor']
+  documento:     string   // DNI / Pasaporte
+  celularCodigo: string   // ej: '+54'
+  celular:       string   // número sin código de país
+  pertenencia:   typeof PERTENENCIAS[number]['valor']
 }
 
 // ─── Propuesta ───────────────────────────────────────────────
