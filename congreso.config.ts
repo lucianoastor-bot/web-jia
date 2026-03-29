@@ -96,10 +96,11 @@ export const ESTADOS_PROPUESTA = [
 ] as const
 
 export const RESTRICCIONES_ACTIVIDAD = {
-  mesa:    { minPropuestas: 2, maxPropuestas: 4 },
-  pósters: { minPropuestas: 4, maxPropuestas: 15 },
-  panel:   { minParticipantes: 2, maxParticipantes: 7 },
-  otro:    { minPropuestas: 1, maxPropuestas: 10 },
+  conferencia: { minInvitados: 1, maxInvitados: 1 },
+  mesa:        { minPropuestas: 2, maxPropuestas: 4 },
+  pósters:     { minPropuestas: 4, maxPropuestas: 15 },
+  panel:       { minParticipantes: 2, maxParticipantes: 7 },
+  otro:        { minPropuestas: 1, maxPropuestas: 10 },
 } as const
 
 export const COORDINADORES: string[] = [

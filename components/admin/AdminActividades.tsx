@@ -323,9 +323,14 @@ export default function AdminActividades() {
       {/* ── Conferencista (solo conferencia al editar) ── */}
       {editando && form.tipo === 'conferencia' && (
         <>
-          <h2 className="admin-module__title" style={{ marginTop: '2.5rem' }}>
-            Conferencista
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
+            <h2 className="admin-module__title" style={{ margin: 0 }}>
+              Conferencista ({invitadoActual ? '1/1' : '0/1'})
+            </h2>
+            {!invitadoActual && (
+              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>requerido</span>
+            )}
+          </div>
 
           {invitadoActual ? (
             <div className="admin-list">
