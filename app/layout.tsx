@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { AuthProvider } from '@/lib/auth-context'
 import { CONGRESO } from '@/congreso.config'
+import { Analytics } from "@vercel/analytics/next"
 
 const lora = Lora({
   subsets: ['latin'],
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <Footer />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   )

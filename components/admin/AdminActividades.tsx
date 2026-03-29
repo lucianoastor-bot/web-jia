@@ -7,7 +7,7 @@ import { useInvitados } from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { crearActividad, actualizarActividad, eliminarActividad, quitarInvitadoDePanel } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { TIPOS_ACTIVIDAD, RESTRICCIONES_ACTIVIDAD } from '@/congreso.config'
+import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD } from '@/congreso.config'
 import type { Actividad, TipoActividad, TipoPropuesta } from '@/types'
 
 // Qué tipos de propuesta acepta cada tipo de actividad
@@ -55,6 +55,11 @@ export default function AdminActividades() {
   const [cargando, setCargando]       = useState(false)
   const [mensaje, setMensaje]         = useState<string | null>(null)
   const [filtro, setFiltro]           = useState<TipoActividad | 'todas'>('todas')
+
+  // Filtros para propuestas disponibles
+  const [filtroPTipo,  setFiltroPTipo]  = useState<TipoPropuesta | 'todos'>('todos')
+  const [filtroPEje,   setFiltroPEje]   = useState<string>('todos')
+  const [filtroPBusca, setFiltroPBusca] = useState<string>('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -131,6 +136,9 @@ export default function AdminActividades() {
     setEditando(null)
     setActual(null)
     setMensaje(null)
+    setFiltroPTipo('todos')
+    setFiltroPEje('todos')
+    setFiltroPBusca('')
   }
 
   const handleQuitarInvitado = async (invitadoId: string) => {
@@ -152,14 +160,18 @@ export default function AdminActividades() {
     [propuestas, editando]
   )
 
-  const propuestasDisponibles = useMemo(() =>
-    propuestas.filter(p =>
+  const propuestasDisponibles = useMemo(() => {
+    const busca = filtroPBusca.toLowerCase()
+    return propuestas.filter(p =>
       p.estado === 'aceptada' &&
       !p.actividadId &&
-      (tiposCompatibles as string[]).includes(p.tipo)
-    ).sort((a, b) => a.eje.localeCompare(b.eje)),
-    [propuestas, editando, form.tipo] // eslint-disable-line react-hooks/exhaustive-deps
-  )
+      (tiposCompatibles as string[]).includes(p.tipo) &&
+      (filtroPTipo === 'todos' || p.tipo === filtroPTipo) &&
+      (filtroPEje  === 'todos' || p.eje  === filtroPEje) &&
+      (!busca || p.titulo.toLowerCase().includes(busca) || p.autor.nombre.toLowerCase().includes(busca))
+    ).sort((a, b) => a.eje.localeCompare(b.eje))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propuestas, editando, form.tipo, filtroPTipo, filtroPEje, filtroPBusca])
 
   const restriccion = form.tipo in RESTRICCIONES_ACTIVIDAD
     ? RESTRICCIONES_ACTIVIDAD[form.tipo as keyof typeof RESTRICCIONES_ACTIVIDAD]
@@ -360,36 +372,73 @@ export default function AdminActividades() {
           </div>
 
           {/* Disponibles */}
-          {propuestasDisponibles.length > 0 && (
-            <>
-              <p className="admin-form__label" style={{ marginTop: '1.25rem', marginBottom: '0.5rem', opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                Disponibles para agregar ({propuestasDisponibles.length})
-              </p>
-              <div className="admin-list">
-                {propuestasDisponibles.map(p => (
-                  <div key={p.id} className="admin-list__item">
-                    <div className="admin-list__item-info">
-                      <p className="admin-list__item-name">{p.titulo}</p>
-                      <p className="admin-list__item-sub">
-                        {p.autor.nombre}
-                        {p.autor.institucion && ` · ${p.autor.institucion}`}
-                        {' · '}Eje {p.eje}
-                      </p>
-                    </div>
-                    <div className="admin-list__item-actions">
-                      <button
-                        className="admin-btn admin-btn--small"
-                        onClick={() => handleAsignar(p.id)}
-                        disabled={maxPropuestas !== null && propuestasAsignadas.length >= maxPropuestas}
-                      >
-                        Agregar
-                      </button>
-                    </div>
-                  </div>
+          {/* Filtros de disponibles */}
+          <div style={{ marginTop: '1.25rem', marginBottom: '0.5rem' }}>
+            <p className="admin-form__label" style={{ opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              Disponibles para agregar
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <input
+                className="admin-form__input"
+                type="text"
+                placeholder="Buscar por título o autor..."
+                value={filtroPBusca}
+                onChange={e => setFiltroPBusca(e.target.value)}
+                style={{ flex: '1 1 180px', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+              />
+              {tiposCompatibles.length > 1 && (
+                <select
+                  className="admin-form__input"
+                  style={{ width: 'auto', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+                  value={filtroPTipo}
+                  onChange={e => setFiltroPTipo(e.target.value as TipoPropuesta | 'todos')}
+                >
+                  <option value="todos">Todos los tipos</option>
+                  {tiposCompatibles.map(t => (
+                    <option key={t} value={t}>{TIPOS_PROPUESTA.find(tp => tp.valor === t)?.etiqueta ?? t}</option>
+                  ))}
+                </select>
+              )}
+              <select
+                className="admin-form__input"
+                style={{ width: 'auto', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+                value={filtroPEje}
+                onChange={e => setFiltroPEje(e.target.value)}
+              >
+                <option value="todos">Todos los ejes</option>
+                {EJES.map(e => (
+                  <option key={e.num} value={e.num}>{e.num} — {e.titulo}</option>
                 ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="admin-list">
+            {propuestasDisponibles.length === 0 && (
+              <p className="admin-list__empty">Sin resultados.</p>
+            )}
+            {propuestasDisponibles.map(p => (
+              <div key={p.id} className="admin-list__item">
+                <div className="admin-list__item-info">
+                  <p className="admin-list__item-name">{p.titulo}</p>
+                  <p className="admin-list__item-sub">
+                    {p.autor.nombre}
+                    {p.autor.institucion && ` · ${p.autor.institucion}`}
+                    {' · '}Eje {p.eje}
+                  </p>
+                </div>
+                <div className="admin-list__item-actions">
+                  <button
+                    className="admin-btn admin-btn--small"
+                    onClick={() => handleAsignar(p.id)}
+                    disabled={maxPropuestas !== null && propuestasAsignadas.length >= maxPropuestas}
+                  >
+                    Agregar
+                  </button>
+                </div>
               </div>
-            </>
-          )}
+            ))}
+          </div>
           {propuestasDisponibles.length === 0 && propuestasAsignadas.length === 0 && (
             <p className="admin-list__empty" style={{ marginTop: '0.5rem' }}>
               No hay propuestas aceptadas disponibles de este tipo.
