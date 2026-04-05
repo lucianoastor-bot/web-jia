@@ -13,7 +13,7 @@ import type { Eje, Noticia } from '@/types'
 
 export const CONGRESO = {
   nombre:       'Jornadas: La Inteligencia Artificial en debate',
-  nombreCorto:  'La IA en debate',
+  nombreCorto:  'Jornadas: La IA en debate',
   institucion:  'Facultad de Humanidades y Artes',
   universidad:  'Universidad Nacional de Rosario',
   siglas:       'FHyA · UNR',
