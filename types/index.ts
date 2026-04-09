@@ -12,6 +12,9 @@ export type Invitado = {
   email?: string
   mostrarEnPagina?:    boolean   // aparece en /invitados
   mostrarEnCarrusel?:  boolean   // aparece en el carrusel de inicio
+  linkedin?:  string
+  instagram?: string
+  web?:       string
 }
 
 export type Eje = {
