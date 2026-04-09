@@ -61,7 +61,6 @@ export default function InvitadosCarrusel() {
   return (
     <section className="invitados" id="invitados">
       <div className="invitados__inner">
-        <div className="section__eyebrow">Conferencias invitadas</div>
         <h2 className="section__title">Invitados</h2>
 
         <div
