@@ -6,6 +6,13 @@ export default function Footer() {
   return (
     <footer className="footer" role="contentinfo">
       <div className="footer__main">
+        <Image
+          className="footer__logo"
+          src="/logo-upar.png"
+          alt="Universidad Nacional de Rosario"
+          width={200}
+          height={48}
+        />
         <Link href={CONGRESO.urlInstitucion} target="_blank" rel="noopener noreferrer">
           <Image
             className="footer__logo"
