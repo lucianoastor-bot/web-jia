@@ -2,6 +2,7 @@
 // Versión reducida para el home: timeline + CTA. El detalle completo está en /propuestas.
 
 import PlazoTimeline from '@/components/PlazoTimeline'
+import { CONGRESO } from '@/congreso.config'
 
 export default function SeccionResumenes() {
   return (
