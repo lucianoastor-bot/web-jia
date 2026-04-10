@@ -47,11 +47,11 @@ export default function Home() {
         <Hero />
         <div className="content" id="contenido">
           <div className="home-bloque"><InvitadosCarrusel /></div>
-          <div className="home-bloque"><Ejes /></div>
+          <div className="home-bloque home-bloque--tinted"><Ejes /></div>
           <div className="home-bloque"><SeccionResumenes /></div>
-          <div className="home-bloque"><Noticias /></div>
+          <div className="home-bloque home-bloque--tinted"><Noticias /></div>
           <div className="home-bloque"><SeccionOrganizacion /></div>
-          <div className="home-bloque"><SeccionContacto /></div>
+          <div className="home-bloque home-bloque--tinted"><SeccionContacto /></div>
         </div>
       </main>
     </>

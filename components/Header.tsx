@@ -36,9 +36,10 @@ export default function Header() {
             <React.Fragment key={enlace.href}>
               {i > 0 && <li><span className="nav__sep">·</span></li>}
               <li>
-                <Link href={enlace.href} className="nav__link">
-                  {enlace.etiqueta}
-                </Link>
+                {enlace.href.startsWith('/#')
+                  ? <a href={enlace.href} className="nav__link">{enlace.etiqueta}</a>
+                  : <Link href={enlace.href} className="nav__link">{enlace.etiqueta}</Link>
+                }
               </li>
             </React.Fragment>
           ))}
@@ -80,15 +81,25 @@ export default function Header() {
       {/* Mobile drawer */}
       <div className={`nav__drawer ${open ? 'is-open' : ''}`} role="menu">
         {NAVEGACION.map(enlace => (
-          <Link
-            key={enlace.href}
-            href={enlace.href}
-            className="nav__link"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-          >
-            {enlace.etiqueta}
-          </Link>
+          enlace.href.startsWith('/#')
+            ? <a
+                key={enlace.href}
+                href={enlace.href}
+                className="nav__link"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+              >
+                {enlace.etiqueta}
+              </a>
+            : <Link
+                key={enlace.href}
+                href={enlace.href}
+                className="nav__link"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+              >
+                {enlace.etiqueta}
+              </Link>
         ))}
         <a
           href={CONGRESO.instagram}
