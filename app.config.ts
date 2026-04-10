@@ -18,6 +18,6 @@ export const NAVEGACION = [
   { href: '/invitados',    etiqueta: 'Invitados' },
   /*{ href: '/programa',    etiqueta: 'Programa' },*/
   { href: '/propuestas',   etiqueta: 'Envío de resúmenes' },
-  { href: '/organizacion', etiqueta: 'Organización' },
-  { href: '/contacto',     etiqueta: 'Contacto' },
+  { href: '/#organizacion', etiqueta: 'Organización' },
+  { href: '/#contacto',     etiqueta: 'Contacto' },
 ]
