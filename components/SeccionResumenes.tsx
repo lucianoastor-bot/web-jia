@@ -14,8 +14,8 @@ export default function SeccionResumenes() {
       <div style={{ margin: '2.5rem 0' }}>
         <PlazoTimeline />
       </div>
-      <a href="/propuestas" className="btn btn--primary">
-        Envío de Resúmenes →
+      <a href="/propuestas" className="btn btn--primary" style={{ display: 'inline-flex', width: 'fit-content' }}>
+        Envío de Resúmenes
       </a>
     </section>
   )
