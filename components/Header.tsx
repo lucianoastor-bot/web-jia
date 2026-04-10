@@ -3,12 +3,37 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { CONGRESO } from '@/congreso.config'
 import { NAVEGACION } from '@/app.config'
 
 export default function Header() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen]   = useState(false)
+  const router            = useRouter()
+  const pathname          = usePathname()
+
+  // Navegación a secciones del home via hash.
+  // Si ya estamos en /, hace scrollIntoView directo.
+  // Si venimos de otra página, navega sin scroll y luego desplaza al elemento.
+  const handleHashNav = useCallback((e: React.MouseEvent, href: string) => {
+    e.preventDefault()
+    const id = href.replace('/#', '')
+    setOpen(false)
+
+    const scrollToEl = () => {
+      const el = document.getElementById(id)
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    if (pathname === '/') {
+      scrollToEl()
+    } else {
+      router.push('/', { scroll: false })
+      // Espera a que el home renderice antes de desplazar
+      setTimeout(scrollToEl, 400)
+    }
+  }, [pathname, router])
 
   return (
     <>
@@ -37,8 +62,12 @@ export default function Header() {
               {i > 0 && <li><span className="nav__sep">·</span></li>}
               <li>
                 {enlace.href.startsWith('/#')
-                  ? <a href={enlace.href} className="nav__link">{enlace.etiqueta}</a>
-                  : <Link href={enlace.href} className="nav__link">{enlace.etiqueta}</Link>
+                  ? <a href={enlace.href} className="nav__link" onClick={e => handleHashNav(e, enlace.href)}>
+                      {enlace.etiqueta}
+                    </a>
+                  : <Link href={enlace.href} className="nav__link">
+                      {enlace.etiqueta}
+                    </Link>
                 }
               </li>
             </React.Fragment>
@@ -87,7 +116,7 @@ export default function Header() {
                 href={enlace.href}
                 className="nav__link"
                 role="menuitem"
-                onClick={() => setOpen(false)}
+                onClick={e => handleHashNav(e, enlace.href)}
               >
                 {enlace.etiqueta}
               </a>
