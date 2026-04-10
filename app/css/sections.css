@@ -508,7 +508,7 @@
 /* ── Plazo timeline ── */
 .plazo-timeline {
   margin: 2rem 0 2.5rem;
-  max-width: 720px;
+  width: 100%;
 }
 
 .plazo-timeline__barra {

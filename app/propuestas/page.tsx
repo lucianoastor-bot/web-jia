@@ -2,7 +2,6 @@
 
 import type { Metadata } from 'next'
 import { CONGRESO, EJES } from '@/congreso.config'
-import PlazoTimeline from '@/components/PlazoTimeline'
 
 export const metadata: Metadata = {
   title: `Propuestas — ${CONGRESO.nombreCorto}`,
@@ -29,7 +28,6 @@ export default function Propuestas() {
             <span style={{ color: 'var(--c-mid)' }}>Plazo:</span>{' '}
             <span style={{ color: 'var(--c-coral)' }}>20 de abril de 2026</span>
           </h2>
-          <PlazoTimeline />
         </div>
 
         {/* Ejes */}
