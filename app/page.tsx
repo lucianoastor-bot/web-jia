@@ -2,6 +2,9 @@ import Hero from '@/components/Hero'
 import Ejes from '@/components/Ejes'
 import InvitadosCarrusel from '@/components/InvitadosCarrusel'
 import Noticias from '@/components/Noticias'
+import SeccionResumenes from '@/components/SeccionResumenes'
+import SeccionOrganizacion from '@/components/SeccionOrganizacion'
+import SeccionContacto from '@/components/SeccionContacto'
 import { CONGRESO } from '@/congreso.config'
 
 const structuredData = {
@@ -43,9 +46,12 @@ export default function Home() {
       <main>
         <Hero />
         <div className="content" id="contenido">
-          <InvitadosCarrusel />
-          <Noticias />
-          <Ejes />
+          <div className="home-bloque"><InvitadosCarrusel /></div>
+          <div className="home-bloque"><Ejes /></div>
+          <div className="home-bloque"><SeccionResumenes /></div>
+          <div className="home-bloque"><Noticias /></div>
+          <div className="home-bloque"><SeccionOrganizacion /></div>
+          <div className="home-bloque"><SeccionContacto /></div>
         </div>
       </main>
     </>
