@@ -11,7 +11,6 @@ export default function Invitados() {
   return (
     <main className="page">
       <div className="section">
-        <div className="section__eyebrow">Keynote Speakers</div>
         <h1 className="section__title">Invitados</h1>
         <InvitadosLista />
       </div>

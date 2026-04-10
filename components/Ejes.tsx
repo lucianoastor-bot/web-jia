@@ -15,7 +15,7 @@ export default function Ejes() {
       <div className="ejes__inner">
 
         <h2 className="section__title">Ejes temáticos</h2>
-
+        <br />
         <div className="ejes__grid">
           {EJES.map((eje) => (
             <div
