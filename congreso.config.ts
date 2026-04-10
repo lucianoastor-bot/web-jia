@@ -231,6 +231,6 @@ export const NOTICIAS_DEFECTO: Noticia[] = [
     fecha: '2026-03-25',
     titulo: 'Las jornadas se realizarán los días 10, 11 y 12 de junio de 2026',
     resumen: 'La Facultad de Humanidades y Artes de la UNR será sede de las Jornadas: La Inteligencia Artificial en debate.',
-    enlace: '/contacto',
+    enlace: '#contacto',
   },
 ]

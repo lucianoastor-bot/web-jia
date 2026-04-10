@@ -4,7 +4,6 @@
 export default function SeccionContacto() {
   return (
     <section className="section" id="contacto">
-      <div className="section__eyebrow">Contacto</div>
       <h2 className="section__title">Consultas e información</h2>
 
       <p className="section__body" style={{ marginTop: '1rem' }}>

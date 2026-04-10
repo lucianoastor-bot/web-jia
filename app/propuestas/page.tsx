@@ -12,7 +12,6 @@ export default function Propuestas() {
   return (
     <main className="page">
       <div className="section">
-        <div className="section__eyebrow">Call for Papers</div>
         <h1 className="section__title">Envío de resúmenes</h1>
 
         <p className="section__body">
