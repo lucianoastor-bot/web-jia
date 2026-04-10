@@ -7,8 +7,7 @@ import { CONGRESO } from '@/congreso.config'
 export default function SeccionResumenes() {
   return (
     <section className="section" id="resumenes">
-      <div className="section__eyebrow">Envío de Resúmenes</div>
-      <h2 className="section__title">Presentá tu propuesta</h2>
+      <h2 className="section__title" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>Presentá tu propuesta</h2>
       <p className="section__body" style={{ marginTop: '1rem' }}>
         La convocatoria está abierta hasta el {CONGRESO.plazoResumenes}.
         Se aceptan ponencias, paneles, relatos de experiencia y pósters.

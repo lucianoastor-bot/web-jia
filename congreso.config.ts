@@ -195,9 +195,9 @@ export const COMITE_ORGANIZADOR: string[] = [
 ]
 
 export const COMITE_ACADEMICO: string[] = [
-  /*'Fernando Avendaño',
+  /*'Fernando Avendaño',*/
   'Mariano Balla',
-  'Alicia Caporossi',
+  /*'Alicia Caporossi',*/
   'María Laura Carrascal',
   'Gabriel Data',
   'Susana Daz',
@@ -205,14 +205,14 @@ export const COMITE_ACADEMICO: string[] = [
   'María Victoria Gonzalez',
   'Melina Mailhou',
   'Erika Nawoczyk',
-  'Carola Nin',
+  /*'Carola Nin',*/
   'Lorena Pafumi',
   'Natalia Ricchiardi',
   'Andrea Rodrigo',
-  'Liliana Sanjurjo',
-  'Carolina Tramallino',
-  'Marcela Valdata',
-  'Gina Valenti',*/
+  /*'Liliana Sanjurjo',*/
+  /*'Carolina Tramallino',
+  'Marcela Valdata',*/
+  'Gina Valenti',
 ]
 
 

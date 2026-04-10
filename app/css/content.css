@@ -16,10 +16,6 @@
 
 /* ── Home: bloques de pantalla completa ── */
 .home-bloque {
-  min-height: calc(100svh - var(--nav-h));
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   border-top: 1px solid rgba(35, 22, 81, 0.07);
 }
 .home-bloque:nth-child(even) {

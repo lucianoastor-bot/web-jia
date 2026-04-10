@@ -63,6 +63,8 @@ export default function InvitadosCarrusel() {
       <div className="invitados__inner">
         <h2 className="section__title">Invitados</h2>
 
+        <br />
+
         <div
           className="invitados__carrusel-wrap"
           onTouchStart={handleTouchStart}

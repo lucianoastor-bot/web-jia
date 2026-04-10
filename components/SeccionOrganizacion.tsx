@@ -1,7 +1,7 @@
 // components/SeccionOrganizacion.tsx
 // Sección de organización para el home. La página /organizacion puede usar este componente.
 
-import { COORDINADORES, COMITE_ORGANIZADOR } from '@/congreso.config'
+import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO } from '@/congreso.config'
 
 export default function SeccionOrganizacion() {
   return (
@@ -32,6 +32,17 @@ export default function SeccionOrganizacion() {
             {COMITE_ORGANIZADOR.join(' · ')}
           </p>
         </div>
+
+        {COMITE_ACADEMICO.length > 0 && (
+          <div style={{ maxWidth: '520px' }}>
+            <p style={{ fontSize: '0.68rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--c-mid)', fontWeight: 500, marginBottom: '1rem' }}>
+              Comité académico
+            </p>
+            <p style={{ fontSize: '1rem', color: '#444', lineHeight: 1.9 }}>
+              {COMITE_ACADEMICO.join(' · ')}
+            </p>
+          </div>
+        )}
 
       </div>
     </section>
