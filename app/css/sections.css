@@ -20,7 +20,6 @@
 }
 
 .invitados {
-  background: var(--content-bg);
   overflow: hidden;
 }
 
@@ -383,7 +382,6 @@
 ══════════════════════════════════════ */
 
 .noticias {
-  background: var(--content-bg);
 }
 
 .noticias__grid {
