@@ -32,17 +32,16 @@ export default function PlazoTimeline() {
           className="plazo-timeline__progreso"
           style={{ width: mounted ? `${estado.progreso}%` : '0%' }}
         />
-        <div className="plazo-timeline__hito">
-          {mounted && (
-            <span className="plazo-timeline__cuenta">
-              {estado.vencido
-                ? 'Plazo vencido'
-                : estado.dias === 1
-                  ? 'Queda: 1 día'
-                  : `Quedan: ${estado.dias} días`}
-            </span>
-          )}
-        </div>
+        <div className="plazo-timeline__hito" />
+        {mounted && (
+          <span className="plazo-timeline__cuenta">
+            {estado.vencido
+              ? 'Plazo vencido'
+              : estado.dias === 1
+                ? 'Queda: 1 día'
+                : `Quedan: ${estado.dias} días`}
+          </span>
+        )}
       </div>
     </div>
   )
