@@ -59,7 +59,7 @@ export const EJES: Eje[] = [
   },
   {
     num: '05',
-    titulo: 'Problemas éticos del uso de la Inteligencia Artificial',
+    titulo: 'Problemas éticos en el uso de la Inteligencia Artificial',
     descripcion: 'Discusión sobre los dilemas éticos que plantea el desarrollo y uso de la IA: sesgos, responsabilidad, transparencia y derechos digitales.',
   },
   {
@@ -178,10 +178,10 @@ export const RESTRICCIONES_ACTIVIDAD = {
 export const COORDINADORES: string[] = [
   'Tomás Giroud Guillet',
   'Magalí Gómez Castillo',
+  'Luciano Astor',
 ]
 
 export const COMITE_ORGANIZADOR: string[] = [
-  'Luciano Astor',
   'Lucio Braida',
   'Carlos Galassi',
   'Luz Jovine',
