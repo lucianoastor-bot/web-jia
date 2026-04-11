@@ -61,6 +61,9 @@ export default function Hero() {
           </h1>
 
           <p className="hero__date">
+            {CONGRESO.institucion.toUpperCase()} · {CONGRESO.universidad.toUpperCase()}
+          </p>
+          <p className="hero__date">
             <strong>{CONGRESO.fechaTexto}</strong>
             {' '}·{' '}{CONGRESO.ciudad}, {CONGRESO.pais}
           </p>
