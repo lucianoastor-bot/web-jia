@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { CONGRESO } from '@/congreso.config'
 
-const INICIO = new Date(2026, 2, 1)              // 1 marzo 2026
-const FIN    = new Date(2026, 3, 20, 23, 59, 59) // 20 abril 2026 23:59:59
+const INICIO = CONGRESO.inicioResumenes
+const FIN    = CONGRESO.finResumenes
 const TOTAL  = FIN.getTime() - INICIO.getTime()
 
 function calcular() {

@@ -27,7 +27,9 @@ export const CONGRESO = {
   logoPath:     '/logo-hya.png',
   instagram:           'https://www.instagram.com/jornadas.ia/',
   formularioResumenes: 'https://forms.gle/SKB7J1o7beuXAsGz5',
-  plazoResumenes: '3 de mayo de 2026',
+  plazoResumenes:     '3 de mayo de 2026',
+  inicioResumenes:    new Date('2026-03-01T00:00:00-03:00'),
+  finResumenes:       new Date('2026-05-03T23:59:59-03:00'),
 } as const
 
 
