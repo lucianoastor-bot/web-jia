@@ -27,7 +27,7 @@ export const CONGRESO = {
   logoPath:     '/logo-hya.png',
   instagram:           'https://www.instagram.com/jornadas.ia/',
   formularioResumenes: 'https://forms.gle/SKB7J1o7beuXAsGz5',
-  plazoResumenes: '20 de abril de 2026',
+  plazoResumenes: '3 de mayo de 2026',
 } as const
 
 
@@ -195,9 +195,9 @@ export const COMITE_ORGANIZADOR: string[] = [
 ]
 
 export const COMITE_ACADEMICO: string[] = [
-  /*'Fernando Avendaño',*/
+  'Fernando Avendaño',
   'Mariano Balla',
-  /*'Alicia Caporossi',*/
+  'Alicia Caporossi',
   'María Laura Carrascal',
   'Gabriel Data',
   'Susana Daz',
@@ -210,8 +210,8 @@ export const COMITE_ACADEMICO: string[] = [
   'Natalia Ricchiardi',
   'Andrea Rodrigo',
   /*'Liliana Sanjurjo',*/
-  /*'Carolina Tramallino',
-  'Marcela Valdata',*/
+  'Carolina Tramallino',
+  'Marcela Valdata',
   'Gina Valenti',
 ]
 
