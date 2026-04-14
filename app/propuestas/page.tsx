@@ -25,7 +25,7 @@ export default function Propuestas() {
         <div style={{ margin: '3rem 0' }}>
           <h2 className="section__title" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', marginBottom: '1.5rem' }}>
             <span style={{ color: 'var(--c-mid)' }}>Plazo:</span>{' '}
-            <span style={{ color: 'var(--c-coral)' }}>20 de abril de 2026</span>
+            <span style={{ color: 'var(--c-coral)' }}>{CONGRESO.plazoResumenes}</span>
           </h2>
         </div>
 
