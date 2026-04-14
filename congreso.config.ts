@@ -27,14 +27,16 @@ export const CONGRESO = {
   logoPath:     '/logo-hya.png',
   instagram:           'https://www.instagram.com/jornadas.ia/',
   formularioResumenes: 'https://forms.gle/SKB7J1o7beuXAsGz5',
-  plazoResumenes:     '3 de mayo de 2026',
-  inicioResumenes:    new Date('2026-03-01T00:00:00-03:00'),
-  finResumenes:       new Date('2026-05-03T23:59:59-03:00'),
+  plazoResumenes:          '3 de mayo de 2026',
+  notificacionResumenes:   '20 de mayo de 2026',
+  direccion:               'Entre Ríos 758, Rosario',
+  inicioResumenes:         new Date('2026-03-01T00:00:00-03:00'),
+  finResumenes:            new Date('2026-05-03T23:59:59-03:00'),
 } as const
 
 
 // ─── Ejes temáticos ──────────────────────────────────────────────────────────
-// Cada eje tiene un número de dos dígitos ('01'…'08'), un título y una
+// Cada eje tiene un número de dos dígitos ('01'…'10'), un título y una
 // descripción. Se usan en el formulario de propuestas y en los filtros del panel
 // de administración.
 
@@ -51,7 +53,7 @@ export const EJES: Eje[] = [
   },
   {
     num: '03',
-    titulo: 'Inteligencia Artificial, escritura y traducción',
+    titulo: 'Inteligencia Artificial, lenguaje, escritura y traducción',
     descripcion: 'Exploración del impacto de la IA en la producción textual y académica, y en las prácticas de traducción: sus herramientas, sus límites y las preguntas que abre sobre autoría, estilo y fidelidad.',
   },
   {
@@ -78,6 +80,16 @@ export const EJES: Eje[] = [
     num: '08',
     titulo: 'Inteligencia Artificial: utopía y distopía',
     descripcion: 'Reflexiones sobre los imaginarios sociales, narrativas culturales y representaciones del futuro que rodean al desarrollo de la IA.',
+  },
+  {
+    num: '09',
+    titulo: 'Inteligencia Artificial, derecho y gobernanza',
+    descripcion: 'Análisis de los marcos regulatorios, los desafíos jurídicos y las políticas públicas que emergen del desarrollo y uso de sistemas de IA.',
+  },
+  {
+    num: '10',
+    titulo: 'Inteligencia Artificial, ambiente y cambio climático',
+    descripcion: 'Reflexiones sobre el impacto ambiental de la IA, su huella energética y su rol en la gestión de datos ambientales y el abordaje del cambio climático.',
   },
 ]
 
