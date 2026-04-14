@@ -13,6 +13,7 @@ const VACIO: DatosNoticia = {
   resumen: '',
   fecha: '',
   enlace: '',
+  nuevaPestania: false,
 }
 
 export default function AdminNovedades() {
@@ -23,7 +24,9 @@ export default function AdminNovedades() {
   const [mensaje, setMensaje]   = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    const { name, value, type } = e.target
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    setForm(f => ({ ...f, [name]: val }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +112,20 @@ export default function AdminNovedades() {
               onChange={handleChange}
               placeholder="/propuestas o https://..."
             />
+          </div>
+
+          <div className="admin-form__field" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              type="checkbox"
+              id="nuevaPestania"
+              name="nuevaPestania"
+              checked={!!form.nuevaPestania}
+              onChange={handleChange}
+              style={{ width: 'auto', cursor: 'pointer' }}
+            />
+            <label htmlFor="nuevaPestania" className="admin-form__label" style={{ marginBottom: 0, cursor: 'pointer' }}>
+              Abrir en nueva pestaña
+            </label>
           </div>
 
         </div>

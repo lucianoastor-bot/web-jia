@@ -19,7 +19,11 @@ export default function Noticias() {
               <h3 className="noticia-card__titulo">{n.titulo}</h3>
               <p className="noticia-card__resumen">{n.resumen}</p>
               {n.enlace && (
-                <a href={n.enlace} className="noticia-card__link">
+                <a
+                  href={n.enlace}
+                  className="noticia-card__link"
+                  {...(n.nuevaPestania ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
                   Leer más →
                 </a>
               )}

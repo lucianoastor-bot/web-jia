@@ -29,6 +29,7 @@ export type Noticia = {
   titulo: string
   resumen: string
   enlace?: string
+  nuevaPestania?: boolean
 }
 
 export type Usuario = {
