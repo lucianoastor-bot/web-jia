@@ -8,7 +8,10 @@ export default function InvitadosLista() {
   const { invitados: todos, loading } = useInvitados()
   const invitados = todos
     .filter(inv => inv.confirmado)
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+    .sort((a, b) => {
+      const apellido = (n: string) => n.trim().split(' ').slice(-1)[0]
+      return apellido(a.nombre).localeCompare(apellido(b.nombre), 'es')
+    })
 
   if (loading) return (
     <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
