@@ -197,6 +197,7 @@ export const COORDINADORES: string[] = [
 
 export const COMITE_ORGANIZADOR: string[] = [
   'Lucio Braida',
+  'Melanie Esenarro',
   'Carlos Galassi',
   'Luz Jovine',
   'Lucas Martino',
@@ -204,8 +205,10 @@ export const COMITE_ORGANIZADOR: string[] = [
   'Adelina Pasalagua',
   'Luis Rodríguez',
   'Víctor Sánchez',
+  'Silvia Tomas',
   'Gina Valenti',
   'Manuel Videguren',
+  'Gerardo Zacaro',
 ]
 
 export const COMITE_ACADEMICO: string[] = [
@@ -221,9 +224,9 @@ export const COMITE_ACADEMICO: string[] = [
   'Erika Nawoczyk',
   /*'Carola Nin',*/
   'Lorena Pafumi',
-  'Natalia Ricchiardi',
+  'Natalia Ricciardi',
   'Andrea Rodrigo',
-  /*'Liliana Sanjurjo',*/
+  'Liliana Sanjurjo',
   'Carolina Tramallino',
   'Marcela Valdata',
   'Gina Valenti',

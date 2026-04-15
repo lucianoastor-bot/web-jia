@@ -44,7 +44,7 @@ export default function Propuestas() {
           disciplinas, enfoques y experiencias.
         </p>
         <p className="section__body" style={{ marginTop: '1rem' }}>
-          Las Jornadas se desarrollarán los días <strong>{CONGRESO.fechaTexto}</strong> en la
+          Las Jornadas tendrán lugar en la
           Sede Centro de la {CONGRESO.institucion}: {CONGRESO.direccion}.
         </p>
 
@@ -151,9 +151,9 @@ export default function Propuestas() {
             {[
               ['Expositor',                              '$60.000'],
               ['Expositor de la Facultad de Humanidades y Artes', '$40.000'],
-              ['Expositor estudiante de la UNR',         '$10.000 · presentar certificado de Alumno Regular'],
+              ['Expositor estudiante de la UNR',         '$10.000 (presentar certificado de Alumno Regular)'],
               ['Asistente con certificado',              '$10.000'],
-              ['Asistente estudiante de la UNR con certificado', 'Gratuito · presentar certificado de Alumno Regular'],
+              ['Asistente estudiante de la UNR con certificado', 'Gratuito (presentar certificado de Alumno Regular)'],
             ].map(([label, value]) => (
               <tr key={label} style={{ borderBottom: '1px solid rgba(35,22,81,0.07)' }}>
                 <td style={{ padding: '0.9rem 1.5rem 0.9rem 0', fontSize: '0.88rem', color: '#444', verticalAlign: 'top', width: '340px' }}>
