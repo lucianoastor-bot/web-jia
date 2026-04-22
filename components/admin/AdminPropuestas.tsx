@@ -31,6 +31,7 @@ type DatosPropuesta = {
   autor:         DatosAutor
   descriptor:    string        // solo para tipo 'otro'
   participantes: DatosAutor[]  // solo para tipo 'panel'
+  coautores:     DatosAutor[]  // ponencia / relato / poster
 }
 
 // ── Constantes ────────────────────────────────────────────────
@@ -43,7 +44,7 @@ const VACIO_AUTOR: DatosAutor = {
 const VACIO: DatosPropuesta = {
   tipo: 'ponencia', titulo: '', resumen: '',
   eje: '01', estado: 'pendiente', autor: VACIO_AUTOR,
-  descriptor: '', participantes: [],
+  descriptor: '', participantes: [], coautores: [],
 }
 
 const BADGE_ESTADO: Record<EstadoPropuesta, string> = {
@@ -95,6 +96,22 @@ export default function AdminPropuestas() {
     setForm(f => ({ ...f, participantes: f.participantes.filter((_, i) => i !== idx) }))
   }
 
+  const handleCoautorChange = (idx: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm(f => {
+      const coautores = [...f.coautores]
+      coautores[idx] = { ...coautores[idx], [e.target.name]: e.target.value }
+      return { ...f, coautores }
+    })
+  }
+
+  const agregarCoautor = () => {
+    setForm(f => ({ ...f, coautores: [...f.coautores, { ...VACIO_AUTOR }] }))
+  }
+
+  const quitarCoautor = (idx: number) => {
+    setForm(f => ({ ...f, coautores: f.coautores.filter((_, i) => i !== idx) }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setCargando(true)
@@ -134,6 +151,15 @@ export default function AdminPropuestas() {
         celular:         pa.celular ?? '',
         pertenencia:     pa.pertenencia,
         tituloPonencia:  pa.tituloPonencia ?? '',
+      })),
+      coautores: (p.coautores ?? []).map(ca => ({
+        nombre:        ca.nombre,
+        institucion:   ca.institucion,
+        email:         ca.email,
+        documento:     ca.documento ?? '',
+        celularCodigo: ca.celularCodigo ?? '+54',
+        celular:       ca.celular ?? '',
+        pertenencia:   ca.pertenencia,
       })),
       autor: {
         nombre:        p.autor.nombre,
@@ -412,6 +438,97 @@ export default function AdminPropuestas() {
           </div>
         )}
 
+        {/* Co-autores (ponencia / relato / poster) */}
+        {form.tipo !== 'panel' && (
+          <div style={{ marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '0.75rem' }}>
+              <p className="admin-form__label" style={{ opacity: 0.5, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
+                Co-autores/as
+              </p>
+              <button type="button" className="admin-btn admin-btn--small" onClick={agregarCoautor}>
+                + Agregar
+              </button>
+            </div>
+            {form.coautores.length === 0 && (
+              <p style={{ fontSize: '0.82rem', color: '#999', marginBottom: '0.75rem' }}>
+                Sin co-autores. Hacé clic en "+ Agregar" para sumar uno.
+              </p>
+            )}
+            {form.coautores.map((ca, idx) => (
+              <div key={idx} style={{ border: '1px solid rgba(35,22,81,0.1)', borderRadius: '4px', padding: '0.75rem', marginBottom: '0.75rem' }}>
+                <p style={{ fontSize: '0.68rem', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  Co-autor/a {idx + 1}
+                </p>
+                <div className="admin-form__grid">
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Nombre</label>
+                    <input className="admin-form__input" type="text" name="nombre" value={ca.nombre} onChange={e => handleCoautorChange(idx, e)} required />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Institución</label>
+                    <input className="admin-form__input" type="text" name="institucion" value={ca.institucion} onChange={e => handleCoautorChange(idx, e)} />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Email</label>
+                    <input className="admin-form__input" type="email" name="email" value={ca.email} onChange={e => handleCoautorChange(idx, e)} />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Celular</label>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <select
+                        className="admin-form__input"
+                        style={{ width: '130px', flexShrink: 0 }}
+                        name="celularCodigo"
+                        value={ca.celularCodigo}
+                        onChange={e => handleCoautorChange(idx, e)}
+                      >
+                        <optgroup label="- · -">
+                          {CODIGOS_PRIORITARIOS.map(c => (
+                            <option key={c.codigo} value={c.codigo}>{c.codigo} {c.pais}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="- ·· -">
+                          {CODIGOS_RESTO.map(c => (
+                            <option key={c.codigo} value={c.codigo}>{c.codigo} {c.pais}</option>
+                          ))}
+                        </optgroup>
+                      </select>
+                      <input
+                        className="admin-form__input"
+                        type="tel"
+                        name="celular"
+                        value={ca.celular}
+                        onChange={e => handleCoautorChange(idx, e)}
+                        placeholder="341 5551234"
+                      />
+                    </div>
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">DNI / Pasaporte</label>
+                    <input className="admin-form__input" type="text" name="documento" value={ca.documento} onChange={e => handleCoautorChange(idx, e)} />
+                  </div>
+                  <div className="admin-form__field">
+                    <label className="admin-form__label">Pertenencia</label>
+                    <select className="admin-form__input" name="pertenencia" value={ca.pertenencia} onChange={e => handleCoautorChange(idx, e)}>
+                      {PERTENENCIAS.map(per => (
+                        <option key={per.valor} value={per.valor}>{per.etiqueta}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--small admin-btn--danger"
+                  style={{ marginTop: '0.5rem' }}
+                  onClick={() => quitarCoautor(idx)}
+                >
+                  Quitar
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Resumen */}
         <div className="admin-form__field admin-form__field--full" style={{ marginTop: '0.5rem' }}>
           <label className="admin-form__label">Resumen</label>
@@ -558,6 +675,18 @@ export default function AdminPropuestas() {
                   <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#888' }}>
                     {p.autor.email} · {PERTENENCIAS.find(per => per.valor === p.autor.pertenencia)?.etiqueta}
                   </p>
+                )}
+                {p.coautores && p.coautores.length > 0 && (
+                  <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(35,22,81,0.07)' }}>
+                    <p style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>
+                      Co-autores/as
+                    </p>
+                    {p.coautores.map((ca, i) => (
+                      <p key={i} style={{ fontSize: '0.82rem', color: '#555' }}>
+                        {ca.nombre}{ca.institucion ? ` · ${ca.institucion}` : ''}{ca.email ? ` · ${ca.email}` : ''}
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
