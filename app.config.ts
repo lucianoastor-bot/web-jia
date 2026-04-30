@@ -15,7 +15,7 @@ export const FORMATO = {
 // Para agregar un idioma: duplicar el array con las etiquetas traducidas
 // y seleccionarlo con IDIOMA. Las rutas (href) no cambian.
 export const NAVEGACION = [
-  { href: '/invitados',    etiqueta: 'Conferencias y paneles' },
+  { href: '/invitados',    etiqueta: 'Invitados' },
   /*{ href: '/programa',    etiqueta: 'Programa' },*/
   { href: '/propuestas',   etiqueta: 'Envío de resúmenes' },
   { href: '/#organizacion', etiqueta: 'Organización' },
