@@ -15,6 +15,9 @@ export type Invitado = {
   linkedin?:  string
   instagram?: string
   web?:       string
+  academia?:  string
+  facebook?:  string
+  youtube?:   string
 }
 
 export type Eje = {

@@ -30,6 +30,7 @@ const VACIO_INVITADO: DatosInvitado = {
   foto: '/invitados/', confirmado: false, email: '',
   mostrarEnPagina: false, mostrarEnCarrusel: false,
   linkedin: '', instagram: '', web: '',
+  academia: '', facebook: '', youtube: '',
 }
 
 
@@ -47,6 +48,9 @@ const camposInvitado: { nombre: keyof DatosInvitado; etiqueta: string }[] = [
   { nombre: 'linkedin',    etiqueta: 'LinkedIn (URL)' },
   { nombre: 'instagram',   etiqueta: 'Instagram (URL)' },
   { nombre: 'web',         etiqueta: 'Sitio web (URL)' },
+  { nombre: 'academia',    etiqueta: 'Academia.edu (URL)' },
+  { nombre: 'facebook',    etiqueta: 'Facebook (URL)' },
+  { nombre: 'youtube',     etiqueta: 'YouTube (URL)' },
 ]
 
 const camposActividad: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string; soloTipo?: TipoActividad[] }[] = [
