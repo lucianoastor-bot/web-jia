@@ -78,6 +78,7 @@ export type Propuesta = {
   autor:           Participante
   coautores?:      Participante[]
   estado:          typeof ESTADOS_PROPUESTA[number]['valor']
+  evaluador?:      string
   actividadId?:    string          // se asigna al armar el programa
   embeddings?:     number[]        // para uso futuro (similitud semántica)
   participantes?:  Participante[]  // panel: integrantes adicionales al coordinador

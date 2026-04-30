@@ -224,7 +224,32 @@ export const COMITE_ACADEMICO: string[] = [
   'María Victoria González',
   'Melina Mailhou',
   'Erika Nawoczyk',
-  /*'Carola Nin',*/
+  'Lorena Pafumi',
+  'Natalia Ricciardi',
+  'Andrea Rodrigo',
+  'Liliana Sanjurjo',
+  'Carolina Tramallino',
+  'Marcela Valdata',
+  'Gina Valenti',
+]
+
+
+// ─── Evaluadores ─────────────────────────────────────────────────────────────
+// Lista de evaluadores disponibles para asignar a propuestas desde el panel de
+// administración. Se puede editar de forma independiente al comité académico.
+
+export const EVALUADORES: string[] = [
+  'Fernando Avendaño',
+  'Mariano Balla',
+  'Alicia Caporossi',
+  'María Laura Carrascal',
+  'Susana Copertari',
+  'Gabriel Data',
+  'Susana Daz',
+  'Federico Donner',
+  'María Victoria González',
+  'Melina Mailhou',
+  'Erika Nawoczyk',
   'Lorena Pafumi',
   'Natalia Ricciardi',
   'Andrea Rodrigo',

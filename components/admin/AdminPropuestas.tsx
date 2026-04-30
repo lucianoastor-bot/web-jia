@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { agregarPropuesta, actualizarPropuesta, actualizarEstado, eliminarPropuesta } from '@/lib/services/propuestas'
-import { TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, EJES } from '@/congreso.config'
+import { TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, EJES, EVALUADORES } from '@/congreso.config'
 import { CODIGOS_PRIORITARIOS, CODIGOS_RESTO } from '@/lib/data/codigosPais'
 import type { Propuesta, TipoPropuesta, EstadoPropuesta, Participante } from '@/types'
 
@@ -28,6 +28,7 @@ type DatosPropuesta = {
   resumen:       string
   eje:           string
   estado:        EstadoPropuesta
+  evaluador:     string
   autor:         DatosAutor
   descriptor:    string        // solo para tipo 'otro'
   participantes: DatosAutor[]  // solo para tipo 'panel'
@@ -43,8 +44,8 @@ const VACIO_AUTOR: DatosAutor = {
 
 const VACIO: DatosPropuesta = {
   tipo: 'ponencia', titulo: '', resumen: '',
-  eje: '01', estado: 'pendiente', autor: VACIO_AUTOR,
-  descriptor: '', participantes: [], coautores: [],
+  eje: '01', estado: 'pendiente', evaluador: '',
+  autor: VACIO_AUTOR, descriptor: '', participantes: [], coautores: [],
 }
 
 const BADGE_ESTADO: Record<EstadoPropuesta, string> = {
@@ -136,11 +137,12 @@ export default function AdminPropuestas() {
 
   const handleEditar = (p: Propuesta) => {
     setForm({
-      tipo:    p.tipo,
-      titulo:  p.titulo,
-      resumen: p.resumen,
-      eje:     p.eje,
-      estado:  p.estado,
+      tipo:      p.tipo,
+      titulo:    p.titulo,
+      resumen:   p.resumen,
+      eje:       p.eje,
+      estado:    p.estado,
+      evaluador: p.evaluador ?? '',
       descriptor:    p.descriptor ?? '',
       participantes: (p.participantes ?? []).map(pa => ({
         nombre:          pa.nombre,
@@ -248,6 +250,17 @@ export default function AdminPropuestas() {
             <select className="admin-form__input" name="estado" value={form.estado} onChange={handleChange}>
               {ESTADOS_PROPUESTA.map(e => (
                 <option key={e.valor} value={e.valor}>{e.etiqueta}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Evaluador */}
+          <div className="admin-form__field">
+            <label className="admin-form__label">Evaluador/a</label>
+            <select className="admin-form__input" name="evaluador" value={form.evaluador} onChange={handleChange}>
+              <option value="">— Sin asignar —</option>
+              {EVALUADORES.map(ev => (
+                <option key={ev} value={ev}>{ev}</option>
               ))}
             </select>
           </div>
@@ -674,6 +687,11 @@ export default function AdminPropuestas() {
                 {p.autor.email && (
                   <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#888' }}>
                     {p.autor.email} · {PERTENENCIAS.find(per => per.valor === p.autor.pertenencia)?.etiqueta}
+                  </p>
+                )}
+                {p.evaluador && (
+                  <p style={{ marginTop: '0.3rem', fontSize: '0.8rem', color: '#888' }}>
+                    Evaluador/a: <strong>{p.evaluador}</strong>
                   </p>
                 )}
                 {p.coautores && p.coautores.length > 0 && (
