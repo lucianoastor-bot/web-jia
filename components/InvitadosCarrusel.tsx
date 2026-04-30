@@ -50,7 +50,7 @@ export default function InvitadosCarrusel() {
   if (loading) return (
     <section className="invitados">
       <div className="invitados__inner">
-        <h2 className="section__title">Invitados</h2>
+        <h2 className="section__title">Conferencias y paneles</h2>
         <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
       </div>
     </section>
@@ -61,7 +61,7 @@ export default function InvitadosCarrusel() {
   return (
     <section className="invitados" id="invitados">
       <div className="invitados__inner">
-        <h2 className="section__title">Invitados</h2>
+        <h2 className="section__title">Conferencias y paneles</h2>
 
         <br />
 
