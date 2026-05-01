@@ -63,23 +63,32 @@ const VACIO: DatosPropuesta = {
 // ── Helpers de normalización para importación ─────────────────
 
 function normalizarTipo(val: unknown): TipoPropuesta {
-  const v = String(val ?? '').toLowerCase()
-  if (v.includes('relato') || v.includes('experiencia')) return 'relato'
-  if (v.includes('ster'))                                return 'poster'
-  if (v.includes('panel'))                               return 'panel'
-  return 'ponencia'
+  const v = String(val ?? '').toLowerCase().trim()
+  // Coincidencia exacta por valor
+  const exacto = TIPOS_PROPUESTA.find(t => t.valor === v)
+  if (exacto) return exacto.valor
+  // Coincidencia parcial por etiqueta (el valor del Excel contiene la etiqueta o viceversa)
+  const parcial = TIPOS_PROPUESTA.find(t =>
+    v.includes(t.etiqueta.toLowerCase()) || t.etiqueta.toLowerCase().includes(v)
+  )
+  if (parcial) return parcial.valor
+  // Por defecto: primer tipo del config
+  return TIPOS_PROPUESTA[0].valor
 }
 
 function normalizarEje(val: unknown): string {
   const v = String(val ?? '').trim()
   if (!v) return ''
-  // Numérico
+  // Numérico: busca el eje cuyo num coincide
   const num = parseInt(v)
-  if (!isNaN(num) && num >= 1 && num <= 10) return num.toString().padStart(2, '0')
+  if (!isNaN(num)) {
+    const porNum = EJES.find(e => parseInt(e.num) === num)
+    if (porNum) return porNum.num
+  }
   // Coincidencia exacta con título (case-insensitive)
   const exacto = EJES.find(e => e.titulo.toLowerCase() === v.toLowerCase())
   if (exacto) return exacto.num
-  // Coincidencia parcial: el valor incluye palabras clave del título
+  // Coincidencia parcial
   const parcial = EJES.find(e => v.toLowerCase().includes(e.titulo.toLowerCase()) ||
                                  e.titulo.toLowerCase().includes(v.toLowerCase()))
   return parcial?.num ?? ''
