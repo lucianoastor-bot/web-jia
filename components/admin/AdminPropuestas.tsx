@@ -3,6 +3,8 @@
 
 import { useState, useRef } from 'react'
 import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { agregarPropuesta, actualizarPropuesta, actualizarEstado, eliminarPropuesta } from '@/lib/services/propuestas'
 import { TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, EJES, EVALUADORES } from '@/congreso.config'
@@ -381,6 +383,45 @@ export default function AdminPropuestas() {
 
   const ejeEtiqueta = (num: string) =>
     EJES.find(e => e.num === num)?.titulo ?? num
+
+  const apellidoDeNombre = (nombre: string) => nombre.trim().split(' ').slice(-1)[0]
+
+  const descargarPDF = (lista: Propuesta[]) => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+    const ordenadas = [...lista].sort((a, b) =>
+      apellidoDeNombre(a.autor.nombre).localeCompare(apellidoDeNombre(b.autor.nombre), 'es')
+    )
+
+    autoTable(doc, {
+      head: [['Apellido y nombre', 'Mail', 'Coautores', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador']],
+      body: ordenadas.map(p => [
+        p.autor.nombre,
+        p.autor.email,
+        p.coautores?.map(c => c.nombre).join(', ') ?? '',
+        p.autor.institucion,
+        p.eje,
+        tipoEtiqueta(p.tipo),
+        p.titulo,
+        p.evaluador ?? '',
+      ]),
+      styles:     { fontSize: 7, cellPadding: 2 },
+      headStyles: { fillColor: [35, 22, 81] },
+      columnStyles: {
+        0: { cellWidth: 32 },  // nombre
+        1: { cellWidth: 38 },  // email
+        2: { cellWidth: 28 },  // coautores
+        3: { cellWidth: 28 },  // institución
+        4: { cellWidth: 8  },  // eje
+        5: { cellWidth: 18 },  // tipo
+        6: { cellWidth: 60 },  // título
+        7: { cellWidth: 26 },  // evaluador
+      },
+    })
+
+    const fecha = new Date().toISOString().slice(0, 10)
+    doc.save(`propuestas-${fecha}.pdf`)
+  }
 
   // ── Render ─────────────────────────────────────────────────
 
@@ -792,6 +833,14 @@ export default function AdminPropuestas() {
               <option key={e.num} value={e.num}>{e.num} — {e.titulo}</option>
             ))}
           </select>
+
+          <button
+            className="admin-btn"
+            style={{ fontSize: '0.8rem', padding: '0.2rem 0.9rem', marginLeft: 'auto' }}
+            onClick={() => descargarPDF(propuestasFiltradas)}
+          >
+            ↓ PDF
+          </button>
         </div>
       </div>
 
