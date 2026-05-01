@@ -119,7 +119,8 @@ function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]):
     const email    = String(row[COL.email]    ?? '').trim().toLowerCase()
     const tipo     = normalizarTipo(row[COL.tipo])
     const ejeRaw   = normalizarEje(row[COL.eje])
-    const titulo   = String(row[COL.titulo]   ?? '').trim()
+    const tituloRaw = String(row[COL.titulo] ?? '').trim()
+    const titulo    = tituloRaw.charAt(0).toUpperCase() + tituloRaw.slice(1).toLowerCase()
 
     const advertencias: string[] = []
     if (!nombre)  advertencias.push('Sin nombre')
