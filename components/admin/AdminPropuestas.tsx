@@ -148,7 +148,8 @@ function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]):
 
     const duplicada = existentes.some(p =>
       p.titulo.trim().toLowerCase() === titulo.toLowerCase() ||
-      (email && p.autor.email && p.autor.email.toLowerCase() === email)
+      (email  && p.autor.email   && p.autor.email.trim().toLowerCase()   === email) ||
+      (nombre && p.autor.nombre  && p.autor.nombre.trim().toLowerCase()  === nombre.toLowerCase())
     )
 
     return { idx, datos, advertencias, duplicada, descartar: duplicada }
