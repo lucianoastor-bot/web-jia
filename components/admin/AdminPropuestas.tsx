@@ -108,10 +108,13 @@ const COL = {
   resumenLink:  'Resumen',
 } as const
 
+const titleCase = (s: string) =>
+  s.toLowerCase().replace(/(?:^|\s)\S/g, c => c.toUpperCase())
+
 function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]): FilaImport[] {
   return rows.map((row, idx) => {
-    const nombres  = String(row[COL.nombres]  ?? '').trim()
-    const apellido = String(row[COL.apellido] ?? '').trim()
+    const nombres  = titleCase(String(row[COL.nombres]  ?? '').trim())
+    const apellido = titleCase(String(row[COL.apellido] ?? '').trim())
     const nombre   = [nombres, apellido].filter(Boolean).join(' ')
     const email    = String(row[COL.email]    ?? '').trim().toLowerCase()
     const tipo     = normalizarTipo(row[COL.tipo])
@@ -139,7 +142,7 @@ function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]):
         nombre,
         email,
         documento:     String(row[COL.documento]   ?? '').trim(),
-        institucion:   String(row[COL.institucion]  ?? '').trim(),
+        institucion:   titleCase(String(row[COL.institucion]  ?? '').trim()),
         celularCodigo: '+54',
         celular:       String(row[COL.celular]       ?? '').trim(),
         pertenencia:   'externo',
