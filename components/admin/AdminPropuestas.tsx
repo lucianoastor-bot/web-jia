@@ -65,30 +65,49 @@ const VACIO: DatosPropuesta = {
 function normalizarTipo(val: unknown): TipoPropuesta {
   const v = String(val ?? '').toLowerCase()
   if (v.includes('relato') || v.includes('experiencia')) return 'relato'
-  if (v.includes('ster') || v.includes('póster') || v.includes('poster')) return 'poster'
-  if (v.includes('panel')) return 'panel'
+  if (v.includes('ster'))                                return 'poster'
+  if (v.includes('panel'))                               return 'panel'
   return 'ponencia'
 }
 
 function normalizarEje(val: unknown): string {
   const v = String(val ?? '').trim()
+  if (!v) return ''
+  // Numérico
   const num = parseInt(v)
   if (!isNaN(num) && num >= 1 && num <= 10) return num.toString().padStart(2, '0')
-  const encontrado = EJES.find(e =>
-    v.toLowerCase().startsWith(e.titulo.toLowerCase().slice(0, 12))
-  )
-  return encontrado?.num ?? ''
+  // Coincidencia exacta con título (case-insensitive)
+  const exacto = EJES.find(e => e.titulo.toLowerCase() === v.toLowerCase())
+  if (exacto) return exacto.num
+  // Coincidencia parcial: el valor incluye palabras clave del título
+  const parcial = EJES.find(e => v.toLowerCase().includes(e.titulo.toLowerCase()) ||
+                                 e.titulo.toLowerCase().includes(v.toLowerCase()))
+  return parcial?.num ?? ''
 }
+
+// Columnas del formulario Google Forms exportado a Excel
+const COL = {
+  email:        'Dirección de correo electrónico',
+  apellido:     'Apellido',
+  nombres:      'Nombres',
+  documento:    'DNI',
+  institucion:  'Pertenencia institucional',
+  celular:      'Teléfono celular',
+  tipo:         'Tipo de presentación',
+  titulo:       'Título',
+  eje:          'Eje temático sugerido',
+  resumenLink:  'Resumen',
+} as const
 
 function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]): FilaImport[] {
   return rows.map((row, idx) => {
-    const nombres  = String(row['Nombres']    ?? '').trim()
-    const apellido = String(row['Apellido']   ?? '').trim()
+    const nombres  = String(row[COL.nombres]  ?? '').trim()
+    const apellido = String(row[COL.apellido] ?? '').trim()
     const nombre   = [nombres, apellido].filter(Boolean).join(' ')
-    const email    = String(row['Mail']       ?? '').trim().toLowerCase()
-    const tipo     = normalizarTipo(row['Tipo'])
-    const ejeRaw   = normalizarEje(row['Eje'])
-    const titulo   = String(row['Título'] ?? row['Titulo'] ?? '').trim()
+    const email    = String(row[COL.email]    ?? '').trim().toLowerCase()
+    const tipo     = normalizarTipo(row[COL.tipo])
+    const ejeRaw   = normalizarEje(row[COL.eje])
+    const titulo   = String(row[COL.titulo]   ?? '').trim()
 
     const advertencias: string[] = []
     if (!nombre)  advertencias.push('Sin nombre')
@@ -100,7 +119,7 @@ function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]):
       tipo,
       titulo,
       resumen:     '',
-      resumenLink: String(row['Link al resumen'] ?? row['Link resumen'] ?? '').trim(),
+      resumenLink: String(row[COL.resumenLink] ?? '').trim(),
       eje:         ejeRaw || '01',
       estado:      'pendiente',
       evaluador:   '',
@@ -110,17 +129,17 @@ function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]):
       autor: {
         nombre,
         email,
-        documento:     String(row['Documento'] ?? '').trim(),
-        institucion:   String(row['Institución'] ?? row['Institucion'] ?? '').trim(),
+        documento:     String(row[COL.documento]   ?? '').trim(),
+        institucion:   String(row[COL.institucion]  ?? '').trim(),
         celularCodigo: '+54',
-        celular:       String(row['Celular'] ?? '').trim(),
+        celular:       String(row[COL.celular]       ?? '').trim(),
         pertenencia:   'externo',
       },
     }
 
     const duplicada = existentes.some(p =>
       p.titulo.trim().toLowerCase() === titulo.toLowerCase() ||
-      (p.autor.email && p.autor.email.toLowerCase() === email && !!email)
+      (email && p.autor.email && p.autor.email.toLowerCase() === email)
     )
 
     return { idx, datos, advertencias, duplicada, descartar: duplicada }
