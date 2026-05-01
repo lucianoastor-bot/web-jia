@@ -1,7 +1,8 @@
 // components/admin/AdminPropuestas.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import * as XLSX from 'xlsx'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { agregarPropuesta, actualizarPropuesta, actualizarEstado, eliminarPropuesta } from '@/lib/services/propuestas'
 import { TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, EJES, EVALUADORES } from '@/congreso.config'
@@ -26,6 +27,7 @@ type DatosPropuesta = {
   tipo:          TipoPropuesta
   titulo:        string
   resumen:       string
+  resumenLink:   string
   eje:           string
   estado:        EstadoPropuesta
   evaluador:     string
@@ -33,6 +35,16 @@ type DatosPropuesta = {
   descriptor:    string        // solo para tipo 'otro'
   participantes: DatosAutor[]  // solo para tipo 'panel'
   coautores:     DatosAutor[]  // ponencia / relato / poster
+}
+
+// ── Tipos para importación desde Excel ────────────────────────
+
+type FilaImport = {
+  idx:          number
+  datos:        DatosPropuesta
+  advertencias: string[]
+  duplicada:    boolean
+  descartar:    boolean
 }
 
 // ── Constantes ────────────────────────────────────────────────
@@ -43,9 +55,76 @@ const VACIO_AUTOR: DatosAutor = {
 }
 
 const VACIO: DatosPropuesta = {
-  tipo: 'ponencia', titulo: '', resumen: '',
+  tipo: 'ponencia', titulo: '', resumen: '', resumenLink: '',
   eje: '01', estado: 'pendiente', evaluador: '',
   autor: VACIO_AUTOR, descriptor: '', participantes: [], coautores: [],
+}
+
+// ── Helpers de normalización para importación ─────────────────
+
+function normalizarTipo(val: unknown): TipoPropuesta {
+  const v = String(val ?? '').toLowerCase()
+  if (v.includes('relato') || v.includes('experiencia')) return 'relato'
+  if (v.includes('ster') || v.includes('póster') || v.includes('poster')) return 'poster'
+  if (v.includes('panel')) return 'panel'
+  return 'ponencia'
+}
+
+function normalizarEje(val: unknown): string {
+  const v = String(val ?? '').trim()
+  const num = parseInt(v)
+  if (!isNaN(num) && num >= 1 && num <= 10) return num.toString().padStart(2, '0')
+  const encontrado = EJES.find(e =>
+    v.toLowerCase().startsWith(e.titulo.toLowerCase().slice(0, 12))
+  )
+  return encontrado?.num ?? ''
+}
+
+function parsearFilas(rows: Record<string, unknown>[], existentes: Propuesta[]): FilaImport[] {
+  return rows.map((row, idx) => {
+    const nombres  = String(row['Nombres']    ?? '').trim()
+    const apellido = String(row['Apellido']   ?? '').trim()
+    const nombre   = [nombres, apellido].filter(Boolean).join(' ')
+    const email    = String(row['Mail']       ?? '').trim().toLowerCase()
+    const tipo     = normalizarTipo(row['Tipo'])
+    const ejeRaw   = normalizarEje(row['Eje'])
+    const titulo   = String(row['Título'] ?? row['Titulo'] ?? '').trim()
+
+    const advertencias: string[] = []
+    if (!nombre)  advertencias.push('Sin nombre')
+    if (!titulo)  advertencias.push('Sin título')
+    if (!ejeRaw)  advertencias.push('Eje no reconocido')
+    if (!email)   advertencias.push('Sin email')
+
+    const datos: DatosPropuesta = {
+      tipo,
+      titulo,
+      resumen:     '',
+      resumenLink: String(row['Link al resumen'] ?? row['Link resumen'] ?? '').trim(),
+      eje:         ejeRaw || '01',
+      estado:      'pendiente',
+      evaluador:   '',
+      descriptor:  '',
+      participantes: [],
+      coautores:   [],
+      autor: {
+        nombre,
+        email,
+        documento:     String(row['Documento'] ?? '').trim(),
+        institucion:   String(row['Institución'] ?? row['Institucion'] ?? '').trim(),
+        celularCodigo: '+54',
+        celular:       String(row['Celular'] ?? '').trim(),
+        pertenencia:   'externo',
+      },
+    }
+
+    const duplicada = existentes.some(p =>
+      p.titulo.trim().toLowerCase() === titulo.toLowerCase() ||
+      (p.autor.email && p.autor.email.toLowerCase() === email && !!email)
+    )
+
+    return { idx, datos, advertencias, duplicada, descartar: duplicada }
+  })
 }
 
 const BADGE_ESTADO: Record<EstadoPropuesta, string> = {
@@ -65,6 +144,12 @@ export default function AdminPropuestas() {
   const [expandida, setExpandida] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
   const [mensaje, setMensaje]   = useState<string | null>(null)
+
+  // Importación Excel
+  const fileRef                             = useRef<HTMLInputElement>(null)
+  const [filasImport, setFilasImport]       = useState<FilaImport[]>([])
+  const [importando,  setImportando]        = useState(false)
+  const [importLog,   setImportLog]         = useState<string | null>(null)
 
   // Filtros
   const [filtroTipo,   setFiltroTipo]   = useState<TipoPropuesta | 'todas'>('todas')
@@ -137,12 +222,13 @@ export default function AdminPropuestas() {
 
   const handleEditar = (p: Propuesta) => {
     setForm({
-      tipo:      p.tipo,
-      titulo:    p.titulo,
-      resumen:   p.resumen,
-      eje:       p.eje,
-      estado:    p.estado,
-      evaluador: p.evaluador ?? '',
+      tipo:        p.tipo,
+      titulo:      p.titulo,
+      resumen:     p.resumen,
+      resumenLink: p.resumenLink ?? '',
+      eje:         p.eje,
+      estado:      p.estado,
+      evaluador:   p.evaluador ?? '',
       descriptor:    p.descriptor ?? '',
       participantes: (p.participantes ?? []).map(pa => ({
         nombre:          pa.nombre,
@@ -213,6 +299,49 @@ export default function AdminPropuestas() {
     aceptada:  propuestas.filter(p => p.estado === 'aceptada').length,
     rechazada: propuestas.filter(p => p.estado === 'rechazada').length,
   }
+
+  // ── Importación Excel ──────────────────────────────────────
+
+  const handleArchivoExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportLog(null)
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const data     = new Uint8Array(ev.target!.result as ArrayBuffer)
+      const workbook = XLSX.read(data, { type: 'array' })
+      const sheet    = workbook.Sheets[workbook.SheetNames[0]]
+      const rows     = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet)
+      setFilasImport(parsearFilas(rows, propuestas))
+    }
+    reader.readAsArrayBuffer(file)
+  }
+
+  const toggleDescartar = (idx: number) => {
+    setFilasImport(fs => fs.map(f => f.idx === idx ? { ...f, descartar: !f.descartar } : f))
+  }
+
+  const handleImportar = async () => {
+    const aGuardar = filasImport.filter(f => !f.descartar)
+    if (aGuardar.length === 0) { setImportLog('Nada para importar.'); return }
+    setImportando(true)
+    setImportLog(null)
+    let ok = 0; let err = 0
+    for (const fila of aGuardar) {
+      try {
+        await agregarPropuesta(fila.datos)
+        ok++
+        setImportLog(`Guardando... ${ok} de ${aGuardar.length}`)
+      } catch { err++ }
+    }
+    await cargar()
+    setFilasImport([])
+    if (fileRef.current) fileRef.current.value = ''
+    setImportLog(`Importación finalizada: ${ok} guardadas${err ? `, ${err} con error` : ''}.`)
+    setImportando(false)
+  }
+
+  // ── Helpers lista ──────────────────────────────────────────
 
   const tipoEtiqueta = (tipo: TipoPropuesta) =>
     TIPOS_PROPUESTA.find(t => t.valor === tipo)?.etiqueta ?? tipo
@@ -551,7 +680,19 @@ export default function AdminPropuestas() {
             value={form.resumen}
             onChange={handleChange}
             rows={5}
-            required
+          />
+        </div>
+
+        {/* Link al resumen */}
+        <div className="admin-form__field admin-form__field--full">
+          <label className="admin-form__label">Link al resumen (URL)</label>
+          <input
+            className="admin-form__input"
+            type="url"
+            name="resumenLink"
+            value={form.resumenLink}
+            onChange={handleChange}
+            placeholder="https://docs.google.com/..."
           />
         </div>
 
@@ -689,6 +830,13 @@ export default function AdminPropuestas() {
                     {p.autor.email} · {PERTENENCIAS.find(per => per.valor === p.autor.pertenencia)?.etiqueta}
                   </p>
                 )}
+                {p.resumenLink && (
+                  <p style={{ marginTop: '0.3rem', fontSize: '0.8rem' }}>
+                    <a href={p.resumenLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--c-turq)' }}>
+                      Ver resumen →
+                    </a>
+                  </p>
+                )}
                 {p.evaluador && (
                   <p style={{ marginTop: '0.3rem', fontSize: '0.8rem', color: '#888' }}>
                     Evaluador/a: <strong>{p.evaluador}</strong>
@@ -713,11 +861,104 @@ export default function AdminPropuestas() {
         ))}
       </div>
 
-      {/* ── Google Sheets (futuro) ── */}
-      <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
-        <button className="admin-btn admin-btn--ghost" disabled style={{ opacity: 0.4, cursor: 'not-allowed' }}>
-          ↓ Importar desde Google Sheets — próximamente
-        </button>
+      {/* ── Importar desde Excel ── */}
+      <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
+        <h2 className="admin-module__title">Importar desde Excel</h2>
+        <p style={{ fontSize: '0.82rem', color: '#888', marginBottom: '1rem' }}>
+          Aceptá archivos .xlsx o .xls con las columnas: Mail, Apellido, Nombres, Documento, Institución, Celular, Tipo, Título, Eje, Link al resumen.
+        </p>
+
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleArchivoExcel}
+          style={{ marginBottom: '1rem' }}
+        />
+
+        {filasImport.length > 0 && (
+          <>
+            <p style={{ fontSize: '0.82rem', color: '#555', marginBottom: '0.75rem' }}>
+              {filasImport.length} filas encontradas ·{' '}
+              <strong style={{ color: 'var(--c-coral)' }}>
+                {filasImport.filter(f => f.duplicada).length} posibles duplicadas
+              </strong>
+              {' '}(marcadas para descartar por defecto) ·{' '}
+              <strong>{filasImport.filter(f => !f.descartar).length} se importarán</strong>
+            </p>
+
+            <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid rgba(35,22,81,0.1)', textAlign: 'left' }}>
+                    <th style={{ padding: '0.5rem 0.75rem 0.5rem 0', color: 'var(--c-mid)', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Descartar</th>
+                    <th style={{ padding: '0.5rem 0.75rem', color: 'var(--c-mid)', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Nombre</th>
+                    <th style={{ padding: '0.5rem 0.75rem', color: 'var(--c-mid)', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Tipo</th>
+                    <th style={{ padding: '0.5rem 0.75rem', color: 'var(--c-mid)', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Eje</th>
+                    <th style={{ padding: '0.5rem 0.75rem', color: 'var(--c-mid)', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Título</th>
+                    <th style={{ padding: '0.5rem 0.75rem', color: 'var(--c-mid)', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Notas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filasImport.map(fila => (
+                    <tr
+                      key={fila.idx}
+                      style={{
+                        borderBottom: '1px solid rgba(35,22,81,0.06)',
+                        background: fila.descartar
+                          ? 'rgba(200,50,50,0.04)'
+                          : fila.duplicada
+                            ? 'rgba(255,160,0,0.05)'
+                            : 'transparent',
+                        opacity: fila.descartar ? 0.5 : 1,
+                      }}
+                    >
+                      <td style={{ padding: '0.5rem 0.75rem 0.5rem 0', textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={fila.descartar}
+                          onChange={() => toggleDescartar(fila.idx)}
+                        />
+                      </td>
+                      <td style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>{fila.datos.autor.nombre}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>
+                        {TIPOS_PROPUESTA.find(t => t.valor === fila.datos.tipo)?.etiqueta}
+                      </td>
+                      <td style={{ padding: '0.5rem 0.75rem' }}>{fila.datos.eje}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {fila.datos.titulo}
+                      </td>
+                      <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}>
+                        {fila.duplicada && (
+                          <span style={{ color: 'var(--c-coral)', marginRight: '0.4rem' }}>⚠ duplicada</span>
+                        )}
+                        {fila.advertencias.map(a => (
+                          <span key={a} style={{ color: '#999', marginRight: '0.3rem' }}>{a}</span>
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {importLog && (
+              <p style={{ fontSize: '0.82rem', color: 'var(--c-mid)', marginBottom: '0.75rem' }}>{importLog}</p>
+            )}
+
+            <button
+              className="admin-btn admin-btn--primary"
+              onClick={handleImportar}
+              disabled={importando || filasImport.filter(f => !f.descartar).length === 0}
+            >
+              {importando ? importLog ?? 'Importando...' : `Importar ${filasImport.filter(f => !f.descartar).length} propuestas`}
+            </button>
+          </>
+        )}
+
+        {filasImport.length === 0 && importLog && (
+          <p style={{ fontSize: '0.82rem', color: 'var(--c-mid)', marginTop: '0.5rem' }}>{importLog}</p>
+        )}
       </div>
 
     </div>
