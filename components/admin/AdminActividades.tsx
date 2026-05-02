@@ -116,11 +116,10 @@ export default function AdminActividades() {
         }
         setMensaje('Actividad actualizada.')
       } else {
-        await crearActividad(datos)
-        setMensaje('Actividad creada.')
+        const newId = await crearActividad(datos)
+        setEditando(newId)
+        setMensaje('Actividad creada. Podés agregar participantes o propuestas.')
       }
-      setForm(VACIO)
-      setEditando(null)
       await cargar()
     } catch {
       setMensaje('Error al guardar.')
@@ -324,6 +323,23 @@ export default function AdminActividades() {
           </div>
         )}
 
+        {/* Tipo personalizado — aparece inmediatamente al seleccionar 'otro' */}
+        {form.tipo === 'otro' && (
+          <div className="admin-form__field admin-form__field--full">
+            <label className="admin-form__label">
+              Tipo <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación de libro, workshop…)</span>
+            </label>
+            <input
+              className="admin-form__input"
+              type="text"
+              name="descriptor"
+              value={form.descriptor}
+              onChange={handleChange}
+              placeholder="taller, workshop, presentación…"
+            />
+          </div>
+        )}
+
         <div className="admin-form__grid">
           {/* Título */}
           {camposTexto.filter(c => c.nombre === 'titulo').map(c => (
@@ -400,22 +416,6 @@ export default function AdminActividades() {
           )}
         </div>
 
-        {/* Descriptor — otro */}
-        {form.tipo === 'otro' && (
-          <div className="admin-form__field admin-form__field--full">
-            <label className="admin-form__label">
-              Descriptor <span style={{ opacity: 0.5, fontWeight: 400 }}>(ej: taller, presentación de libro)</span>
-            </label>
-            <input
-              className="admin-form__input"
-              type="text"
-              name="descriptor"
-              value={form.descriptor}
-              onChange={handleChange}
-              placeholder="taller, workshop, presentación..."
-            />
-          </div>
-        )}
 
         {/* Resumen / Descripción */}
         <div className="admin-form__field admin-form__field--full">
@@ -446,8 +446,8 @@ export default function AdminActividades() {
       </form>
 
 
-      {/* ── Participantes del panel ── */}
-      {editando && form.tipo === 'panel' && (
+      {/* ── Participantes (panel y otro) ── */}
+      {editando && (form.tipo === 'panel' || form.tipo === 'otro') && (
         <>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
             <h2 className="admin-module__title" style={{ margin: 0 }}>
