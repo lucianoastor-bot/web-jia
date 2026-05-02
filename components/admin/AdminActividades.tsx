@@ -7,10 +7,10 @@ import { useInvitados } from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import {
   crearActividad, actualizarActividad, eliminarActividad,
-  actualizarParticipantesPanel, asignarInvitado, desasignarInvitado,
+  actualizarParticipantesPanel, desasignarInvitado,
 } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES } from '@/congreso.config'
+import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES, CONGRESO } from '@/congreso.config'
 import type { Actividad, TipoActividad, TipoPropuesta, ParticipantePanel } from '@/types'
 
 type DatosActividad = {
@@ -25,24 +25,40 @@ type DatosActividad = {
   coordinador: string   // panel
   descriptor:  string
   descripcion: string
+  invitadoId:  string   // conferencia
 }
 
 const VACIO: DatosActividad = {
   tipo: 'conferencia', titulo: '', resumen: '',
   fecha: '', horaInicio: '', horaFin: '',
   sala: '', moderador: '', coordinador: '', descriptor: '', descripcion: '',
+  invitadoId: '',
 }
 
 const VACIO_PARTICIPANTE: ParticipantePanel = {
   nombre: '', institucion: '', tituloPonencia: '', invitadoId: '',
 }
 
-const camposComunes: { nombre: keyof DatosActividad; etiqueta: string; tipo?: string }[] = [
-  { nombre: 'titulo',     etiqueta: 'Título' },
-  { nombre: 'fecha',      etiqueta: 'Fecha',      tipo: 'date' },
-  { nombre: 'horaInicio', etiqueta: 'Hora inicio', tipo: 'time' },
-  { nombre: 'horaFin',    etiqueta: 'Hora fin',    tipo: 'time' },
-  { nombre: 'sala',       etiqueta: 'Sala / Lugar' },
+// Días del congreso derivados de CONGRESO.fechaInicio
+const FECHAS_JORNADA = [0, 1, 2].map(d => {
+  const ms   = CONGRESO.fechaInicio.getTime() + d * 86_400_000
+  const date = new Date(ms)
+  const valor = date.toISOString().slice(0, 10)
+  const etiqueta = new Date(valor + 'T12:00:00').toLocaleDateString('es-AR', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
+  return { valor, etiqueta }
+})
+
+// Slots de hora de 08:00 a 21:00 en intervalos de 30 min
+const HORAS = Array.from({ length: 27 }, (_, i) => {
+  const min = 480 + i * 30
+  return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
+})
+
+const camposTexto: { nombre: keyof DatosActividad; etiqueta: string }[] = [
+  { nombre: 'titulo', etiqueta: 'Título' },
+  { nombre: 'sala',   etiqueta: 'Sala / Lugar' },
 ]
 
 export default function AdminActividades() {
@@ -86,12 +102,18 @@ export default function AdminActividades() {
         ...(form.sala       && { sala:       form.sala }),
         ...(['conferencia', 'mesa'] as TipoActividad[]).includes(form.tipo) && form.moderador
           ? { moderador: form.moderador } : {},
-        ...(form.tipo === 'panel' && form.coordinador && { coordinador: form.coordinador }),
-        ...(form.tipo === 'otro'  && form.descriptor  && { descriptor:  form.descriptor }),
-        ...(form.tipo === 'otro'  && form.descripcion && { descripcion: form.descripcion }),
+        ...(form.tipo === 'panel'       && form.coordinador && { coordinador: form.coordinador }),
+        ...(form.tipo === 'otro'        && form.descriptor  && { descriptor:  form.descriptor }),
+        ...(form.tipo === 'otro'        && form.descripcion && { descripcion: form.descripcion }),
+        ...(form.tipo === 'conferencia' && form.invitadoId  && { invitadoId:  form.invitadoId }),
       }
       if (editando) {
         await actualizarActividad(editando, datos)
+        // Si se quitó el conferencista, eliminarlo del documento
+        if (form.tipo === 'conferencia' && !form.invitadoId) {
+          const prevId = actividades.find(a => a.id === editando)?.invitadoId
+          if (prevId) await desasignarInvitado(editando)
+        }
         setMensaje('Actividad actualizada.')
       } else {
         await crearActividad(datos)
@@ -120,6 +142,7 @@ export default function AdminActividades() {
       coordinador: act.coordinador ?? '',
       descriptor:  act.descriptor  ?? '',
       descripcion: act.descripcion ?? '',
+      invitadoId:  act.invitadoId  ?? '',
     })
     setEditando(act.id)
     setMensaje(null)
@@ -249,11 +272,6 @@ export default function AdminActividades() {
 
   // ── Conferencista ──────────────────────────────────────────
 
-  const invitadoActual = useMemo(() => {
-    const invitadoId = actividades.find(a => a.id === editando)?.invitadoId
-    return invitadoId ? invitados.find(i => i.id === invitadoId) ?? null : null
-  }, [actividades, editando, invitados])
-
   const invitadosDisponibles = useMemo(() => {
     const asignados = new Set(
       actividades
@@ -262,18 +280,6 @@ export default function AdminActividades() {
     )
     return invitados.filter(i => !asignados.has(i.id))
   }, [actividades, invitados, editando])
-
-  const handleAsignarInvitado = async (invitadoId: string) => {
-    if (!editando) return
-    await asignarInvitado(editando, invitadoId)
-    await cargar()
-  }
-
-  const handleDesasignarInvitado = async () => {
-    if (!editando) return
-    await desasignarInvitado(editando)
-    await cargar()
-  }
 
   // ── Helpers ────────────────────────────────────────────────
 
@@ -305,17 +311,74 @@ export default function AdminActividades() {
           </select>
         </div>
 
+        {/* Conferencista — aparece inmediatamente al seleccionar 'conferencia' */}
+        {form.tipo === 'conferencia' && (
+          <div className="admin-form__field admin-form__field--full">
+            <label className="admin-form__label">Conferencista</label>
+            <select className="admin-form__input" name="invitadoId" value={form.invitadoId} onChange={handleChange}>
+              <option value="">— Sin asignar —</option>
+              {invitadosDisponibles.map(inv => (
+                <option key={inv.id} value={inv.id}>{inv.nombre} · {inv.rol}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="admin-form__grid">
-          {camposComunes.map(c => (
+          {/* Título */}
+          {camposTexto.filter(c => c.nombre === 'titulo').map(c => (
+            <div key={c.nombre} className="admin-form__field admin-form__field--full">
+              <label className="admin-form__label">{c.etiqueta}</label>
+              <input
+                className="admin-form__input"
+                type="text"
+                name={c.nombre}
+                value={form[c.nombre] as string}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          ))}
+
+          {/* Fecha */}
+          <div className="admin-form__field">
+            <label className="admin-form__label">Fecha</label>
+            <select className="admin-form__input" name="fecha" value={form.fecha} onChange={handleChange}>
+              <option value="">— Sin definir —</option>
+              {FECHAS_JORNADA.map(f => (
+                <option key={f.valor} value={f.valor}>{f.etiqueta}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Hora inicio */}
+          <div className="admin-form__field">
+            <label className="admin-form__label">Hora inicio</label>
+            <select className="admin-form__input" name="horaInicio" value={form.horaInicio} onChange={handleChange}>
+              <option value="">—</option>
+              {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+          </div>
+
+          {/* Hora fin */}
+          <div className="admin-form__field">
+            <label className="admin-form__label">Hora fin</label>
+            <select className="admin-form__input" name="horaFin" value={form.horaFin} onChange={handleChange}>
+              <option value="">—</option>
+              {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+          </div>
+
+          {/* Sala */}
+          {camposTexto.filter(c => c.nombre === 'sala').map(c => (
             <div key={c.nombre} className="admin-form__field">
               <label className="admin-form__label">{c.etiqueta}</label>
               <input
                 className="admin-form__input"
-                type={c.tipo ?? 'text'}
+                type="text"
                 name={c.nombre}
                 value={form[c.nombre] as string}
                 onChange={handleChange}
-                required={c.nombre === 'titulo'}
               />
             </div>
           ))}
@@ -382,50 +445,6 @@ export default function AdminActividades() {
         </div>
       </form>
 
-      {/* ── Conferencista ── */}
-      {editando && form.tipo === 'conferencia' && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '2.5rem', marginBottom: '0.75rem' }}>
-            <h2 className="admin-module__title" style={{ margin: 0 }}>
-              Conferencista ({invitadoActual ? '1/1' : '0/1'})
-            </h2>
-            {!invitadoActual && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--c-coral)' }}>requerido</span>
-            )}
-          </div>
-
-          {invitadoActual ? (
-            <div className="admin-list">
-              <div className="admin-list__item">
-                <div className="admin-list__item-info">
-                  <p className="admin-list__item-name">{invitadoActual.nombre}</p>
-                  <p className="admin-list__item-sub">{invitadoActual.rol} · {invitadoActual.institucion}</p>
-                </div>
-                <div className="admin-list__item-actions">
-                  <button className="admin-btn admin-btn--small admin-btn--danger" onClick={handleDesasignarInvitado}>
-                    Quitar
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className="admin-list__empty" style={{ marginBottom: '0.75rem' }}>Sin conferencista asignado.</p>
-              <select
-                className="admin-form__input"
-                style={{ maxWidth: '420px' }}
-                defaultValue=""
-                onChange={e => e.target.value && handleAsignarInvitado(e.target.value)}
-              >
-                <option value="" disabled>Seleccionar invitado...</option>
-                {invitadosDisponibles.map(inv => (
-                  <option key={inv.id} value={inv.id}>{inv.nombre} · {inv.rol}</option>
-                ))}
-              </select>
-            </>
-          )}
-        </>
-      )}
 
       {/* ── Participantes del panel ── */}
       {editando && form.tipo === 'panel' && (
