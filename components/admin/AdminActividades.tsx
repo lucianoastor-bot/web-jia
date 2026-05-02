@@ -690,7 +690,7 @@ export default function AdminActividades() {
                   <p className="admin-list__item-name">
                     {act.titulo || '(sin título)'}
                     <span className="admin-badge admin-badge--pending" style={{ marginLeft: '0.5rem' }}>
-                      {tipoEtiqueta(act.tipo)}
+                      {act.tipo === 'otro' && act.descriptor ? act.descriptor : tipoEtiqueta(act.tipo)}
                     </span>
                   </p>
                   <p className="admin-list__item-sub">
@@ -755,8 +755,8 @@ export default function AdminActividades() {
                     <p><span style={{ color: '#888', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Moderador </span>{act.moderador}</p>
                   )}
 
-                  {/* Panel */}
-                  {act.tipo === 'panel' && (
+                  {/* Panel / Otro — participantes */}
+                  {(act.tipo === 'panel' || act.tipo === 'otro') && (
                     <>
                       {act.coordinador && (
                         <p style={{ marginBottom: '0.35rem' }}>
