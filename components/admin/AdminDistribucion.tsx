@@ -13,7 +13,7 @@ import { usePropuestas }       from '@/lib/hooks/usePropuestas'
 import { useInvitados }        from '@/lib/hooks/useInvitados'
 import { actualizarActividad } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { CONGRESO, PROPUESTAS_COMPATIBLES } from '@/congreso.config'
+import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA } from '@/congreso.config'
 import type { Actividad, Propuesta } from '@/types'
 
 // ── Constantes ────────────────────────────────────────────────
@@ -166,6 +166,11 @@ function PropuestaChip({
         <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.4)', flexShrink: 0 }}>
           Eje {prop.eje}
         </span>
+        {showTitle && (
+          <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.55)', flexShrink: 0, marginLeft: 'auto', fontStyle: 'italic' }}>
+            {TIPOS_PROPUESTA.find(t => t.valor === prop.tipo)?.etiqueta ?? prop.tipo}
+          </span>
+        )}
       </div>
       {showTitle && (
         <span style={{ fontSize: '0.72rem', color: 'rgba(35,22,81,0.55)', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
