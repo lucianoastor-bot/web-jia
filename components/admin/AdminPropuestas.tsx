@@ -389,9 +389,15 @@ export default function AdminPropuestas() {
   const descargarPDF = (lista: Propuesta[]) => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
-    const ordenadas = [...lista].sort((a, b) =>
-      apellidoDeNombre(a.autor.nombre).localeCompare(apellidoDeNombre(b.autor.nombre), 'es')
-    )
+    const ordenadas = [...lista].sort((a, b) => {
+      // 1° tipo (según orden en TIPOS_PROPUESTA), 2° eje, 3° apellido
+      const tipoOrden = TIPOS_PROPUESTA.map(t => t.valor)
+      const tipoDiff  = tipoOrden.indexOf(a.tipo) - tipoOrden.indexOf(b.tipo)
+      if (tipoDiff !== 0) return tipoDiff
+      const ejeDiff = a.eje.localeCompare(b.eje, 'es')
+      if (ejeDiff !== 0) return ejeDiff
+      return apellidoDeNombre(a.autor.nombre).localeCompare(apellidoDeNombre(b.autor.nombre), 'es')
+    })
 
     autoTable(doc, {
       head: [['Apellido y nombre', 'Mail', 'Coautores', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador']],
