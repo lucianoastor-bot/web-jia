@@ -2,6 +2,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
@@ -10,7 +12,7 @@ import {
   actualizarParticipantesPanel, desasignarInvitado,
 } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES, CONGRESO, SALAS } from '@/congreso.config'
+import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES, CONGRESO, SALAS, PERTENENCIAS, ESTADOS_PROPUESTA } from '@/congreso.config'
 import type { Actividad, TipoActividad, TipoPropuesta, ParticipantePanel } from '@/types'
 
 type DatosActividad = {
@@ -285,6 +287,100 @@ export default function AdminActividades() {
   const actividadesFiltradas = filtro === 'todas'
     ? actividades
     : actividades.filter(a => a.tipo === filtro)
+
+  // ── PDF ────────────────────────────────────────────────────
+
+  const descargarPDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+    const FECHAS_JORNADA = [0, 1, 2].map(d => {
+      const ms    = CONGRESO.fechaInicio.getTime() + d * 86_400_000
+      const valor = new Date(ms).toISOString().slice(0, 10)
+      const etiq  = new Date(valor + 'T12:00:00').toLocaleDateString('es-AR', {
+        weekday: 'short', day: 'numeric', month: 'short',
+      })
+      return { valor, etiq }
+    })
+
+    const ordenadas = [...actividades].sort((a, b) => {
+      const fa = `${a.fecha ?? '9999'} ${a.horaInicio ?? '99:99'}`
+      const fb = `${b.fecha ?? '9999'} ${b.horaInicio ?? '99:99'}`
+      return fa.localeCompare(fb)
+    })
+
+    // Construir filas: una por participante; actividades sin participantes → una fila
+    type Fila = { row: string[]; primera: boolean }
+    const filas: Fila[] = []
+
+    for (const act of ordenadas) {
+      const tipo    = act.tipo === 'otro' && act.descriptor ? act.descriptor : tipoEtiqueta(act.tipo)
+      const fechaEt = FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiq ?? act.fecha ?? ''
+      const hora    = act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : ''
+      const base    = [fechaEt, hora, act.sala ?? '', tipo, act.titulo ?? '']
+
+      const propAct = propuestas.filter(p => p.actividadId === act.id)
+      const inv     = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+
+      if (act.tipo === 'conferencia') {
+        filas.push({
+          primera: true,
+          row: [...base, inv?.nombre ?? '', inv?.institucion ?? '', '', '', ''],
+        })
+      } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
+        if (propAct.length === 0) {
+          filas.push({ primera: true, row: [...base, '', '', '', '', ''] })
+        } else {
+          propAct.forEach((p, idx) => {
+            const pert   = PERTENENCIAS.find(x => x.valor === p.autor.pertenencia)?.etiqueta ?? ''
+            const estado = ESTADOS_PROPUESTA.find(x => x.valor === p.estado)?.etiqueta ?? ''
+            filas.push({ primera: idx === 0, row: [...base, p.autor.nombre, pert, p.titulo, p.eje, estado] })
+            ;(p.coautores ?? []).forEach(c => {
+              filas.push({ primera: false, row: ['', '', '', '', '', c.nombre, '', '', '', ''] })
+            })
+          })
+        }
+      } else {
+        // panel, otro: act.participantes
+        const parts = act.participantes ?? []
+        if (parts.length === 0) {
+          filas.push({ primera: true, row: [...base, '', '', '', '', ''] })
+        } else {
+          parts.forEach((p, idx) => {
+            filas.push({ primera: idx === 0, row: [...base, p.nombre, p.institucion ?? '', p.tituloPonencia ?? '', '', ''] })
+          })
+        }
+      }
+    }
+
+    autoTable(doc, {
+      head: [['Fecha', 'Hora', 'Sala', 'Tipo', 'Título de la actividad', 'Participante', 'Pertenencia / Institución', 'Título de la presentación', 'Eje', 'Estado']],
+      body: filas.map(f => f.row),
+      styles:     { fontSize: 7, cellPadding: 2 },
+      headStyles: { fillColor: [35, 22, 81] },
+      columnStyles: {
+        0: { cellWidth: 22 },  // fecha
+        1: { cellWidth: 18 },  // hora
+        2: { cellWidth: 22 },  // sala
+        3: { cellWidth: 20 },  // tipo
+        4: { cellWidth: 44 },  // título actividad
+        5: { cellWidth: 30 },  // participante
+        6: { cellWidth: 26 },  // pertenencia
+        7: { cellWidth: 50 },  // título presentación
+        8: { cellWidth: 8  },  // eje
+        9: { cellWidth: 16 },  // estado
+      },
+      didParseCell: (data) => {
+        if (data.section !== 'body') return
+        // Línea separadora entre actividades (primera fila de cada una)
+        if (filas[data.row.index]?.primera) {
+          data.cell.styles.lineWidth = { top: 0.4 } as never
+          data.cell.styles.lineColor = [180, 180, 200] as never
+        }
+      },
+    })
+
+    doc.save(`actividades-${new Date().toISOString().slice(0, 10)}.pdf`)
+  }
 
   // ── Render ─────────────────────────────────────────────────
 
@@ -659,6 +755,13 @@ export default function AdminActividades() {
             <option key={t.valor} value={t.valor}>{t.etiqueta}</option>
           ))}
         </select>
+        <button
+          className="admin-btn admin-btn--ghost"
+          style={{ fontSize: '0.78rem', padding: '0.2rem 0.6rem', marginLeft: 'auto' }}
+          onClick={descargarPDF}
+        >
+          ↓ PDF
+        </button>
       </div>
 
       <div className="admin-list">
