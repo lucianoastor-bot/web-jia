@@ -19,18 +19,50 @@ const FECHAS_JORNADA = [0, 1, 2].map(d => {
   return { valor, etiqueta }
 })
 
-const DAY_START  = '08:00'
-const DAY_END    = '21:00'
-const PX_PER_MIN = 0.85     // px por minuto → 1 hora = 51 px
-const HORA_LABELS = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
+const DAY_START   = '08:00'
+const DAY_END     = '21:00'
+const PX_MIN_FLOOR = 0.9   // mínimo absoluto: 1h = 54px
+const PX_MIN_CAP   = 4.0   // máximo: evita que actividades muy cortas escalen demasiado
+const HORA_LABELS  = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
 
 function toMin(t: string): number {
   const [h, m] = t.split(':').map(Number)
   return h * 60 + m
 }
-const TOP_TOTAL  = (toMin(DAY_END) - toMin(DAY_START)) * PX_PER_MIN  // 780 * 1.2 = 936 px
-const timeToTop  = (t: string) => (toMin(t) - toMin(DAY_START)) * PX_PER_MIN
-const timeToPx   = (inicio: string, fin: string) => (toMin(fin) - toMin(inicio)) * PX_PER_MIN
+
+// Altura estimada que necesita una tarjeta según su contenido
+const H_PADDING     = 14   // 7px top + 7px bottom
+const H_TIPO        = 20   // línea de tipo
+const H_TITULO      = 24   // línea de título
+const H_GAP         = 6    // gaps internos
+const H_PART_LINE   = 22   // altura por línea de participantes (font 0.82rem)
+const H_PART_MAX    = 3    // max líneas (line-clamp)
+
+function alturaEstimada(nParticipantes: number): number {
+  const lineas = Math.min(nParticipantes, H_PART_MAX)
+  return H_PADDING + H_TIPO + H_TITULO + H_GAP + (lineas > 0 ? lineas * H_PART_LINE : 0)
+}
+
+// Calcula el px/min mínimo para que todas las actividades del día quepan
+function calcPxPerMin(
+  acts: Actividad[],
+  propuestas: Propuesta[],
+  invitados: { id: string; nombre: string }[],
+): number {
+  let maxPx = PX_MIN_FLOOR
+  for (const act of acts) {
+    if (!act.horaInicio || !act.horaFin) continue
+    const dur = toMin(act.horaFin) - toMin(act.horaInicio)
+    if (dur <= 0) continue
+    const asignadas  = propuestas.filter(p => p.actividadId === act.id)
+    const invNombre  = act.invitadoId ? invitados.find(i => i.id === act.invitadoId)?.nombre : undefined
+    const nPart      = nombresParticipantes(act, asignadas, invNombre).length
+    const needed     = alturaEstimada(nPart)
+    const px         = Math.min(needed / dur, PX_MIN_CAP)
+    if (px > maxPx) maxPx = px
+  }
+  return maxPx
+}
 
 // ── Helpers de presentación ───────────────────────────────────
 
@@ -143,6 +175,15 @@ function GrillaHorarios({
   const conHorario = actividades.filter(a => a.horaInicio && a.horaFin)
   const sinHorario = actividades.filter(a => !a.horaInicio || !a.horaFin)
 
+  // Escala dinámica: el px/min mínimo para que todas las tarjetas quepan
+  const pxPerMin = useMemo(
+    () => calcPxPerMin(conHorario, propuestas, invitados),
+    [conHorario, propuestas, invitados]
+  )
+  const topTotal   = (toMin(DAY_END) - toMin(DAY_START)) * pxPerMin
+  const timeToTop  = (t: string) => (toMin(t) - toMin(DAY_START)) * pxPerMin
+  const timeToPx   = (i: string, f: string) => (toMin(f) - toMin(i)) * pxPerMin
+
   // Salas como columnas (orden: primero las nombradas, luego las sin nombre)
   const salas = useMemo(() => {
     const set = new Set(conHorario.map(a => a.sala ?? ''))
@@ -184,7 +225,7 @@ function GrillaHorarios({
           <div style={{ display: 'flex', position: 'relative', minWidth: salas.length * 160 + 52 }}>
 
             {/* Columna de horas */}
-            <div style={{ width: 52, flexShrink: 0, position: 'relative', height: TOP_TOTAL }}>
+            <div style={{ width: 52, flexShrink: 0, position: 'relative', height: topTotal }}>
               {HORA_LABELS.map(h => (
                 <div key={h} style={{
                   position: 'absolute',
@@ -207,7 +248,7 @@ function GrillaHorarios({
                 <div key={sala} style={{
                   flex:     1,
                   position: 'relative',
-                  height:   TOP_TOTAL,
+                  height:   topTotal,
                   borderLeft: '1px solid rgba(35,22,81,0.08)',
                   background: '#fafbfd',
                 }}>
