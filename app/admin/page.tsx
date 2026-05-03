@@ -20,8 +20,8 @@ const MENU = [
   { id: 'invitados',    label: 'Invitados' },
   { id: 'propuestas',   label: 'Propuestas' },
   { id: 'actividades',  label: 'Actividades' },
-  { id: 'embeddings',   label: 'Generar Embeddings' },
-  { id: 'distribuir-ia',label: 'Distribuir con IA' },
+  // { id: 'embeddings',    label: 'Generar Embeddings' },  // pendiente
+  // { id: 'distribuir-ia', label: 'Distribuir con IA' },   // pendiente
   { id: 'distribuir',   label: 'Distribución manual' },
 ]
 
