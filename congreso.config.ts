@@ -199,20 +199,6 @@ export const SALAS: string[] = [
   'Hall',
 ]
 
-// Franjas horarias predefinidas (inicio · fin).
-// Permiten cargar horario de actividades con un solo click.
-
-export const FRANJAS_HORARIAS: { inicio: string; fin: string; etiqueta: string }[] = [
-  { inicio: '09:00', fin: '10:30', etiqueta: '09:00 – 10:30' },
-  { inicio: '10:30', fin: '11:00', etiqueta: '10:30 – 11:00' },
-  { inicio: '11:00', fin: '12:30', etiqueta: '11:00 – 12:30' },
-  { inicio: '12:30', fin: '14:00', etiqueta: '12:30 – 14:00' },
-  { inicio: '14:00', fin: '15:30', etiqueta: '14:00 – 15:30' },
-  { inicio: '15:30', fin: '17:00', etiqueta: '15:30 – 17:00' },
-  { inicio: '17:00', fin: '17:30', etiqueta: '17:00 – 17:30' },
-  { inicio: '17:30', fin: '19:00', etiqueta: '17:30 – 19:00' },
-]
-
 
 // ─── Autoridades ─────────────────────────────────────────────────────────────
 
