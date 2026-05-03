@@ -99,37 +99,33 @@ function TarjetaActividad({
       height:        `${Math.max(height - 2, 20)}px`,
       left:          2, right: 2,
       background:    'var(--c-white)',
-      borderLeft:    `3px solid ${color}`,
+      borderLeft:    `4px solid ${color}`,
       borderRadius:  '0 2px 2px 0',
       boxShadow:     '0 1px 3px rgba(35,22,81,0.08)',
-      padding:       compact ? '2px 6px' : '6px 8px',
+      padding:       compact ? '3px 8px' : '7px 10px',
       overflow:      'hidden',
       display:       'flex',
       flexDirection: 'column',
-      gap:           '2px',
+      gap:           '3px',
       zIndex:        1,
     }}>
-      {/* Título */}
-      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {act.titulo || <i style={{ opacity: 0.4 }}>sin título</i>}
-      </span>
-
       {/* Tipo */}
       {!compact && (
-        <span style={{ fontSize: '0.65rem', color, fontWeight: 600, letterSpacing: '0.04em' }}>
+        <span style={{ fontSize: '0.65rem', color, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
           {tipoLabel(act)}
         </span>
       )}
 
-      {/* Participantes */}
+      {/* Título */}
+      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {act.titulo || <i style={{ opacity: 0.4 }}>sin título</i>}
+      </span>
+
+      {/* Participantes separados por · */}
       {!compact && nombres.length > 0 && (
-        <ul style={{ margin: '2px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1px' }}>
-          {nombres.map((nombre, i) => (
-            <li key={i} style={{ fontSize: '0.72rem', color: 'rgba(35,22,81,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {nombre}
-            </li>
-          ))}
-        </ul>
+        <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(35,22,81,0.7)', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+          {nombres.join(' · ')}
+        </p>
       )}
     </div>
   )
