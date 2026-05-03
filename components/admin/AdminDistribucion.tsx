@@ -12,7 +12,8 @@ import { useActividades }      from '@/lib/hooks/useActividades'
 import { usePropuestas }       from '@/lib/hooks/usePropuestas'
 import { useInvitados }        from '@/lib/hooks/useInvitados'
 import { actualizarActividad } from '@/lib/services/actividades'
-import { CONGRESO }            from '@/congreso.config'
+import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
+import { CONGRESO, PROPUESTAS_COMPATIBLES } from '@/congreso.config'
 import type { Actividad, Propuesta } from '@/types'
 
 // ── Constantes ────────────────────────────────────────────────
@@ -31,9 +32,14 @@ const DAY_END      = '21:00'
 const PX_MIN_FLOOR = 0.9
 const PX_MIN_CAP   = 4.0
 const HORA_LABELS  = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
-const VACIA        = '__sin_sala__'  // id de columna droppable para actividades sin sala
+const VACIA        = '__sin_sala__'
+const POOL_ID      = '__pool__'
 
-// ── Helpers ───────────────────────────────────────────────────
+// ── Bandera: mostrar solo propuestas aceptadas en el pool ─────
+// Cambiar a true cuando el flujo de evaluación esté completo
+const SOLO_APROBADAS = false
+
+// ── Helpers de tiempo ─────────────────────────────────────────
 
 function toMin(t: string): number {
   const [h, m] = t.split(':').map(Number)
@@ -46,16 +52,16 @@ function minToTime(min: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
+// ── Cálculo de escala ─────────────────────────────────────────
+
 const H_PADDING   = 14
-const H_TIPO      = 20
-const H_TITULO    = 24
-const H_GAP       = 6
-const H_PART_LINE = 22
+const H_HANDLE    = 44   // altura fija del handle (tipo + título)
+const H_PART_LINE = 20   // altura por línea de participante
 const H_PART_MAX  = 3
 
 function alturaEstimada(nParticipantes: number): number {
   const lineas = Math.min(nParticipantes, H_PART_MAX)
-  return H_PADDING + H_TIPO + H_TITULO + H_GAP + (lineas > 0 ? lineas * H_PART_LINE : 0)
+  return H_PADDING + H_HANDLE + (lineas > 0 ? lineas * H_PART_LINE : 0)
 }
 
 function calcPxPerMin(
@@ -112,66 +118,26 @@ function nombresParticipantes(act: Actividad, asignadas: Propuesta[], invNombre?
   return asignadas.flatMap(p => [p.autor.nombre, ...(p.coautores ?? []).map(c => c.nombre)])
 }
 
-// ── ContenidoTarjeta ──────────────────────────────────────────
-// Parte visual pura — usada en la grilla y en el DragOverlay
+// ── Tipo activo en el drag ────────────────────────────────────
 
-function ContenidoTarjeta({
-  act, height, asignadas, invNombre,
+type ActiveItem =
+  | { type: 'actividad'; id: string }
+  | { type: 'propuesta'; id: string; fromActividadId: string | null }
+
+// ── PropuestaChip ─────────────────────────────────────────────
+// Chip draggable — usado en el pool y dentro de las tarjetas
+
+function PropuestaChip({
+  prop, fromActividadId, dimmed,
 }: {
-  act:       Actividad
-  height:    number
-  asignadas: Propuesta[]
-  invNombre?: string
+  prop:            Propuesta
+  fromActividadId: string | null
+  dimmed?:         boolean
 }) {
-  const color   = tipoColor(act.tipo)
-  const compact = height < 36
-  const nombres = nombresParticipantes(act, asignadas, invNombre)
-
-  return (
-    <div style={{
-      height:        '100%',
-      background:    'var(--c-white)',
-      borderLeft:    `4px solid ${color}`,
-      borderRadius:  '0 2px 2px 0',
-      boxShadow:     '0 1px 3px rgba(35,22,81,0.08)',
-      padding:       compact ? '3px 8px' : '7px 10px',
-      overflow:      'hidden',
-      display:       'flex',
-      flexDirection: 'column',
-      gap:           '3px',
-    }}>
-      {!compact && (
-        <span style={{ fontSize: '0.65rem', color, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          {tipoLabel(act)}
-        </span>
-      )}
-      <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {act.titulo || <i style={{ opacity: 0.4 }}>sin título</i>}
-      </span>
-      {!compact && nombres.length > 0 && (
-        <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(35,22,81,0.7)', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-          {nombres.join(' · ')}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// ── TarjetaActividad ──────────────────────────────────────────
-// Wrapper draggable + posicionamiento absoluto en la grilla
-
-function TarjetaActividad({
-  act, top, height, asignadas, invNombre, isDragging,
-}: {
-  act:        Actividad
-  top:        number
-  height:     number
-  asignadas:  Propuesta[]
-  invNombre?: string
-  isDragging: boolean
-}) {
-  const { attributes, listeners, setNodeRef } = useDraggable({ id: act.id })
-  const h = Math.max(height - 2, 20)
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id:   prop.id,
+    data: { type: 'propuesta', fromActividadId },
+  })
 
   return (
     <div
@@ -179,26 +145,181 @@ function TarjetaActividad({
       {...listeners}
       {...attributes}
       style={{
-        position:    'absolute',
-        top:         `${top}px`,
-        height:      `${h}px`,
-        left: 2, right: 2,
-        opacity:     isDragging ? 0.25 : 1,
+        display:     'flex',
+        alignItems:  'baseline',
+        gap:         '0.35rem',
+        padding:     '0.3rem 0.5rem',
+        background:  isDragging ? 'rgba(35,22,81,0.03)' : 'rgba(35,22,81,0.04)',
+        borderRadius: 2,
         cursor:      'grab',
         touchAction: 'none',
-        zIndex:      1,
+        opacity:     isDragging || dimmed ? 0.35 : 1,
+        userSelect:  'none',
       }}
     >
-      <ContenidoTarjeta act={act} height={h} asignadas={asignadas} invNombre={invNombre} />
+      <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--c-dark)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {prop.autor.nombre}
+      </span>
+      <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.4)', flexShrink: 0 }}>
+        Eje {prop.eje}
+      </span>
+    </div>
+  )
+}
+
+// ── ZonaContenido ─────────────────────────────────────────────
+// Mitad inferior de la tarjeta: droppable + lista de propuestas/participantes
+
+function ZonaContenido({
+  act, asignadas, invNombre, activeItem,
+}: {
+  act:        Actividad
+  asignadas:  Propuesta[]
+  invNombre?: string
+  activeItem: ActiveItem | null
+}) {
+  const aceptaPropuestas = !!PROPUESTAS_COMPATIBLES[act.tipo]
+  const { setNodeRef, isOver } = useDroppable({
+    id:       `prop-${act.id}`,
+    data:     { type: 'actividad-slot', actividadId: act.id },
+    disabled: !aceptaPropuestas,
+  })
+
+  const nombres = nombresParticipantes(act, asignadas, invNombre)
+
+  // Si se está arrastrando una propuesta, resaltar zona compatible
+  const propDragging = activeItem?.type === 'propuesta'
+  const propId       = propDragging ? activeItem.id : null
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        flex:       1,
+        padding:    '4px 8px 6px',
+        background: isOver && aceptaPropuestas ? 'rgba(77,204,189,0.1)' : 'transparent',
+        borderTop:  '1px solid rgba(35,22,81,0.07)',
+        display:    'flex',
+        flexDirection: 'column',
+        gap:        '3px',
+        overflow:   'hidden',
+        transition: 'background 0.12s',
+        minHeight:  24,
+      }}
+    >
+      {/* Propuestas asignadas (draggables) */}
+      {aceptaPropuestas && asignadas.map(p => (
+        <PropuestaChip
+          key={p.id}
+          prop={p}
+          fromActividadId={act.id}
+          dimmed={propId === p.id}
+        />
+      ))}
+
+      {/* Participantes no draggables (conferencia, panel, otro) */}
+      {!aceptaPropuestas && nombres.map((n, i) => (
+        <span key={i} style={{ fontSize: '0.76rem', color: 'rgba(35,22,81,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {n}
+        </span>
+      ))}
+
+      {/* Indicador de zona vacía cuando se arrastra */}
+      {aceptaPropuestas && asignadas.length === 0 && propDragging && (
+        <div style={{ fontSize: '0.65rem', color: 'rgba(77,204,189,0.7)', fontStyle: 'italic' }}>
+          Soltar aquí
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── HandleActividad ───────────────────────────────────────────
+// Mitad superior de la tarjeta: drag handle para mover la actividad
+
+function HandleActividad({
+  act, isDragging,
+}: {
+  act:        Actividad
+  isDragging: boolean
+}) {
+  const color = tipoColor(act.tipo)
+  const { attributes, listeners, setNodeRef } = useDraggable({
+    id:   act.id,
+    data: { type: 'actividad' },
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={{
+        height:      H_HANDLE,
+        flexShrink:  0,
+        padding:     '6px 10px',
+        cursor:      isDragging ? 'grabbing' : 'grab',
+        touchAction: 'none',
+        display:     'flex',
+        flexDirection: 'column',
+        gap:         '2px',
+        justifyContent: 'center',
+      }}
+    >
+      <span style={{ fontSize: '0.6rem', color, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', lineHeight: 1 }}>
+        {tipoLabel(act)}
+      </span>
+      <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {act.titulo || <i style={{ opacity: 0.4 }}>sin título</i>}
+      </span>
+    </div>
+  )
+}
+
+// ── TarjetaActividad ──────────────────────────────────────────
+// Posicionamiento absoluto + handle + zona de contenido
+
+function TarjetaActividad({
+  act, top, height, asignadas, invNombre, isDragging, activeItem,
+}: {
+  act:        Actividad
+  top:        number
+  height:     number
+  asignadas:  Propuesta[]
+  invNombre?: string
+  isDragging: boolean
+  activeItem: ActiveItem | null
+}) {
+  const color = tipoColor(act.tipo)
+  const h     = Math.max(height - 2, H_HANDLE + 4)
+
+  return (
+    <div style={{
+      position:      'absolute',
+      top:           `${top}px`,
+      height:        `${h}px`,
+      left: 2, right: 2,
+      background:    'var(--c-white)',
+      borderLeft:    `4px solid ${color}`,
+      borderRadius:  '0 2px 2px 0',
+      boxShadow:     '0 1px 3px rgba(35,22,81,0.08)',
+      display:       'flex',
+      flexDirection: 'column',
+      opacity:       isDragging ? 0.25 : 1,
+      overflow:      'hidden',
+      zIndex:        1,
+    }}>
+      <HandleActividad act={act} isDragging={isDragging} />
+      <ZonaContenido act={act} asignadas={asignadas} invNombre={invNombre} activeItem={activeItem} />
     </div>
   )
 }
 
 // ── ColumnaSala ───────────────────────────────────────────────
-// Columna droppable — cambia de color al sobrevolar
 
 function ColumnaSala({
-  sala, actsEnSala, topTotal, timeToTop, timeToPx, propuestas, invitados, activeId,
+  sala, actsEnSala, topTotal, timeToTop, timeToPx,
+  propuestas, invitados, activeItem,
 }: {
   sala:        string
   actsEnSala:  Actividad[]
@@ -207,9 +328,14 @@ function ColumnaSala({
   timeToPx:    (i: string, f: string) => number
   propuestas:  Propuesta[]
   invitados:   { id: string; nombre: string }[]
-  activeId:    string | null
+  activeItem:  ActiveItem | null
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: sala || VACIA })
+  const isActDragging = activeItem?.type === 'actividad'
+  const { setNodeRef, isOver } = useDroppable({
+    id:       sala || VACIA,
+    data:     { type: 'sala' },
+    disabled: !isActDragging,   // solo acepta actividades
+  })
 
   return (
     <div
@@ -219,11 +345,10 @@ function ColumnaSala({
         position:   'relative',
         height:     topTotal,
         borderLeft: '1px solid rgba(35,22,81,0.08)',
-        background: isOver ? 'rgba(77,204,189,0.06)' : '#fafbfd',
+        background: isOver && isActDragging ? 'rgba(77,204,189,0.06)' : '#fafbfd',
         transition: 'background 0.15s',
       }}
     >
-      {/* Líneas de hora */}
       {HORA_LABELS.map(h => (
         <div key={h} style={{
           position:      'absolute',
@@ -235,7 +360,6 @@ function ColumnaSala({
         }} />
       ))}
 
-      {/* Actividades */}
       {actsEnSala.map(act => {
         const asignadas = propuestas.filter(p => p.actividadId === act.id)
         const invNombre = act.invitadoId
@@ -249,7 +373,8 @@ function ColumnaSala({
             height={timeToPx(act.horaInicio!, act.horaFin!)}
             asignadas={asignadas}
             invNombre={invNombre}
-            isDragging={activeId === act.id}
+            isDragging={activeItem?.type === 'actividad' && activeItem.id === act.id}
+            activeItem={activeItem}
           />
         )
       })}
@@ -260,20 +385,17 @@ function ColumnaSala({
 // ── GrillaHorarios ────────────────────────────────────────────
 
 function GrillaHorarios({
-  actividades, propuestas, invitados, onMoved,
+  actividades, propuestas, invitados, pxPerMin, activeItem,
 }: {
   actividades: Actividad[]
   propuestas:  Propuesta[]
   invitados:   { id: string; nombre: string }[]
-  onMoved:     () => void
+  pxPerMin:    number
+  activeItem:  ActiveItem | null
 }) {
-  const [activeId, setActiveId] = useState<string | null>(null)
-
   const conHorario = actividades.filter(a => a.horaInicio && a.horaFin)
   const sinHorario = actividades.filter(a => !a.horaInicio || !a.horaFin)
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pxPerMin  = useMemo(() => calcPxPerMin(conHorario, propuestas, invitados), [actividades, propuestas, invitados])
   const topTotal  = (toMin(DAY_END) - toMin(DAY_START)) * pxPerMin
   const timeToTop = (t: string) => (toMin(t) - toMin(DAY_START)) * pxPerMin
   const timeToPx  = (i: string, f: string) => (toMin(f) - toMin(i)) * pxPerMin
@@ -288,65 +410,12 @@ function GrillaHorarios({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actividades])
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  )
-
-  // Datos de la actividad que se está arrastrando (para el DragOverlay)
-  const activeAct       = activeId ? conHorario.find(a => a.id === activeId) : null
-  const activeAsignadas = activeAct ? propuestas.filter(p => p.actividadId === activeAct.id) : []
-  const activeInvNombre = activeAct?.invitadoId
-    ? invitados.find(i => i.id === activeAct.invitadoId)?.nombre
-    : undefined
-  const activeHeight    = activeAct?.horaInicio && activeAct.horaFin
-    ? Math.max(timeToPx(activeAct.horaInicio, activeAct.horaFin) - 2, 20)
-    : 60
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
-  }
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveId(null)
-    const { active, over, delta } = event
-    if (!over) return
-
-    const act = conHorario.find(a => a.id === active.id)
-    if (!act || !act.horaInicio || !act.horaFin) return
-
-    // Calcular nueva hora: delta.y → minutos, snap a 30 min
-    const duracion     = toMin(act.horaFin) - toMin(act.horaInicio)
-    const snappedDelta = Math.round((delta.y / pxPerMin) / 30) * 30
-    const newInicioMin = Math.max(
-      toMin(DAY_START),
-      Math.min(toMin(DAY_END) - duracion, toMin(act.horaInicio) + snappedDelta),
-    )
-    const newFinMin = newInicioMin + duracion
-
-    // Nueva sala (solo si es una columna con nombre)
-    const nuevaSala   = over.id === VACIA ? (act.sala ?? '') : over.id as string
-    const timeChanged = newInicioMin !== toMin(act.horaInicio)
-    const salaChanged = nuevaSala !== (act.sala ?? '')
-
-    if (!timeChanged && !salaChanged) return
-
-    const updates: Partial<Omit<Actividad, 'id'>> = {
-      horaInicio: minToTime(newInicioMin),
-      horaFin:    minToTime(newFinMin),
-    }
-    if (salaChanged && nuevaSala) updates.sala = nuevaSala
-
-    await actualizarActividad(act.id, updates)
-    onMoved()
-  }
-
   if (conHorario.length === 0 && sinHorario.length === 0) {
     return <p className="admin-list__empty">No hay actividades para este día.</p>
   }
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-
+    <>
       {conHorario.length > 0 && (
         <div style={{ overflowX: 'auto' }}>
 
@@ -354,42 +423,34 @@ function GrillaHorarios({
           <div style={{ display: 'flex', paddingLeft: 52, marginBottom: 2, minWidth: salas.length * 160 + 52 }}>
             {salas.map(sala => (
               <div key={sala} style={{
-                flex:          1,
-                fontSize:      '0.65rem',
-                fontWeight:    700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color:         'rgba(35,22,81,0.45)',
-                padding:       '0 4px 6px 6px',
-                borderBottom:  '2px solid rgba(35,22,81,0.1)',
-                textAlign:     'center',
+                flex: 1, textAlign: 'center',
+                fontSize: '0.65rem', fontWeight: 700,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: 'rgba(35,22,81,0.45)',
+                padding: '0 4px 6px 6px',
+                borderBottom: '2px solid rgba(35,22,81,0.1)',
               }}>
                 {sala || 'Sin sala'}
               </div>
             ))}
           </div>
 
-          {/* Cuerpo: etiquetas de hora + columnas */}
+          {/* Cuerpo */}
           <div style={{ display: 'flex', position: 'relative', minWidth: salas.length * 160 + 52 }}>
 
-            {/* Columna de horas */}
+            {/* Etiquetas de hora */}
             <div style={{ width: 52, flexShrink: 0, position: 'relative', height: topTotal }}>
               {HORA_LABELS.map(h => (
                 <div key={h} style={{
-                  position:   'absolute',
-                  top:        timeToTop(h) - 7,
-                  right:      6,
-                  fontSize:   '0.62rem',
-                  fontWeight: 600,
-                  color:      'rgba(35,22,81,0.3)',
-                  userSelect: 'none',
+                  position: 'absolute', top: timeToTop(h) - 7, right: 6,
+                  fontSize: '0.62rem', fontWeight: 600,
+                  color: 'rgba(35,22,81,0.3)', userSelect: 'none',
                 }}>
                   {h}
                 </div>
               ))}
             </div>
 
-            {/* Columnas de sala */}
             {salas.map(sala => (
               <ColumnaSala
                 key={sala}
@@ -400,14 +461,13 @@ function GrillaHorarios({
                 timeToPx={timeToPx}
                 propuestas={propuestas}
                 invitados={invitados}
-                activeId={activeId}
+                activeItem={activeItem}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* Sin horario */}
       {sinHorario.length > 0 && (
         <div style={{ marginTop: conHorario.length > 0 ? '2.5rem' : 0 }}>
           <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.6rem' }}>
@@ -419,9 +479,8 @@ function GrillaHorarios({
               const n = contarParticipantes(act, asignadas)
               return (
                 <div key={act.id} style={{
-                  padding:    '0.6rem 1rem',
-                  background: 'var(--c-white)',
-                  border:     '1px dashed rgba(35,22,81,0.15)',
+                  padding: '0.6rem 1rem', background: 'var(--c-white)',
+                  border: '1px dashed rgba(35,22,81,0.15)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
                 }}>
                   <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>
@@ -437,45 +496,186 @@ function GrillaHorarios({
           </div>
         </div>
       )}
-
-      {/* Ghost durante el drag */}
-      <DragOverlay>
-        {activeAct && (
-          <div style={{ height: activeHeight, opacity: 0.9, pointerEvents: 'none' }}>
-            <ContenidoTarjeta
-              act={activeAct}
-              height={activeHeight}
-              asignadas={activeAsignadas}
-              invNombre={activeInvNombre}
-            />
-          </div>
-        )}
-      </DragOverlay>
-
-    </DndContext>
+    </>
   )
 }
 
-// ── Componente raíz ───────────────────────────────────────────
+// ── PoolPropuestas ────────────────────────────────────────────
+// Panel derecho: propuestas sin asignar, droppable para desasignar
+
+function PoolPropuestas({
+  propuestas, activeItem, onAgregar,
+}: {
+  propuestas: Propuesta[]
+  activeItem: ActiveItem | null
+  onAgregar?: () => void
+}) {
+  const isPropDragging = activeItem?.type === 'propuesta'
+  const { setNodeRef, isOver } = useDroppable({
+    id:       POOL_ID,
+    data:     { type: 'pool' },
+    disabled: !isPropDragging,
+  })
+
+  const sinAsignar = propuestas.filter(p =>
+    !p.actividadId && (SOLO_APROBADAS ? p.estado === 'aceptada' : true)
+  )
+
+  return (
+    <div style={{ position: 'sticky', top: '5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+      {/* Cabecera */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.6rem', borderBottom: '2px solid var(--c-turq)' }}>
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-dark)' }}>
+          Propuestas ({sinAsignar.length})
+        </span>
+        {onAgregar && (
+          <button className="admin-btn admin-btn--small" onClick={onAgregar}>
+            + Actividad
+          </button>
+        )}
+      </div>
+
+      {/* Zona droppable */}
+      <div
+        ref={setNodeRef}
+        style={{
+          display:       'flex',
+          flexDirection: 'column',
+          gap:           '0.3rem',
+          minHeight:     60,
+          maxHeight:     'calc(100vh - 12rem)',
+          overflowY:     'auto',
+          padding:       isOver ? '0.35rem' : '0',
+          background:    isOver ? 'rgba(77,204,189,0.06)' : 'transparent',
+          borderRadius:  4,
+          transition:    'background 0.15s, padding 0.15s',
+        }}
+      >
+        {sinAsignar.length === 0 && (
+          <p style={{ fontSize: '0.78rem', color: 'rgba(35,22,81,0.3)', textAlign: 'center', padding: '1rem 0' }}>
+            {SOLO_APROBADAS ? 'Sin propuestas aceptadas sin asignar' : 'Sin propuestas sin asignar'}
+          </p>
+        )}
+
+        {sinAsignar.map(p => (
+          <PropuestaChip
+            key={p.id}
+            prop={p}
+            fromActividadId={null}
+            dimmed={activeItem?.type === 'propuesta' && activeItem.id === p.id}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── AdminDistribucion ─────────────────────────────────────────
 
 export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => void }) {
-  const { actividades, cargar, loading: loadAct } = useActividades()
-  const { propuestas,  loading: loadProp }         = usePropuestas()
-  const { invitados,   loading: loadInv  }         = useInvitados()
+  const { actividades, cargar: recargarActs, loading: loadAct } = useActividades()
+  const { propuestas,  cargar: recargarP,    loading: loadProp } = usePropuestas()
+  const { invitados,                         loading: loadInv  } = useInvitados()
 
-  const [diaActivo, setDiaActivo] = useState(FECHAS_JORNADA[0].valor)
+  const [diaActivo,  setDiaActivo]  = useState(FECHAS_JORNADA[0].valor)
+  const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
 
   const actsDia  = useMemo(() => actividades.filter(a => a.fecha === diaActivo), [actividades, diaActivo])
-  const sinFecha = useMemo(() => actividades.filter(a => !a.fecha),              [actividades])
+  const sinFecha = useMemo(() => actividades.filter(a => !a.fecha), [actividades])
 
-  const actividadesOrdenadas = useMemo(() =>
-    [...actividades].sort((a, b) => {
-      const fa = `${a.fecha ?? '9999'} ${a.horaInicio ?? '99:99'}`
-      const fb = `${b.fecha ?? '9999'} ${b.horaInicio ?? '99:99'}`
-      return fa.localeCompare(fb)
-    }),
-    [actividades]
+  // pxPerMin para el día activo — necesario en onDragEnd
+  const pxPerMin = useMemo(
+    () => calcPxPerMin(actsDia, propuestas, invitados),
+    [actsDia, propuestas, invitados]
   )
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
+
+  // ── DnD handlers ──────────────────────────────────────────
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const data = event.active.data.current
+    if (data?.type === 'actividad') {
+      setActiveItem({ type: 'actividad', id: event.active.id as string })
+    } else if (data?.type === 'propuesta') {
+      setActiveItem({ type: 'propuesta', id: event.active.id as string, fromActividadId: data.fromActividadId ?? null })
+    }
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const item = activeItem
+    setActiveItem(null)
+    const { active, over, delta } = event
+    if (!over || !item) return
+
+    const overType = over.data.current?.type
+
+    // ── Mover actividad ──────────────────────────────────────
+    if (item.type === 'actividad' && overType === 'sala') {
+      const act = actsDia.find(a => a.id === active.id)
+      if (!act?.horaInicio || !act.horaFin) return
+
+      const duracion     = toMin(act.horaFin) - toMin(act.horaInicio)
+      const snappedDelta = Math.round((delta.y / pxPerMin) / 30) * 30
+      const newInicioMin = Math.max(
+        toMin(DAY_START),
+        Math.min(toMin(DAY_END) - duracion, toMin(act.horaInicio) + snappedDelta),
+      )
+      const newFinMin  = newInicioMin + duracion
+      const nuevaSala  = over.id === VACIA ? (act.sala ?? '') : over.id as string
+      const timeChanged = newInicioMin !== toMin(act.horaInicio)
+      const salaChanged = nuevaSala !== (act.sala ?? '')
+
+      if (!timeChanged && !salaChanged) return
+
+      const updates: Partial<Omit<Actividad, 'id'>> = {
+        horaInicio: minToTime(newInicioMin),
+        horaFin:    minToTime(newFinMin),
+      }
+      if (salaChanged && nuevaSala) updates.sala = nuevaSala
+      await actualizarActividad(act.id, updates)
+      await recargarActs()
+    }
+
+    // ── Asignar propuesta a actividad ────────────────────────
+    if (item.type === 'propuesta' && overType === 'actividad-slot') {
+      const actividadId = over.data.current?.actividadId as string
+      if (actividadId === item.fromActividadId) return  // ya está aquí
+
+      const act  = actividades.find(a => a.id === actividadId)
+      const prop = propuestas.find(p => p.id === item.id)
+      if (!act || !prop) return
+
+      // Validar compatibilidad
+      const compatibles = PROPUESTAS_COMPATIBLES[act.tipo]?.tipos ?? []
+      if (!(compatibles as string[]).includes(prop.tipo)) return
+
+      await asignarPropuesta(item.id, actividadId)
+      await recargarP()
+    }
+
+    // ── Devolver propuesta al pool (desasignar) ──────────────
+    if (item.type === 'propuesta' && overType === 'pool') {
+      if (!item.fromActividadId) return  // ya está en el pool
+      await desasignarPropuesta(item.id)
+      await recargarP()
+    }
+  }
+
+  // ── DragOverlay content ──────────────────────────────────
+
+  const overlayActividadAct = activeItem?.type === 'actividad'
+    ? actsDia.find(a => a.id === activeItem.id)
+    : null
+
+  const overlayPropuesta = activeItem?.type === 'propuesta'
+    ? propuestas.find(p => p.id === activeItem.id)
+    : null
+
+  // ── Render ───────────────────────────────────────────────
 
   if (loadAct || loadProp || loadInv) return (
     <div className="admin-module">
@@ -485,114 +685,103 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
   )
 
   return (
-    <div className="admin-module" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '2rem', alignItems: 'start' }}>
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="admin-module" style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '2rem', alignItems: 'start' }}>
 
-      {/* ── Columna izquierda: grilla ── */}
-      <div>
-        <h2 className="admin-module__title">Distribución</h2>
+        {/* ── Columna izquierda: grilla ── */}
+        <div>
+          <h2 className="admin-module__title">Distribución</h2>
 
-        {/* Tabs por día */}
-        <div style={{ display: 'flex', gap: 0, marginBottom: '1.75rem', borderBottom: '1px solid rgba(35,22,81,0.1)' }}>
-          {FECHAS_JORNADA.map(f => (
-            <button
-              key={f.valor}
-              onClick={() => setDiaActivo(f.valor)}
-              style={{
-                padding:      '0.55rem 1.4rem',
-                fontSize:     '0.78rem',
-                fontWeight:   diaActivo === f.valor ? 700 : 400,
-                border:       'none',
-                cursor:       'pointer',
-                background:   'transparent',
-                color:        diaActivo === f.valor ? 'var(--c-dark)' : 'rgba(35,22,81,0.4)',
-                borderBottom: diaActivo === f.valor ? '2px solid var(--c-turq)' : '2px solid transparent',
-                marginBottom: -1,
-                letterSpacing: '0.02em',
-                transition:   'all 0.15s',
-              }}
-            >
-              {f.etiqueta}
-            </button>
-          ))}
+          {/* Tabs por día */}
+          <div style={{ display: 'flex', marginBottom: '1.75rem', borderBottom: '1px solid rgba(35,22,81,0.1)' }}>
+            {FECHAS_JORNADA.map(f => (
+              <button
+                key={f.valor}
+                onClick={() => setDiaActivo(f.valor)}
+                style={{
+                  padding:      '0.55rem 1.4rem',
+                  fontSize:     '0.78rem',
+                  fontWeight:   diaActivo === f.valor ? 700 : 400,
+                  border:       'none',
+                  cursor:       'pointer',
+                  background:   'transparent',
+                  color:        diaActivo === f.valor ? 'var(--c-dark)' : 'rgba(35,22,81,0.4)',
+                  borderBottom: diaActivo === f.valor ? '2px solid var(--c-turq)' : '2px solid transparent',
+                  marginBottom: -1,
+                  letterSpacing: '0.02em',
+                  transition:   'all 0.15s',
+                }}
+              >
+                {f.etiqueta}
+              </button>
+            ))}
+          </div>
+
+          <GrillaHorarios
+            actividades={actsDia}
+            propuestas={propuestas}
+            invitados={invitados}
+            pxPerMin={pxPerMin}
+            activeItem={activeItem}
+          />
+
+          {/* Sin fecha */}
+          {sinFecha.length > 0 && (
+            <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
+              <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.75rem' }}>
+                Sin fecha asignada ({sinFecha.length})
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {sinFecha.map(act => {
+                  const asignadas = propuestas.filter(p => p.actividadId === act.id)
+                  const n = contarParticipantes(act, asignadas)
+                  return (
+                    <div key={act.id} style={{ padding: '0.6rem 1rem', background: 'var(--c-white)', border: '1px dashed rgba(35,22,81,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>{act.titulo || '(sin título)'}</span>
+                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 600, color: tipoColor(act.tipo) }}>{tipoLabel(act)}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.4)' }}>{n} part.</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Grilla del día */}
-        <GrillaHorarios
-          actividades={actsDia}
+        {/* ── Panel derecho: pool de propuestas ── */}
+        <PoolPropuestas
           propuestas={propuestas}
-          invitados={invitados}
-          onMoved={cargar}
+          activeItem={activeItem}
+          onAgregar={onAgregar}
         />
 
-        {/* Sin fecha */}
-        {sinFecha.length > 0 && (
-          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
-            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.75rem' }}>
-              Sin fecha asignada ({sinFecha.length})
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              {sinFecha.map(act => {
-                const asignadas = propuestas.filter(p => p.actividadId === act.id)
-                const n = contarParticipantes(act, asignadas)
-                return (
-                  <div key={act.id} style={{ padding: '0.6rem 1rem', background: 'var(--c-white)', border: '1px dashed rgba(35,22,81,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>{act.titulo || '(sin título)'}</span>
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: '0.65rem', fontWeight: 600, color: tipoColor(act.tipo) }}>{tipoLabel(act)}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.4)' }}>{n} part.</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+      </div>
+
+      {/* ── Ghost durante el drag ── */}
+      <DragOverlay>
+        {overlayActividadAct && (
+          <div style={{ height: H_HANDLE, background: 'var(--c-white)', borderLeft: `4px solid ${tipoColor(overlayActividadAct.tipo)}`, borderRadius: '0 2px 2px 0', boxShadow: '0 4px 12px rgba(35,22,81,0.15)', padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', opacity: 0.95 }}>
+            <span style={{ fontSize: '0.6rem', color: tipoColor(overlayActividadAct.tipo), fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              {tipoLabel(overlayActividadAct)}
+            </span>
+            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.2 }}>
+              {overlayActividadAct.titulo || '(sin título)'}
+            </span>
           </div>
         )}
-      </div>
-
-      {/* ── Columna derecha: lista de actividades ── */}
-      <div style={{ position: 'sticky', top: '5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.6rem', borderBottom: '2px solid var(--c-turq)' }}>
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-dark)' }}>
-            Actividades ({actividades.length})
-          </span>
-          {onAgregar && (
-            <button className="admin-btn admin-btn--small" onClick={onAgregar}>
-              + Agregar
-            </button>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', maxHeight: 'calc(100vh - 12rem)', overflowY: 'auto' }}>
-          {actividadesOrdenadas.map(act => {
-            const esDiaActivo = act.fecha === diaActivo
-            return (
-              <div key={act.id} style={{
-                padding:    '0.55rem 0.75rem',
-                background: esDiaActivo ? 'rgba(77,204,189,0.07)' : 'var(--c-white)',
-                border:     esDiaActivo ? '1px solid rgba(77,204,189,0.3)' : '1px solid rgba(35,22,81,0.07)',
-                borderLeft: `3px solid ${tipoColor(act.tipo)}`,
-              }}>
-                <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--c-dark)', lineHeight: 1.3, marginBottom: '0.2rem' }}>
-                  {act.titulo || <span style={{ opacity: 0.35 }}>sin título</span>}
-                </p>
-                <p style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.45)' }}>
-                  {[
-                    act.fecha ? FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiqueta.split(',')[0] : null,
-                    act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : null,
-                    act.sala || null,
-                  ].filter(Boolean).join(' · ') || 'Sin programar'}
-                </p>
-              </div>
-            )
-          })}
-          {actividades.length === 0 && (
-            <p style={{ fontSize: '0.78rem', color: 'rgba(35,22,81,0.3)', textAlign: 'center', padding: '1rem' }}>
-              Sin actividades
-            </p>
-          )}
-        </div>
-      </div>
-
-    </div>
+        {overlayPropuesta && (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', padding: '0.3rem 0.6rem', background: 'var(--c-white)', borderRadius: 2, boxShadow: '0 4px 12px rgba(35,22,81,0.15)', opacity: 0.95 }}>
+            <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--c-dark)' }}>
+              {overlayPropuesta.autor.nombre}
+            </span>
+            <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.4)' }}>
+              Eje {overlayPropuesta.eje}
+            </span>
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
   )
 }
