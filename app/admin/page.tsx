@@ -13,6 +13,7 @@ import AdminInvitados from '@/components/admin/AdminInvitados'
 import AdminNovedades from '@/components/admin/AdminNovedades'
 import AdminActividades from '@/components/admin/AdminActividades'
 import AdminPropuestas from '@/components/admin/AdminPropuestas'
+import AdminDistribucion from '@/components/admin/AdminDistribucion'
 
 const MENU = [
   { id: 'bienvenida',   label: 'Bienvenida' },
@@ -51,6 +52,7 @@ export default function Admin() {
       case 'novedades':  return <AdminNovedades />
       case 'propuestas':   return <AdminPropuestas />
       case 'actividades':  return <AdminActividades />
+      case 'distribuir':   return <AdminDistribucion />
       default:             return (
         <div className="admin-placeholder">
           <p>Módulo <strong>{active}</strong> — próximamente</p>
