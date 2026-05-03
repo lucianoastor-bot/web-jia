@@ -317,28 +317,33 @@ export default function AdminActividades() {
       const hora    = act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : ''
       const meta    = [fechaEt, hora, act.sala].filter(Boolean).join('  ·  ')
 
-      // Encabezado de sección: tipo + título en negrita, metadatos en segunda línea
+      // ── Encabezado de sección (--c-mid #2374ab) ──
       body.push([{
-        content:  `${tipoEt.toUpperCase()}  ·  ${act.titulo || '(sin título)'}${meta ? `\n${meta}` : ''}`,
-        colSpan:  5,
-        styles:   { fontStyle: 'bold', fillColor: [224, 220, 240], textColor: [35, 22, 81], fontSize: 7.5, cellPadding: { top: 5, bottom: 4, left: 4, right: 4 } },
+        content: `${tipoEt.toUpperCase()}  ·  ${act.titulo || '(sin título)'}${meta ? `\n${meta}` : ''}`,
+        colSpan: 5,
+        styles:  {
+          fontStyle:   'bold',
+          fillColor:   [35, 116, 171],   // --c-mid
+          textColor:   [255, 255, 255],
+          fontSize:    8,
+          cellPadding: { top: 5, bottom: 4, left: 5, right: 5 },
+        },
       }])
 
       const propAct = propuestas.filter(p => p.actividadId === act.id)
       const inv     = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
 
       if (act.tipo === 'conferencia') {
-        body.push([inv?.nombre ?? '(sin asignar)', inv?.institucion ?? '', '', '', ''])
+        body.push([`  •  ${inv?.nombre ?? '(sin asignar)'}`, inv?.institucion ?? '', '', '', ''])
       } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
         if (propAct.length === 0) {
           body.push([{ content: '(sin propuestas asignadas)', colSpan: 5, styles: { fontStyle: 'italic', textColor: [160, 160, 170] } }])
         } else {
           for (const p of propAct) {
-            // Autor + coautores en la misma celda, separados por " · "
             const nombres = [p.autor.nombre, ...(p.coautores ?? []).map(c => c.nombre)].join(' · ')
             const pert    = PERTENENCIAS.find(x => x.valor === p.autor.pertenencia)?.etiqueta ?? ''
             const estado  = ESTADOS_PROPUESTA.find(x => x.valor === p.estado)?.etiqueta ?? ''
-            body.push([nombres, pert, p.titulo, p.eje, estado])
+            body.push([`  •  ${nombres}`, pert, p.titulo, p.eje, estado])
           }
         }
       } else {
@@ -348,7 +353,7 @@ export default function AdminActividades() {
           body.push([{ content: '(sin participantes)', colSpan: 5, styles: { fontStyle: 'italic', textColor: [160, 160, 170] } }])
         } else {
           for (const p of parts) {
-            body.push([p.nombre, p.institucion ?? '', p.tituloPonencia ?? '', '', ''])
+            body.push([`  •  ${p.nombre}`, p.institucion ?? '', p.tituloPonencia ?? '', '', ''])
           }
         }
       }
@@ -357,8 +362,9 @@ export default function AdminActividades() {
     autoTable(doc, {
       head: [['Nombre(s)', 'Pertenencia / Institución', 'Título de la presentación', 'Eje', 'Estado']],
       body,
-      styles:      { fontSize: 7, cellPadding: 2 },
-      headStyles:  { fillColor: [35, 22, 81] },
+      styles:             { fontSize: 7, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
+      headStyles:         { fillColor: [35, 22, 81], textColor: [255, 255, 255], fontStyle: 'bold' },  // --c-dark
+      alternateRowStyles: { fillColor: [240, 250, 249] },  // tinte muy suave de --c-turq
       columnStyles: {
         0: { cellWidth: 65  },  // nombre(s)
         1: { cellWidth: 45  },  // pertenencia
