@@ -297,7 +297,7 @@ export default function AdminActividades() {
       const ms    = CONGRESO.fechaInicio.getTime() + d * 86_400_000
       const valor = new Date(ms).toISOString().slice(0, 10)
       const etiq  = new Date(valor + 'T12:00:00').toLocaleDateString('es-AR', {
-        weekday: 'short', day: 'numeric', month: 'short',
+        weekday: 'long', day: 'numeric', month: 'long',
       })
       return { valor, etiq }
     })
@@ -308,74 +308,63 @@ export default function AdminActividades() {
       return fa.localeCompare(fb)
     })
 
-    // Construir filas: una por participante; actividades sin participantes → una fila
-    type Fila = { row: string[]; primera: boolean }
-    const filas: Fila[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any[][] = []
 
     for (const act of ordenadas) {
-      const tipo    = act.tipo === 'otro' && act.descriptor ? act.descriptor : tipoEtiqueta(act.tipo)
-      const fechaEt = FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiq ?? act.fecha ?? ''
+      const tipoEt  = act.tipo === 'otro' && act.descriptor ? act.descriptor : tipoEtiqueta(act.tipo)
+      const fechaEt = FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiq ?? ''
       const hora    = act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : ''
-      const base    = [fechaEt, hora, act.sala ?? '', tipo, act.titulo ?? '']
+      const meta    = [fechaEt, hora, act.sala].filter(Boolean).join('  ·  ')
+
+      // Encabezado de sección: tipo + título en negrita, metadatos en segunda línea
+      body.push([{
+        content:  `${tipoEt.toUpperCase()}  ·  ${act.titulo || '(sin título)'}${meta ? `\n${meta}` : ''}`,
+        colSpan:  5,
+        styles:   { fontStyle: 'bold', fillColor: [224, 220, 240], textColor: [35, 22, 81], fontSize: 7.5, cellPadding: { top: 5, bottom: 4, left: 4, right: 4 } },
+      }])
 
       const propAct = propuestas.filter(p => p.actividadId === act.id)
       const inv     = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
 
       if (act.tipo === 'conferencia') {
-        filas.push({
-          primera: true,
-          row: [...base, inv?.nombre ?? '', inv?.institucion ?? '', '', '', ''],
-        })
+        body.push([inv?.nombre ?? '(sin asignar)', inv?.institucion ?? '', '', '', ''])
       } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
         if (propAct.length === 0) {
-          filas.push({ primera: true, row: [...base, '', '', '', '', ''] })
+          body.push([{ content: '(sin propuestas asignadas)', colSpan: 5, styles: { fontStyle: 'italic', textColor: [160, 160, 170] } }])
         } else {
-          propAct.forEach((p, idx) => {
-            const pert   = PERTENENCIAS.find(x => x.valor === p.autor.pertenencia)?.etiqueta ?? ''
-            const estado = ESTADOS_PROPUESTA.find(x => x.valor === p.estado)?.etiqueta ?? ''
-            filas.push({ primera: idx === 0, row: [...base, p.autor.nombre, pert, p.titulo, p.eje, estado] })
-            ;(p.coautores ?? []).forEach(c => {
-              filas.push({ primera: false, row: ['', '', '', '', '', c.nombre, '', '', '', ''] })
-            })
-          })
+          for (const p of propAct) {
+            // Autor + coautores en la misma celda, separados por " · "
+            const nombres = [p.autor.nombre, ...(p.coautores ?? []).map(c => c.nombre)].join(' · ')
+            const pert    = PERTENENCIAS.find(x => x.valor === p.autor.pertenencia)?.etiqueta ?? ''
+            const estado  = ESTADOS_PROPUESTA.find(x => x.valor === p.estado)?.etiqueta ?? ''
+            body.push([nombres, pert, p.titulo, p.eje, estado])
+          }
         }
       } else {
         // panel, otro: act.participantes
         const parts = act.participantes ?? []
         if (parts.length === 0) {
-          filas.push({ primera: true, row: [...base, '', '', '', '', ''] })
+          body.push([{ content: '(sin participantes)', colSpan: 5, styles: { fontStyle: 'italic', textColor: [160, 160, 170] } }])
         } else {
-          parts.forEach((p, idx) => {
-            filas.push({ primera: idx === 0, row: [...base, p.nombre, p.institucion ?? '', p.tituloPonencia ?? '', '', ''] })
-          })
+          for (const p of parts) {
+            body.push([p.nombre, p.institucion ?? '', p.tituloPonencia ?? '', '', ''])
+          }
         }
       }
     }
 
     autoTable(doc, {
-      head: [['Fecha', 'Hora', 'Sala', 'Tipo', 'Título de la actividad', 'Participante', 'Pertenencia / Institución', 'Título de la presentación', 'Eje', 'Estado']],
-      body: filas.map(f => f.row),
-      styles:     { fontSize: 7, cellPadding: 2 },
-      headStyles: { fillColor: [35, 22, 81] },
+      head: [['Nombre(s)', 'Pertenencia / Institución', 'Título de la presentación', 'Eje', 'Estado']],
+      body,
+      styles:      { fontSize: 7, cellPadding: 2 },
+      headStyles:  { fillColor: [35, 22, 81] },
       columnStyles: {
-        0: { cellWidth: 22 },  // fecha
-        1: { cellWidth: 18 },  // hora
-        2: { cellWidth: 22 },  // sala
-        3: { cellWidth: 20 },  // tipo
-        4: { cellWidth: 44 },  // título actividad
-        5: { cellWidth: 30 },  // participante
-        6: { cellWidth: 26 },  // pertenencia
-        7: { cellWidth: 50 },  // título presentación
-        8: { cellWidth: 8  },  // eje
-        9: { cellWidth: 16 },  // estado
-      },
-      didParseCell: (data) => {
-        if (data.section !== 'body') return
-        // Línea separadora entre actividades (primera fila de cada una)
-        if (filas[data.row.index]?.primera) {
-          data.cell.styles.lineWidth = { top: 0.4 } as never
-          data.cell.styles.lineColor = [180, 180, 200] as never
-        }
+        0: { cellWidth: 65  },  // nombre(s)
+        1: { cellWidth: 45  },  // pertenencia
+        2: { cellWidth: 115 },  // título presentación
+        3: { cellWidth: 12  },  // eje
+        4: { cellWidth: 20  },  // estado
       },
     })
 
