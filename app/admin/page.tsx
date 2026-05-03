@@ -52,7 +52,7 @@ export default function Admin() {
       case 'novedades':  return <AdminNovedades />
       case 'propuestas':   return <AdminPropuestas />
       case 'actividades':  return <AdminActividades />
-      case 'distribuir':   return <AdminDistribucion />
+      case 'distribuir':   return <AdminDistribucion onAgregar={() => setActive('actividades')} />
       default:             return (
         <div className="admin-placeholder">
           <p>Módulo <strong>{active}</strong> — próximamente</p>

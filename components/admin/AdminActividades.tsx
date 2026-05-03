@@ -10,7 +10,7 @@ import {
   actualizarParticipantesPanel, desasignarInvitado,
 } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES, CONGRESO } from '@/congreso.config'
+import { TIPOS_ACTIVIDAD, TIPOS_PROPUESTA, EJES, RESTRICCIONES_ACTIVIDAD, PROPUESTAS_COMPATIBLES, CONGRESO, SALAS, FRANJAS_HORARIAS } from '@/congreso.config'
 import type { Actividad, TipoActividad, TipoPropuesta, ParticipantePanel } from '@/types'
 
 type DatosActividad = {
@@ -367,37 +367,45 @@ export default function AdminActividades() {
             </select>
           </div>
 
-          {/* Hora inicio */}
+          {/* Sala — desde config */}
           <div className="admin-form__field">
-            <label className="admin-form__label">Hora inicio</label>
-            <select className="admin-form__input" name="horaInicio" value={form.horaInicio} onChange={handleChange}>
-              <option value="">—</option>
-              {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
+            <label className="admin-form__label">Sala / Lugar</label>
+            <select className="admin-form__input" name="sala" value={form.sala} onChange={handleChange}>
+              <option value="">— Sin definir —</option>
+              {SALAS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
-          {/* Hora fin */}
-          <div className="admin-form__field">
-            <label className="admin-form__label">Hora fin</label>
-            <select className="admin-form__input" name="horaFin" value={form.horaFin} onChange={handleChange}>
-              <option value="">—</option>
-              {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
-            </select>
-          </div>
-
-          {/* Sala */}
-          {camposTexto.filter(c => c.nombre === 'sala').map(c => (
-            <div key={c.nombre} className="admin-form__field">
-              <label className="admin-form__label">{c.etiqueta}</label>
-              <input
+          {/* Franja horaria — atajo que rellena inicio y fin */}
+          <div className="admin-form__field admin-form__field--full">
+            <label className="admin-form__label">
+              Franja horaria <span style={{ opacity: 0.5, fontWeight: 400, textTransform: 'none' }}>(elige una o ajusta manualmente)</span>
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <select
                 className="admin-form__input"
-                type="text"
-                name={c.nombre}
-                value={form[c.nombre] as string}
-                onChange={handleChange}
-              />
+                style={{ flex: '2 1 200px' }}
+                value={`${form.horaInicio}|${form.horaFin}`}
+                onChange={e => {
+                  const [inicio, fin] = e.target.value.split('|')
+                  setForm(f => ({ ...f, horaInicio: inicio ?? '', horaFin: fin ?? '' }))
+                }}
+              >
+                <option value="|">— Franja predefinida —</option>
+                {FRANJAS_HORARIAS.map(f => (
+                  <option key={f.etiqueta} value={`${f.inicio}|${f.fin}`}>{f.etiqueta}</option>
+                ))}
+              </select>
+              <select className="admin-form__input" style={{ flex: '1 1 100px' }} name="horaInicio" value={form.horaInicio} onChange={handleChange}>
+                <option value="">Inicio</option>
+                {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+              <select className="admin-form__input" style={{ flex: '1 1 100px' }} name="horaFin" value={form.horaFin} onChange={handleChange}>
+                <option value="">Fin</option>
+                {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
             </div>
-          ))}
+          </div>
 
           {/* Moderador — conferencia y mesa */}
           {(['conferencia', 'mesa'] as TipoActividad[]).includes(form.tipo) && (

@@ -327,15 +327,25 @@ function GrillaHorarios({
 
 // ── Componente raíz ───────────────────────────────────────────
 
-export default function AdminDistribucion() {
+export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => void }) {
   const { actividades, loading: loadAct } = useActividades()
   const { propuestas,  loading: loadProp } = usePropuestas()
   const { invitados,   loading: loadInv  } = useInvitados()
 
   const [diaActivo, setDiaActivo] = useState(FECHAS_JORNADA[0].valor)
 
-  const actsDia   = useMemo(() => actividades.filter(a => a.fecha === diaActivo), [actividades, diaActivo])
-  const sinFecha  = useMemo(() => actividades.filter(a => !a.fecha),              [actividades])
+  const actsDia  = useMemo(() => actividades.filter(a => a.fecha === diaActivo), [actividades, diaActivo])
+  const sinFecha = useMemo(() => actividades.filter(a => !a.fecha),              [actividades])
+
+  // Lista lateral: todas las actividades ordenadas por fecha + hora
+  const actividadesOrdenadas = useMemo(() =>
+    [...actividades].sort((a, b) => {
+      const fa = `${a.fecha ?? '9999'} ${a.horaInicio ?? '99:99'}`
+      const fb = `${b.fecha ?? '9999'} ${b.horaInicio ?? '99:99'}`
+      return fa.localeCompare(fb)
+    }),
+    [actividades]
+  )
 
   if (loadAct || loadProp || loadInv) return (
     <div className="admin-module">
@@ -345,71 +355,108 @@ export default function AdminDistribucion() {
   )
 
   return (
-    <div className="admin-module">
+    <div className="admin-module" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '2rem', alignItems: 'start' }}>
 
-      <h2 className="admin-module__title">Distribución</h2>
+      {/* ── Columna izquierda: grilla ── */}
+      <div>
+        <h2 className="admin-module__title">Distribución</h2>
 
-      {/* Tabs por día */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: '1.75rem', borderBottom: '1px solid rgba(35,22,81,0.1)' }}>
-        {FECHAS_JORNADA.map(f => (
-          <button
-            key={f.valor}
-            onClick={() => setDiaActivo(f.valor)}
-            style={{
-              padding:     '0.55rem 1.4rem',
-              fontSize:    '0.78rem',
-              fontWeight:  diaActivo === f.valor ? 700 : 400,
-              border:      'none',
-              cursor:      'pointer',
-              background:  'transparent',
-              color:       diaActivo === f.valor ? 'var(--c-dark)' : 'rgba(35,22,81,0.4)',
-              borderBottom: diaActivo === f.valor ? '2px solid var(--c-turq)' : '2px solid transparent',
-              marginBottom: -1,
-              letterSpacing: '0.02em',
-              transition:  'all 0.15s',
-            }}
-          >
-            {f.etiqueta}
-          </button>
-        ))}
+        {/* Tabs por día */}
+        <div style={{ display: 'flex', gap: 0, marginBottom: '1.75rem', borderBottom: '1px solid rgba(35,22,81,0.1)' }}>
+          {FECHAS_JORNADA.map(f => (
+            <button
+              key={f.valor}
+              onClick={() => setDiaActivo(f.valor)}
+              style={{
+                padding:      '0.55rem 1.4rem',
+                fontSize:     '0.78rem',
+                fontWeight:   diaActivo === f.valor ? 700 : 400,
+                border:       'none',
+                cursor:       'pointer',
+                background:   'transparent',
+                color:        diaActivo === f.valor ? 'var(--c-dark)' : 'rgba(35,22,81,0.4)',
+                borderBottom: diaActivo === f.valor ? '2px solid var(--c-turq)' : '2px solid transparent',
+                marginBottom: -1,
+                letterSpacing:'0.02em',
+                transition:   'all 0.15s',
+              }}
+            >
+              {f.etiqueta}
+            </button>
+          ))}
+        </div>
+
+        {/* Grilla del día */}
+        <GrillaHorarios actividades={actsDia} propuestas={propuestas} invitados={invitados} />
+
+        {/* Sin fecha */}
+        {sinFecha.length > 0 && (
+          <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.75rem' }}>
+              Sin fecha asignada ({sinFecha.length})
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {sinFecha.map(act => {
+                const asignadas = propuestas.filter(p => p.actividadId === act.id)
+                const n = contarParticipantes(act, asignadas)
+                return (
+                  <div key={act.id} style={{ padding: '0.6rem 1rem', background: 'var(--c-white)', border: '1px dashed rgba(35,22,81,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>{act.titulo || '(sin título)'}</span>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 600, color: tipoColor(act.tipo) }}>{tipoLabel(act)}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.4)' }}>{n} part.</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Grilla del día */}
-      <GrillaHorarios actividades={actsDia} propuestas={propuestas} invitados={invitados} />
-
-      {/* Actividades sin fecha */}
-      {sinFecha.length > 0 && (
-        <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
-          <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.75rem' }}>
-            Sin fecha asignada ({sinFecha.length})
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            {sinFecha.map(act => {
-              const asignadas = propuestas.filter(p => p.actividadId === act.id)
-              const n = contarParticipantes(act, asignadas)
-              return (
-                <div key={act.id} style={{
-                  padding: '0.6rem 1rem',
-                  background: 'var(--c-white)',
-                  border: '1px dashed rgba(35,22,81,0.12)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '1rem',
-                }}>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>
-                    {act.titulo || '(sin título)'}
-                  </span>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: tipoColor(act.tipo) }}>{tipoLabel(act)}</span>
-                    <span style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.4)' }}>{n} participantes</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+      {/* ── Columna derecha: lista de actividades ── */}
+      <div style={{ position: 'sticky', top: '5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.6rem', borderBottom: '2px solid var(--c-turq)' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-dark)' }}>
+            Actividades ({actividades.length})
+          </span>
+          {onAgregar && (
+            <button className="admin-btn admin-btn--small" onClick={onAgregar}>
+              + Agregar
+            </button>
+          )}
         </div>
-      )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', maxHeight: 'calc(100vh - 12rem)', overflowY: 'auto' }}>
+          {actividadesOrdenadas.map(act => {
+            const esDiaActivo = act.fecha === diaActivo
+            return (
+              <div key={act.id} style={{
+                padding:    '0.55rem 0.75rem',
+                background: esDiaActivo ? 'rgba(77,204,189,0.07)' : 'var(--c-white)',
+                border:     esDiaActivo ? '1px solid rgba(77,204,189,0.3)' : '1px solid rgba(35,22,81,0.07)',
+                borderLeft: `3px solid ${tipoColor(act.tipo)}`,
+              }}>
+                <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--c-dark)', lineHeight: 1.3, marginBottom: '0.2rem' }}>
+                  {act.titulo || <span style={{ opacity: 0.35 }}>sin título</span>}
+                </p>
+                <p style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.45)' }}>
+                  {[
+                    act.fecha ? FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiqueta.split(',')[0] : null,
+                    act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : null,
+                    act.sala || null,
+                  ].filter(Boolean).join(' · ') || 'Sin programar'}
+                </p>
+              </div>
+            )
+          })}
+          {actividades.length === 0 && (
+            <p style={{ fontSize: '0.78rem', color: 'rgba(35,22,81,0.3)', textAlign: 'center', padding: '1rem' }}>
+              Sin actividades
+            </p>
+          )}
+        </div>
+      </div>
 
     </div>
   )
