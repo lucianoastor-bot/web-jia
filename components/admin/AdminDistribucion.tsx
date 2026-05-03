@@ -13,15 +13,15 @@ import type { Actividad, Propuesta } from '@/types'
 const FECHAS_JORNADA = [0, 1, 2].map(d => {
   const ms      = CONGRESO.fechaInicio.getTime() + d * 86_400_000
   const valor   = new Date(ms).toISOString().slice(0, 10)
-  const etiqueta = new Date(valor + 'T12:00:00').toLocaleDateString('es-AR', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
+  const etiqueta = new Date(valor + 'T12:00:00')
+    .toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+    .toUpperCase()
   return { valor, etiqueta }
 })
 
 const DAY_START  = '08:00'
 const DAY_END    = '21:00'
-const PX_PER_MIN = 1.2      // px por minuto → 1 hora = 72 px
+const PX_PER_MIN = 0.85     // px por minuto → 1 hora = 51 px
 const HORA_LABELS = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
 
 function toMin(t: string): number {
@@ -69,6 +69,14 @@ function contarParticipantes(act: Actividad, asignadas: Propuesta[]): number {
   return asignadas.reduce((s, p) => s + 1 + (p.coautores?.length ?? 0), 0)
 }
 
+function nombresParticipantes(act: Actividad, asignadas: Propuesta[], invNombre?: string): string[] {
+  if (act.tipo === 'conferencia') return invNombre ? [invNombre] : []
+  if (act.tipo === 'panel' || act.tipo === 'otro')
+    return (act.participantes ?? []).map(p => p.nombre)
+  // mesa, pósters: autor + coautores de cada propuesta
+  return asignadas.flatMap(p => [p.autor.nombre, ...(p.coautores ?? []).map(c => c.nombre)])
+}
+
 // ── Tarjeta en la grilla ──────────────────────────────────────
 
 function TarjetaActividad({
@@ -80,40 +88,48 @@ function TarjetaActividad({
   asignadas: Propuesta[]
   invNombre?: string
 }) {
-  const color  = tipoColor(act.tipo)
-  const nPart  = contarParticipantes(act, asignadas)
-  const sub    = subtitulo(act, invNombre)
-  const compact = height < 48  // muy chica: solo título
+  const color      = tipoColor(act.tipo)
+  const compact    = height < 36
+  const nombres    = nombresParticipantes(act, asignadas, invNombre)
 
   return (
     <div style={{
-      position:   'absolute',
-      top:        `${top}px`,
-      height:     `${Math.max(height - 2, 20)}px`,
-      left:       2, right: 2,
-      background: 'var(--c-white)',
-      borderLeft: `3px solid ${color}`,
-      borderRadius: '0 2px 2px 0',
-      boxShadow:  '0 1px 3px rgba(35,22,81,0.08)',
-      padding:    compact ? '2px 6px' : '5px 7px',
-      overflow:   'hidden',
-      display:    'flex',
+      position:      'absolute',
+      top:           `${top}px`,
+      height:        `${Math.max(height - 2, 20)}px`,
+      left:          2, right: 2,
+      background:    'var(--c-white)',
+      borderLeft:    `3px solid ${color}`,
+      borderRadius:  '0 2px 2px 0',
+      boxShadow:     '0 1px 3px rgba(35,22,81,0.08)',
+      padding:       compact ? '2px 6px' : '6px 8px',
+      overflow:      'hidden',
+      display:       'flex',
       flexDirection: 'column',
-      gap:        '1px',
-      zIndex:     1,
+      gap:           '2px',
+      zIndex:        1,
     }}>
-      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      {/* Título */}
+      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {act.titulo || <i style={{ opacity: 0.4 }}>sin título</i>}
       </span>
-      {!compact && sub && (
-        <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {sub}
+
+      {/* Tipo */}
+      {!compact && (
+        <span style={{ fontSize: '0.65rem', color, fontWeight: 600, letterSpacing: '0.04em' }}>
+          {tipoLabel(act)}
         </span>
       )}
-      {!compact && (
-        <span style={{ fontSize: '0.62rem', color, fontWeight: 600, marginTop: 'auto' }}>
-          {tipoLabel(act)} · {nPart} part.
-        </span>
+
+      {/* Participantes */}
+      {!compact && nombres.length > 0 && (
+        <ul style={{ margin: '2px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1px' }}>
+          {nombres.map((nombre, i) => (
+            <li key={i} style={{ fontSize: '0.72rem', color: 'rgba(35,22,81,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {nombre}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   )
