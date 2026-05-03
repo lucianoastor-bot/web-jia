@@ -128,11 +128,12 @@ type ActiveItem =
 // Chip draggable — usado en el pool y dentro de las tarjetas
 
 function PropuestaChip({
-  prop, fromActividadId, dimmed,
+  prop, fromActividadId, dimmed, showTitle,
 }: {
   prop:            Propuesta
   fromActividadId: string | null
   dimmed?:         boolean
+  showTitle?:      boolean
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id:   prop.id,
@@ -145,24 +146,32 @@ function PropuestaChip({
       {...listeners}
       {...attributes}
       style={{
-        display:     'flex',
-        alignItems:  'baseline',
-        gap:         '0.35rem',
-        padding:     '0.3rem 0.5rem',
-        background:  isDragging ? 'rgba(35,22,81,0.03)' : 'rgba(35,22,81,0.04)',
-        borderRadius: 2,
-        cursor:      'grab',
-        touchAction: 'none',
-        opacity:     isDragging || dimmed ? 0.35 : 1,
-        userSelect:  'none',
+        display:       'flex',
+        flexDirection: showTitle ? 'column' : 'row',
+        alignItems:    showTitle ? 'flex-start' : 'baseline',
+        gap:           showTitle ? '1px' : '0.35rem',
+        padding:       '0.3rem 0.5rem',
+        background:    isDragging ? 'rgba(35,22,81,0.03)' : 'rgba(35,22,81,0.04)',
+        borderRadius:  2,
+        cursor:        'grab',
+        touchAction:   'none',
+        opacity:       isDragging || dimmed ? 0.35 : 1,
+        userSelect:    'none',
       }}
     >
-      <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--c-dark)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {prop.autor.nombre}
-      </span>
-      <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.4)', flexShrink: 0 }}>
-        Eje {prop.eje}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', width: '100%' }}>
+        <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--c-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {prop.autor.nombre}
+        </span>
+        <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.4)', flexShrink: 0 }}>
+          Eje {prop.eje}
+        </span>
+      </div>
+      {showTitle && (
+        <span style={{ fontSize: '0.72rem', color: 'rgba(35,22,81,0.55)', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          {prop.titulo}
+        </span>
+      )}
     </div>
   )
 }
@@ -179,6 +188,9 @@ function ZonaContenido({
   activeItem: ActiveItem | null
 }) {
   const aceptaPropuestas = !!PROPUESTAS_COMPATIBLES[act.tipo]
+  // Solo mesa y pósters muestran chips draggables; panel/conferencia/otro muestran nombres
+  const mostrarChips = act.tipo === 'mesa' || act.tipo === 'pósters'
+
   const { setNodeRef, isOver } = useDroppable({
     id:       `prop-${act.id}`,
     data:     { type: 'actividad-slot', actividadId: act.id },
@@ -187,7 +199,6 @@ function ZonaContenido({
 
   const nombres = nombresParticipantes(act, asignadas, invNombre)
 
-  // Si se está arrastrando una propuesta, resaltar zona compatible
   const propDragging = activeItem?.type === 'propuesta'
   const propId       = propDragging ? activeItem.id : null
 
@@ -195,20 +206,20 @@ function ZonaContenido({
     <div
       ref={setNodeRef}
       style={{
-        flex:       1,
-        padding:    '4px 8px 6px',
-        background: isOver && aceptaPropuestas ? 'rgba(77,204,189,0.1)' : 'transparent',
-        borderTop:  '1px solid rgba(35,22,81,0.07)',
-        display:    'flex',
+        flex:          1,
+        padding:       '4px 8px 6px',
+        background:    isOver && aceptaPropuestas ? 'rgba(77,204,189,0.1)' : 'transparent',
+        borderTop:     '1px solid rgba(35,22,81,0.07)',
+        display:       'flex',
         flexDirection: 'column',
-        gap:        '3px',
-        overflow:   'hidden',
-        transition: 'background 0.12s',
-        minHeight:  24,
+        gap:           '3px',
+        overflow:      'hidden',
+        transition:    'background 0.12s',
+        minHeight:     24,
       }}
     >
-      {/* Propuestas asignadas (draggables) */}
-      {aceptaPropuestas && asignadas.map(p => (
+      {/* Mesa / pósters: propuestas asignadas como chips draggables */}
+      {mostrarChips && asignadas.map(p => (
         <PropuestaChip
           key={p.id}
           prop={p}
@@ -217,14 +228,14 @@ function ZonaContenido({
         />
       ))}
 
-      {/* Participantes no draggables (conferencia, panel, otro) */}
-      {!aceptaPropuestas && nombres.map((n, i) => (
+      {/* Panel / conferencia / otro: participantes como texto */}
+      {!mostrarChips && nombres.map((n, i) => (
         <span key={i} style={{ fontSize: '0.76rem', color: 'rgba(35,22,81,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {n}
         </span>
       ))}
 
-      {/* Indicador de zona vacía cuando se arrastra */}
+      {/* Indicador de zona vacía al arrastrar sobre actividad compatible */}
       {aceptaPropuestas && asignadas.length === 0 && propDragging && (
         <div style={{ fontSize: '0.65rem', color: 'rgba(77,204,189,0.7)', fontStyle: 'italic' }}>
           Soltar aquí
@@ -563,6 +574,7 @@ function PoolPropuestas({
             key={p.id}
             prop={p}
             fromActividadId={null}
+            showTitle
             dimmed={activeItem?.type === 'propuesta' && activeItem.id === p.id}
           />
         ))}
