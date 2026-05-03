@@ -1,7 +1,7 @@
 // components/admin/AdminDistribucion.tsx
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   DndContext, DragOverlay,
   PointerSensor, useSensor, useSensors,
@@ -13,8 +13,8 @@ import { usePropuestas }       from '@/lib/hooks/usePropuestas'
 import { useInvitados }        from '@/lib/hooks/useInvitados'
 import { actualizarActividad } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA } from '@/congreso.config'
-import type { Actividad, Propuesta } from '@/types'
+import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA } from '@/congreso.config'
+import type { Actividad, Propuesta, Invitado, ParticipantePanel } from '@/types'
 
 // ── Constantes ────────────────────────────────────────────────
 
@@ -254,10 +254,11 @@ function ZonaContenido({
 // Mitad superior de la tarjeta: drag handle para mover la actividad
 
 function HandleActividad({
-  act, isDragging,
+  act, isDragging, onVerDetalle,
 }: {
-  act:        Actividad
-  isDragging: boolean
+  act:          Actividad
+  isDragging:   boolean
+  onVerDetalle: (id: string) => void
 }) {
   const color = tipoColor(act.tipo)
   const { attributes, listeners, setNodeRef } = useDraggable({
@@ -270,6 +271,7 @@ function HandleActividad({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      onClick={() => onVerDetalle(act.id)}
       style={{
         height:      H_HANDLE,
         flexShrink:  0,
@@ -296,15 +298,16 @@ function HandleActividad({
 // Posicionamiento absoluto + handle + zona de contenido
 
 function TarjetaActividad({
-  act, top, height, asignadas, invNombre, isDragging, activeItem,
+  act, top, height, asignadas, invNombre, isDragging, activeItem, onVerDetalle,
 }: {
-  act:        Actividad
-  top:        number
-  height:     number
-  asignadas:  Propuesta[]
-  invNombre?: string
-  isDragging: boolean
-  activeItem: ActiveItem | null
+  act:          Actividad
+  top:          number
+  height:       number
+  asignadas:    Propuesta[]
+  invNombre?:   string
+  isDragging:   boolean
+  activeItem:   ActiveItem | null
+  onVerDetalle: (id: string) => void
 }) {
   const color = tipoColor(act.tipo)
   const h     = Math.max(height - 2, H_HANDLE + 4)
@@ -325,7 +328,7 @@ function TarjetaActividad({
       overflow:      'hidden',
       zIndex:        1,
     }}>
-      <HandleActividad act={act} isDragging={isDragging} />
+      <HandleActividad act={act} isDragging={isDragging} onVerDetalle={onVerDetalle} />
       <ZonaContenido act={act} asignadas={asignadas} invNombre={invNombre} activeItem={activeItem} />
     </div>
   )
@@ -335,16 +338,17 @@ function TarjetaActividad({
 
 function ColumnaSala({
   sala, actsEnSala, topTotal, timeToTop, timeToPx,
-  propuestas, invitados, activeItem,
+  propuestas, invitados, activeItem, onVerDetalle,
 }: {
-  sala:        string
-  actsEnSala:  Actividad[]
-  topTotal:    number
-  timeToTop:   (t: string) => number
-  timeToPx:    (i: string, f: string) => number
-  propuestas:  Propuesta[]
-  invitados:   { id: string; nombre: string }[]
-  activeItem:  ActiveItem | null
+  sala:         string
+  actsEnSala:   Actividad[]
+  topTotal:     number
+  timeToTop:    (t: string) => number
+  timeToPx:     (i: string, f: string) => number
+  propuestas:   Propuesta[]
+  invitados:    { id: string; nombre: string }[]
+  activeItem:   ActiveItem | null
+  onVerDetalle: (id: string) => void
 }) {
   const isActDragging = activeItem?.type === 'actividad'
   const { setNodeRef, isOver } = useDroppable({
@@ -391,6 +395,7 @@ function ColumnaSala({
             invNombre={invNombre}
             isDragging={activeItem?.type === 'actividad' && activeItem.id === act.id}
             activeItem={activeItem}
+            onVerDetalle={onVerDetalle}
           />
         )
       })}
@@ -401,13 +406,14 @@ function ColumnaSala({
 // ── GrillaHorarios ────────────────────────────────────────────
 
 function GrillaHorarios({
-  actividades, propuestas, invitados, pxPerMin, activeItem,
+  actividades, propuestas, invitados, pxPerMin, activeItem, onVerDetalle,
 }: {
-  actividades: Actividad[]
-  propuestas:  Propuesta[]
-  invitados:   { id: string; nombre: string }[]
-  pxPerMin:    number
-  activeItem:  ActiveItem | null
+  actividades:  Actividad[]
+  propuestas:   Propuesta[]
+  invitados:    { id: string; nombre: string }[]
+  pxPerMin:     number
+  activeItem:   ActiveItem | null
+  onVerDetalle: (id: string) => void
 }) {
   const conHorario = actividades.filter(a => a.horaInicio && a.horaFin)
   const sinHorario = actividades.filter(a => !a.horaInicio || !a.horaFin)
@@ -478,6 +484,7 @@ function GrillaHorarios({
                 propuestas={propuestas}
                 invitados={invitados}
                 activeItem={activeItem}
+                onVerDetalle={onVerDetalle}
               />
             ))}
           </div>
@@ -513,6 +520,165 @@ function GrillaHorarios({
         </div>
       )}
     </>
+  )
+}
+
+// ── Helpers del modal ─────────────────────────────────────────
+
+function MetaDato({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(35,22,81,0.35)', margin: 0 }}>
+        {label}
+      </p>
+      <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--c-dark)', margin: 0 }}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function FilaPropuesta({ prop }: { prop: Propuesta }) {
+  const pertEtiqueta   = PERTENENCIAS.find(p => p.valor === prop.autor.pertenencia)?.etiqueta ?? prop.autor.pertenencia ?? ''
+  const estadoEtiqueta = ESTADOS_PROPUESTA.find(e => e.valor === prop.estado)?.etiqueta ?? prop.estado
+  const tipoEtiqueta   = TIPOS_PROPUESTA.find(t => t.valor === prop.tipo)?.etiqueta ?? prop.tipo
+
+  return (
+    <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(35,22,81,0.03)', borderRadius: 3, borderLeft: '3px solid rgba(35,22,81,0.12)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.2rem' }}>
+        <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0, color: 'var(--c-dark)' }}>
+          {prop.autor.nombre}
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, alignItems: 'center' }}>
+          <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.45)' }}>Eje {prop.eje}</span>
+          <span style={{ fontSize: '0.65rem', padding: '1px 6px', background: 'rgba(35,22,81,0.07)', borderRadius: 10, color: 'rgba(35,22,81,0.6)' }}>{tipoEtiqueta}</span>
+          <span style={{ fontSize: '0.65rem', padding: '1px 6px', background: 'rgba(35,22,81,0.07)', borderRadius: 10, color: 'rgba(35,22,81,0.6)' }}>{estadoEtiqueta}</span>
+        </div>
+      </div>
+      {pertEtiqueta && (
+        <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.45)', margin: '0 0 0.2rem' }}>{pertEtiqueta}</p>
+      )}
+      {prop.coautores && prop.coautores.length > 0 && (
+        <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.5)', margin: '0 0 0.25rem' }}>
+          Con: {prop.coautores.map(c => c.nombre).join(', ')}
+        </p>
+      )}
+      <p style={{ fontSize: '0.82rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.7)', margin: 0, lineHeight: 1.4 }}>
+        {prop.titulo}
+      </p>
+    </div>
+  )
+}
+
+function FilaParticipante({ participante }: { participante: ParticipantePanel }) {
+  return (
+    <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(35,22,81,0.03)', borderRadius: 3, borderLeft: '3px solid rgba(35,22,81,0.12)' }}>
+      <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: '0 0 0.15rem', color: 'var(--c-dark)' }}>
+        {participante.nombre}
+      </p>
+      {participante.institucion && (
+        <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.5)', margin: '0 0 0.2rem' }}>
+          {participante.institucion}
+        </p>
+      )}
+      {participante.tituloPonencia && (
+        <p style={{ fontSize: '0.82rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.7)', margin: 0, lineHeight: 1.4 }}>
+          {participante.tituloPonencia}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ── DetalleModal ──────────────────────────────────────────────
+
+function DetalleModal({
+  act, propuestas, invitados, onCerrar,
+}: {
+  act:       Actividad
+  propuestas: Propuesta[]
+  invitados:  Invitado[]
+  onCerrar:  () => void
+}) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCerrar() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onCerrar])
+
+  const color     = tipoColor(act.tipo)
+  const asignadas = propuestas.filter(p => p.actividadId === act.id)
+  const invitado  = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+  const fecha     = act.fecha ? FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiqueta : null
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(35,22,81,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
+      onClick={e => { if (e.target === e.currentTarget) onCerrar() }}
+    >
+      <div style={{ background: 'var(--c-white)', borderRadius: 6, maxWidth: 660, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(35,22,81,0.2)' }}>
+
+        {/* Encabezado */}
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(35,22,81,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+          <div>
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              {tipoLabel(act)}
+            </span>
+            <h2 style={{ margin: '0.2rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.3 }}>
+              {act.titulo || <span style={{ opacity: 0.4 }}>Sin título</span>}
+            </h2>
+          </div>
+          <button
+            onClick={onCerrar}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'rgba(35,22,81,0.35)', padding: '0.2rem', lineHeight: 1, flexShrink: 0 }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Metadatos */}
+        <div style={{ padding: '0.85rem 1.5rem', borderBottom: '1px solid rgba(35,22,81,0.06)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          {fecha         && <MetaDato label="Fecha"       value={fecha} />}
+          {act.horaInicio && act.horaFin && <MetaDato label="Hora" value={`${act.horaInicio} – ${act.horaFin}`} />}
+          {act.sala      && <MetaDato label="Sala"        value={act.sala} />}
+          {act.moderador && <MetaDato label="Moderador"   value={act.moderador} />}
+          {act.coordinador && <MetaDato label="Coordinador" value={act.coordinador} />}
+        </div>
+
+        {/* Participantes */}
+        <div style={{ padding: '1rem 1.5rem 1.5rem' }}>
+          <p style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(35,22,81,0.3)', marginBottom: '0.75rem' }}>
+            Participantes
+          </p>
+
+          {/* Conferencia */}
+          {act.tipo === 'conferencia' && (
+            invitado
+              ? <FilaParticipante participante={{ nombre: invitado.nombre, institucion: invitado.institucion }} />
+              : <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin conferencista asignado</p>
+          )}
+
+          {/* Mesa / pósters: propuestas */}
+          {(act.tipo === 'mesa' || act.tipo === 'pósters') && (
+            asignadas.length === 0
+              ? <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin propuestas asignadas</p>
+              : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {asignadas.map(p => <FilaPropuesta key={p.id} prop={p} />)}
+                </div>
+          )}
+
+          {/* Panel / otro: participantes */}
+          {(act.tipo === 'panel' || act.tipo === 'otro') && (
+            (act.participantes ?? []).length === 0
+              ? <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin participantes</p>
+              : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {(act.participantes ?? []).map((p, i) => <FilaParticipante key={i} participante={p} />)}
+                </div>
+          )}
+        </div>
+
+      </div>
+    </div>
   )
 }
 
@@ -595,8 +761,9 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
   const { propuestas,  cargar: recargarP,    loading: loadProp } = usePropuestas()
   const { invitados,                         loading: loadInv  } = useInvitados()
 
-  const [diaActivo,  setDiaActivo]  = useState(FECHAS_JORNADA[0].valor)
-  const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
+  const [diaActivo,    setDiaActivo]    = useState(FECHAS_JORNADA[0].valor)
+  const [activeItem,   setActiveItem]   = useState<ActiveItem | null>(null)
+  const [detalleActId, setDetalleActId] = useState<string | null>(null)
 
   const actsDia  = useMemo(() => actividades.filter(a => a.fecha === diaActivo), [actividades, diaActivo])
   const sinFecha = useMemo(() => actividades.filter(a => !a.fecha), [actividades])
@@ -740,6 +907,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
             invitados={invitados}
             pxPerMin={pxPerMin}
             activeItem={activeItem}
+            onVerDetalle={setDetalleActId}
           />
 
           {/* Sin fecha */}
@@ -799,6 +967,21 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
           </div>
         )}
       </DragOverlay>
+
+      {/* ── Modal de detalle ── */}
+      {detalleActId && (() => {
+        const act = actividades.find(a => a.id === detalleActId)
+        if (!act) return null
+        return (
+          <DetalleModal
+            act={act}
+            propuestas={propuestas}
+            invitados={invitados}
+            onCerrar={() => setDetalleActId(null)}
+          />
+        )
+      })()}
+
     </DndContext>
   )
 }
