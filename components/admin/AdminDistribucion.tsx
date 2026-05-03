@@ -1,168 +1,290 @@
 // components/admin/AdminDistribucion.tsx
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, Fragment } from 'react'
 import { useActividades } from '@/lib/hooks/useActividades'
-import { usePropuestas } from '@/lib/hooks/usePropuestas'
-import { PROPUESTAS_COMPATIBLES, RESTRICCIONES_ACTIVIDAD, TIPOS_PROPUESTA, EJES } from '@/congreso.config'
+import { usePropuestas }  from '@/lib/hooks/usePropuestas'
+import { useInvitados }   from '@/lib/hooks/useInvitados'
+import { CONGRESO }       from '@/congreso.config'
 import type { Actividad, Propuesta } from '@/types'
 
-// ── Helpers ───────────────────────────────────────────────────
+// ── Constantes de grilla ──────────────────────────────────────
 
-function maxDe(tipo: string): number | null {
-  const r = RESTRICCIONES_ACTIVIDAD[tipo as keyof typeof RESTRICCIONES_ACTIVIDAD]
-  return r && 'maxPropuestas' in r ? r.maxPropuestas : null
+const FECHAS_JORNADA = [0, 1, 2].map(d => {
+  const ms      = CONGRESO.fechaInicio.getTime() + d * 86_400_000
+  const valor   = new Date(ms).toISOString().slice(0, 10)
+  const etiqueta = new Date(valor + 'T12:00:00').toLocaleDateString('es-AR', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
+  return { valor, etiqueta }
+})
+
+const DAY_START  = '08:00'
+const DAY_END    = '21:00'
+const PX_PER_MIN = 1.2      // px por minuto → 1 hora = 72 px
+const HORA_LABELS = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
+
+function toMin(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+const TOP_TOTAL  = (toMin(DAY_END) - toMin(DAY_START)) * PX_PER_MIN  // 780 * 1.2 = 936 px
+const timeToTop  = (t: string) => (toMin(t) - toMin(DAY_START)) * PX_PER_MIN
+const timeToPx   = (inicio: string, fin: string) => (toMin(fin) - toMin(inicio)) * PX_PER_MIN
+
+// ── Helpers de presentación ───────────────────────────────────
+
+const TYPE_COLOR: Record<string, string> = {
+  conferencia: '#4dccbd',
+  panel:       '#7c5cbf',
+  mesa:        '#e8a23a',
+  pósters:     '#3a74ab',
+  otro:        '#888',
 }
 
-function minDe(tipo: string): number | null {
-  const r = RESTRICCIONES_ACTIVIDAD[tipo as keyof typeof RESTRICCIONES_ACTIVIDAD]
-  return r && 'minPropuestas' in r ? r.minPropuestas : null
+function tipoColor(tipo: string) { return TYPE_COLOR[tipo] ?? '#888' }
+
+function tipoLabel(act: Actividad): string {
+  if (act.tipo === 'otro' && act.descriptor) return act.descriptor
+  const L: Record<string, string> = {
+    conferencia: 'Conferencia',
+    panel:       'Panel',
+    mesa:        'Mesa',
+    pósters:     'Pósters',
+    otro:        'Otro',
+  }
+  return L[act.tipo] ?? act.tipo
 }
 
-function etiquetaTipo(tipo: string) {
-  return TIPOS_PROPUESTA.find(t => t.valor === tipo)?.etiqueta ?? tipo
+function subtitulo(act: Actividad, invNombre?: string): string | null {
+  if (act.tipo === 'conferencia') return invNombre ?? null
+  if (act.tipo === 'panel')       return act.coordinador ?? null
+  return null
 }
 
-function etiquetaEje(num: string) {
-  return EJES.find(e => e.num === num)?.titulo ?? num
+function contarParticipantes(act: Actividad, asignadas: Propuesta[]): number {
+  if (act.tipo === 'conferencia') return act.invitadoId ? 1 : 0
+  if (act.tipo === 'panel' || act.tipo === 'otro') return act.participantes?.length ?? 0
+  // mesa, pósters: autor + coautores de cada propuesta asignada
+  return asignadas.reduce((s, p) => s + 1 + (p.coautores?.length ?? 0), 0)
 }
 
-function formatHorario(act: Actividad) {
-  const partes = [
-    act.fecha,
-    act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : act.horaInicio,
-    act.sala,
-  ].filter(Boolean)
-  return partes.join(' · ') || null
-}
+// ── Tarjeta en la grilla ──────────────────────────────────────
 
-// ── Subcomponentes ────────────────────────────────────────────
-
-function BarraProgreso({ actual, max, min }: { actual: number; max: number | null; min: number | null }) {
-  if (!max) return null
-  const pct     = Math.min(100, (actual / max) * 100)
-  const completo = min !== null && actual >= min
-  const color    = actual === 0 ? 'rgba(35,22,81,0.12)' : completo ? '#4dccbd' : '#e8a23a'
-
-  return (
-    <div style={{ marginTop: '0.6rem' }}>
-      <div style={{ height: 4, background: 'rgba(35,22,81,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2, transition: 'width 0.3s' }} />
-      </div>
-      <p style={{ fontSize: '0.68rem', color: 'rgba(35,22,81,0.4)', marginTop: '0.3rem', textAlign: 'right' }}>
-        {actual} / {max}{min !== null && actual < min ? ` · mín ${min}` : ''}
-      </p>
-    </div>
-  )
-}
-
-function TarjetaActividad({ act, propuestas }: { act: Actividad; propuestas: Propuesta[] }) {
-  const asignadas = propuestas.filter(p => p.actividadId === act.id)
-  const max       = maxDe(act.tipo)
-  const min       = minDe(act.tipo)
-  const vacia     = asignadas.length === 0
-  const horario   = formatHorario(act)
-
-  const tipoLabel = act.tipo === 'otro' && act.descriptor
-    ? act.descriptor
-    : TIPOS_PROPUESTA.find(t => t.valor === act.tipo)?.etiqueta ?? act.tipo
+function TarjetaActividad({
+  act, top, height, asignadas, invNombre,
+}: {
+  act:       Actividad
+  top:       number
+  height:    number
+  asignadas: Propuesta[]
+  invNombre?: string
+}) {
+  const color  = tipoColor(act.tipo)
+  const nPart  = contarParticipantes(act, asignadas)
+  const sub    = subtitulo(act, invNombre)
+  const compact = height < 48  // muy chica: solo título
 
   return (
     <div style={{
+      position:   'absolute',
+      top:        `${top}px`,
+      height:     `${Math.max(height - 2, 20)}px`,
+      left:       2, right: 2,
       background: 'var(--c-white)',
-      border: vacia
-        ? '1.5px dashed rgba(35,22,81,0.2)'
-        : '1px solid rgba(35,22,81,0.08)',
-      padding: '1.1rem 1.3rem',
-      display: 'flex',
+      borderLeft: `3px solid ${color}`,
+      borderRadius: '0 2px 2px 0',
+      boxShadow:  '0 1px 3px rgba(35,22,81,0.08)',
+      padding:    compact ? '2px 6px' : '5px 7px',
+      overflow:   'hidden',
+      display:    'flex',
       flexDirection: 'column',
-      gap: '0.5rem',
+      gap:        '1px',
+      zIndex:     1,
     }}>
-      {/* Cabecera */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.3 }}>
-            {act.titulo || <span style={{ opacity: 0.35 }}>(sin título)</span>}
-          </p>
-          {horario && (
-            <p style={{ fontSize: '0.72rem', color: 'rgba(35,22,81,0.45)', marginTop: '0.2rem' }}>
-              {horario}
-            </p>
-          )}
-        </div>
-        <span className="admin-badge admin-badge--pending" style={{ flexShrink: 0, marginLeft: 0 }}>
-          {tipoLabel}
+      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {act.titulo || <i style={{ opacity: 0.4 }}>sin título</i>}
+      </span>
+      {!compact && sub && (
+        <span style={{ fontSize: '0.65rem', color: 'rgba(35,22,81,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {sub}
         </span>
-      </div>
-
-      {/* Barra de progreso */}
-      <BarraProgreso actual={asignadas.length} max={max} min={min} />
-
-      {/* Lista de propuestas asignadas */}
-      {asignadas.length > 0 ? (
-        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.25rem' }}>
-          {asignadas.map(p => (
-            <li key={p.id} style={{
-              fontSize: '0.78rem',
-              padding: '0.45rem 0.65rem',
-              background: 'rgba(35,22,81,0.03)',
-              borderLeft: '2px solid rgba(77,204,189,0.5)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.1rem',
-            }}>
-              <span style={{ fontWeight: 600, color: 'var(--c-dark)' }}>{p.titulo}</span>
-              <span style={{ color: 'rgba(35,22,81,0.5)' }}>
-                {p.autor.nombre}
-                {p.autor.institucion && ` · ${p.autor.institucion}`}
-                {' · '}
-                <span style={{ fontWeight: 500 }}>Eje {p.eje}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.3)', fontStyle: 'italic', textAlign: 'center', padding: '0.75rem 0' }}>
-          Sin propuestas asignadas
-        </p>
+      )}
+      {!compact && (
+        <span style={{ fontSize: '0.62rem', color, fontWeight: 600, marginTop: 'auto' }}>
+          {tipoLabel(act)} · {nPart} part.
+        </span>
       )}
     </div>
   )
 }
 
-// ── Componente principal ──────────────────────────────────────
+// ── Grilla principal ──────────────────────────────────────────
+
+function GrillaHorarios({
+  actividades, propuestas, invitados,
+}: {
+  actividades: Actividad[]
+  propuestas:  Propuesta[]
+  invitados:   { id: string; nombre: string }[]
+}) {
+  const conHorario = actividades.filter(a => a.horaInicio && a.horaFin)
+  const sinHorario = actividades.filter(a => !a.horaInicio || !a.horaFin)
+
+  // Salas como columnas (orden: primero las nombradas, luego las sin nombre)
+  const salas = useMemo(() => {
+    const set = new Set(conHorario.map(a => a.sala ?? ''))
+    return [...set].sort((a, b) => {
+      if (!a && b)  return 1
+      if (a && !b)  return -1
+      return a.localeCompare(b, 'es')
+    })
+  }, [conHorario])
+
+  if (conHorario.length === 0 && sinHorario.length === 0) {
+    return <p className="admin-list__empty">No hay actividades para este día.</p>
+  }
+
+  return (
+    <>
+      {conHorario.length > 0 && (
+        <div style={{ overflowX: 'auto' }}>
+          {/* Cabecera de salas */}
+          <div style={{ display: 'flex', paddingLeft: 52, marginBottom: 2, minWidth: salas.length * 160 + 52 }}>
+            {salas.map(sala => (
+              <div key={sala} style={{
+                flex: 1,
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'rgba(35,22,81,0.45)',
+                padding: '0 4px 6px 6px',
+                borderBottom: '2px solid rgba(35,22,81,0.1)',
+                textAlign: 'center',
+              }}>
+                {sala || 'Sin sala'}
+              </div>
+            ))}
+          </div>
+
+          {/* Cuerpo: etiquetas de hora + columnas de sala */}
+          <div style={{ display: 'flex', position: 'relative', minWidth: salas.length * 160 + 52 }}>
+
+            {/* Columna de horas */}
+            <div style={{ width: 52, flexShrink: 0, position: 'relative', height: TOP_TOTAL }}>
+              {HORA_LABELS.map(h => (
+                <div key={h} style={{
+                  position: 'absolute',
+                  top:      timeToTop(h) - 7,
+                  right:    6,
+                  fontSize: '0.62rem',
+                  fontWeight: 600,
+                  color:    'rgba(35,22,81,0.3)',
+                  userSelect: 'none',
+                }}>
+                  {h}
+                </div>
+              ))}
+            </div>
+
+            {/* Columnas de sala */}
+            {salas.map(sala => {
+              const actsEnSala = conHorario.filter(a => (a.sala ?? '') === sala)
+              return (
+                <div key={sala} style={{
+                  flex:     1,
+                  position: 'relative',
+                  height:   TOP_TOTAL,
+                  borderLeft: '1px solid rgba(35,22,81,0.08)',
+                  background: '#fafbfd',
+                }}>
+                  {/* Líneas de hora */}
+                  {HORA_LABELS.map(h => (
+                    <div key={h} style={{
+                      position: 'absolute',
+                      top:      timeToTop(h),
+                      left:     0, right: 0,
+                      height:   1,
+                      background: 'rgba(35,22,81,0.07)',
+                      pointerEvents: 'none',
+                    }} />
+                  ))}
+
+                  {/* Actividades */}
+                  {actsEnSala.map(act => {
+                    const asignadas = propuestas.filter(p => p.actividadId === act.id)
+                    const invNombre = act.invitadoId
+                      ? invitados.find(i => i.id === act.invitadoId)?.nombre
+                      : undefined
+                    return (
+                      <TarjetaActividad
+                        key={act.id}
+                        act={act}
+                        top={timeToTop(act.horaInicio!)}
+                        height={timeToPx(act.horaInicio!, act.horaFin!)}
+                        asignadas={asignadas}
+                        invNombre={invNombre}
+                      />
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Sin horario */}
+      {sinHorario.length > 0 && (
+        <div style={{ marginTop: conHorario.length > 0 ? '2.5rem' : 0 }}>
+          <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.6rem' }}>
+            Sin horario asignado
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {sinHorario.map(act => {
+              const asignadas = propuestas.filter(p => p.actividadId === act.id)
+              const n = contarParticipantes(act, asignadas)
+              return (
+                <div key={act.id} style={{
+                  padding: '0.6rem 1rem',
+                  background: 'var(--c-white)',
+                  border: '1px dashed rgba(35,22,81,0.15)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>
+                    {act.titulo || '(sin título)'}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: tipoColor(act.tipo) }}>{tipoLabel(act)}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.4)' }}>{n} participantes</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// ── Componente raíz ───────────────────────────────────────────
 
 export default function AdminDistribucion() {
   const { actividades, loading: loadAct } = useActividades()
-  const { propuestas, loading: loadProp } = usePropuestas()
+  const { propuestas,  loading: loadProp } = usePropuestas()
+  const { invitados,   loading: loadInv  } = useInvitados()
 
-  // Solo actividades que agrupan propuestas (panel, mesa, pósters, y 'otro' con restricción)
-  const actividadesConPropuestas = useMemo(() =>
-    actividades.filter(a => PROPUESTAS_COMPATIBLES[a.tipo] || a.tipo === 'otro'),
-    [actividades]
-  )
+  const [diaActivo, setDiaActivo] = useState(FECHAS_JORNADA[0].valor)
 
-  // Propuestas aceptadas sin actividad asignada
-  const sinAsignar = useMemo(() =>
-    propuestas.filter(p => p.estado === 'aceptada' && !p.actividadId),
-    [propuestas]
-  )
+  const actsDia   = useMemo(() => actividades.filter(a => a.fecha === diaActivo), [actividades, diaActivo])
+  const sinFecha  = useMemo(() => actividades.filter(a => !a.fecha),              [actividades])
 
-  // Agrupar sin asignar por tipo
-  const sinAsignarPorTipo = useMemo(() => {
-    const grupos: Record<string, Propuesta[]> = {}
-    for (const p of sinAsignar) {
-      if (!grupos[p.tipo]) grupos[p.tipo] = []
-      grupos[p.tipo].push(p)
-    }
-    return grupos
-  }, [sinAsignar])
-
-  // Stats
-  const totalAsignadas = propuestas.filter(p => p.estado === 'aceptada' && p.actividadId).length
-  const totalAceptadas = propuestas.filter(p => p.estado === 'aceptada').length
-
-  if (loadAct || loadProp) return (
+  if (loadAct || loadProp || loadInv) return (
     <div className="admin-module">
       <h2 className="admin-module__title">Distribución</h2>
       <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
@@ -172,86 +294,69 @@ export default function AdminDistribucion() {
   return (
     <div className="admin-module">
 
-      {/* ── Título y resumen ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem', paddingBottom: '0.75rem', borderBottom: '2px solid var(--c-turq)' }}>
-        <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--c-dark)', margin: 0 }}>
-          Distribución
-        </h2>
-        <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.75rem', color: 'rgba(35,22,81,0.5)' }}>
-          <span><strong style={{ color: 'var(--c-dark)' }}>{actividadesConPropuestas.length}</strong> actividades</span>
-          <span><strong style={{ color: '#4dccbd' }}>{totalAsignadas}</strong> / {totalAceptadas} propuestas asignadas</span>
-          {sinAsignar.length > 0 && (
-            <span style={{ color: '#e8a23a', fontWeight: 600 }}>{sinAsignar.length} sin asignar</span>
-          )}
-        </div>
+      <h2 className="admin-module__title">Distribución</h2>
+
+      {/* Tabs por día */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: '1.75rem', borderBottom: '1px solid rgba(35,22,81,0.1)' }}>
+        {FECHAS_JORNADA.map(f => (
+          <button
+            key={f.valor}
+            onClick={() => setDiaActivo(f.valor)}
+            style={{
+              padding:     '0.55rem 1.4rem',
+              fontSize:    '0.78rem',
+              fontWeight:  diaActivo === f.valor ? 700 : 400,
+              border:      'none',
+              cursor:      'pointer',
+              background:  'transparent',
+              color:       diaActivo === f.valor ? 'var(--c-dark)' : 'rgba(35,22,81,0.4)',
+              borderBottom: diaActivo === f.valor ? '2px solid var(--c-turq)' : '2px solid transparent',
+              marginBottom: -1,
+              letterSpacing: '0.02em',
+              transition:  'all 0.15s',
+            }}
+          >
+            {f.etiqueta}
+          </button>
+        ))}
       </div>
 
-      {/* ── Grid de actividades ── */}
-      {actividadesConPropuestas.length === 0 ? (
-        <p className="admin-list__empty">No hay actividades que agrupen propuestas.</p>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-          {actividadesConPropuestas.map(act => (
-            <TarjetaActividad key={act.id} act={act} propuestas={propuestas} />
-          ))}
+      {/* Grilla del día */}
+      <GrillaHorarios actividades={actsDia} propuestas={propuestas} invitados={invitados} />
+
+      {/* Actividades sin fecha */}
+      {sinFecha.length > 0 && (
+        <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(35,22,81,0.08)' }}>
+          <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.3)', marginBottom: '0.75rem' }}>
+            Sin fecha asignada ({sinFecha.length})
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {sinFecha.map(act => {
+              const asignadas = propuestas.filter(p => p.actividadId === act.id)
+              const n = contarParticipantes(act, asignadas)
+              return (
+                <div key={act.id} style={{
+                  padding: '0.6rem 1rem',
+                  background: 'var(--c-white)',
+                  border: '1px dashed rgba(35,22,81,0.12)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)' }}>
+                    {act.titulo || '(sin título)'}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: tipoColor(act.tipo) }}>{tipoLabel(act)}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.4)' }}>{n} participantes</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
-
-      {/* ── Propuestas sin asignar ── */}
-      <div style={{ marginTop: '3rem' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1.25rem', paddingBottom: '0.6rem', borderBottom: '1px solid rgba(35,22,81,0.08)' }}>
-          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(35,22,81,0.5)', margin: 0 }}>
-            Sin asignar
-          </h3>
-          {sinAsignar.length === 0
-            ? <span style={{ fontSize: '0.75rem', color: '#4dccbd', fontWeight: 600 }}>✓ Todas asignadas</span>
-            : <span style={{ fontSize: '0.75rem', color: '#e8a23a', fontWeight: 600 }}>{sinAsignar.length} pendientes</span>
-          }
-        </div>
-
-        {sinAsignar.length === 0 ? null : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {Object.entries(sinAsignarPorTipo).map(([tipo, props]) => (
-              <div key={tipo}>
-                <p style={{ fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', marginBottom: '0.6rem' }}>
-                  {etiquetaTipo(tipo)} ({props.length})
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {props.map(p => (
-                    <div key={p.id} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '0.6rem 1rem',
-                      background: 'var(--c-white)',
-                      border: '1px solid rgba(35,22,81,0.08)',
-                      gap: '1rem',
-                    }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--c-dark)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {p.titulo}
-                        </p>
-                        <p style={{ fontSize: '0.7rem', color: 'rgba(35,22,81,0.45)', marginTop: '0.1rem' }}>
-                          {p.autor.nombre}
-                          {p.autor.institucion && ` · ${p.autor.institucion}`}
-                        </p>
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'rgba(35,22,81,0.5)', whiteSpace: 'nowrap' }}>
-                          Eje {p.eje}
-                        </span>
-                        <span className="admin-badge admin-badge--revision" style={{ marginLeft: 0 }}>
-                          {etiquetaEje(p.eje).split(' ').slice(0, 3).join(' ')}…
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
     </div>
   )
