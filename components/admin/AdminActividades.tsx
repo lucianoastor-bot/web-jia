@@ -56,10 +56,7 @@ const HORAS = Array.from({ length: 27 }, (_, i) => {
   return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
 })
 
-const camposTexto: { nombre: keyof DatosActividad; etiqueta: string }[] = [
-  { nombre: 'titulo', etiqueta: 'Título' },
-  { nombre: 'sala',   etiqueta: 'Sala / Lugar' },
-]
+// sala ya no es texto libre — se renderiza como select desde SALAS en el form
 
 export default function AdminActividades() {
   const { actividades, cargar }         = useActividades()
@@ -342,19 +339,17 @@ export default function AdminActividades() {
 
         <div className="admin-form__grid">
           {/* Título */}
-          {camposTexto.filter(c => c.nombre === 'titulo').map(c => (
-            <div key={c.nombre} className="admin-form__field admin-form__field--full">
-              <label className="admin-form__label">{c.etiqueta}</label>
-              <input
-                className="admin-form__input"
-                type="text"
-                name={c.nombre}
-                value={form[c.nombre] as string}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          ))}
+          <div className="admin-form__field admin-form__field--full">
+            <label className="admin-form__label">Título</label>
+            <input
+              className="admin-form__input"
+              type="text"
+              name="titulo"
+              value={form.titulo}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
           {/* Fecha */}
           <div className="admin-form__field">
