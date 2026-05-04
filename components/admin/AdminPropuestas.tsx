@@ -456,6 +456,55 @@ export default function AdminPropuestas() {
       },
     })
 
+    // ── Tabla de resumen ──────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finalY: number = (doc as any).lastAutoTable.finalY
+
+    const porTipo = TIPOS_PROPUESTA
+      .map(t => ({ etiqueta: t.etiqueta, count: ordenadas.filter(p => p.tipo === t.valor).length }))
+      .filter(t => t.count > 0)
+
+    const porEje = EJES
+      .map(e => ({ etiqueta: `Eje ${e.num}  ·  ${e.titulo}`, count: ordenadas.filter(p => p.eje === e.num).length }))
+      .filter(e => e.count > 0)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resumenBody: any[][] = [
+      // ── Total general ──
+      [{
+        content: 'TOTAL',
+        colSpan: 2,
+        styles: { fillColor: [35, 22, 81], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+      }],
+      ['Total de propuestas', { content: String(ordenadas.length), styles: { fontStyle: 'bold', halign: 'center' } }],
+      // ── Por tipo ──
+      [{
+        content: 'POR TIPO',
+        colSpan: 2,
+        styles: { fillColor: [35, 116, 171], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+      }],
+      ...porTipo.map(t => [t.etiqueta, { content: String(t.count), styles: { halign: 'center' } }]),
+      // ── Por eje ──
+      [{
+        content: 'POR EJE',
+        colSpan: 2,
+        styles: { fillColor: [35, 116, 171], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+      }],
+      ...porEje.map(e => [e.etiqueta, { content: String(e.count), styles: { halign: 'center' } }]),
+    ]
+
+    autoTable(doc, {
+      startY: finalY + 10,
+      body:   resumenBody,
+      styles: { fontSize: 7, cellPadding: { top: 2, bottom: 2, left: 4, right: 4 } },
+      alternateRowStyles: { fillColor: [245, 246, 250] },
+      columnStyles: {
+        0: { cellWidth: 130 },
+        1: { cellWidth: 20, fontStyle: 'bold' },
+      },
+      tableWidth: 150,
+    })
+
     const fecha = new Date().toISOString().slice(0, 10)
     doc.save(`propuestas-${fecha}.pdf`)
   }
