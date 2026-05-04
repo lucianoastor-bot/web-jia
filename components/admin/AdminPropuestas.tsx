@@ -399,29 +399,60 @@ export default function AdminPropuestas() {
       return apellidoDeNombre(a.autor.nombre).localeCompare(apellidoDeNombre(b.autor.nombre), 'es')
     })
 
+    // Colores de estado (coinciden con los badges del CSS)
+    // rgba(r,g,b,α) sobre blanco → r' = 255 + α*(r-255)
+    const ESTADO_ESTILO: Record<string, { fill: [number,number,number]; text: [number,number,number] }> = {
+      pendiente: { fill: [248, 242, 230], text: [140, 101,  32] },  // amber
+      revisión:  { fill: [236, 236, 251], text: [ 58,  58, 176] },  // violeta
+      aceptada:  { fill: [228, 247, 245], text: [ 26, 140, 126] },  // turquesa
+      rechazada: { fill: [251, 234, 232], text: [176,  48,  32] },  // coral
+    }
+
+    const estadoEtq = (e: string) => ESTADOS_PROPUESTA.find(s => s.valor === e)?.etiqueta ?? e
+
     autoTable(doc, {
-      head: [['Apellido y nombre', 'Mail', 'Coautores', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador']],
-      body: ordenadas.map(p => [
-        p.autor.nombre,
-        p.autor.email,
-        p.coautores?.map(c => c.nombre).join(', ') ?? '',
-        p.autor.institucion,
-        p.eje,
-        tipoEtiqueta(p.tipo),
-        p.titulo,
-        p.evaluador ?? '',
-      ]),
+      head: [['Apellido y nombre', 'Mail', 'Coautores / Participantes', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador', 'Estado']],
+      body: ordenadas.map(p => {
+        // Para panel: participantes en la columna de coautores
+        const coautoresCell = p.tipo === 'panel'
+          ? (p.participantes ?? []).map(pa => pa.nombre).join(', ')
+          : (p.coautores    ?? []).map(c  => c.nombre).join(', ')
+
+        const estiloEstado = ESTADO_ESTILO[p.estado]
+        const estadoCell = {
+          content: estadoEtq(p.estado),
+          styles: {
+            fillColor: estiloEstado?.fill ?? [255, 255, 255] as [number,number,number],
+            textColor: estiloEstado?.text ?? [  0,   0,   0] as [number,number,number],
+            fontStyle: 'bold' as const,
+            halign:    'center' as const,
+          },
+        }
+
+        return [
+          p.autor.nombre,
+          p.autor.email,
+          coautoresCell,
+          p.autor.institucion,
+          p.eje,
+          tipoEtiqueta(p.tipo),
+          p.titulo,
+          p.evaluador ?? '',
+          estadoCell,
+        ]
+      }),
       styles:     { fontSize: 7, cellPadding: 2 },
       headStyles: { fillColor: [35, 22, 81] },
       columnStyles: {
         0: { cellWidth: 32 },  // nombre
-        1: { cellWidth: 38 },  // email
-        2: { cellWidth: 28 },  // coautores
-        3: { cellWidth: 28 },  // institución
+        1: { cellWidth: 34 },  // email
+        2: { cellWidth: 28 },  // coautores / participantes
+        3: { cellWidth: 27 },  // institución
         4: { cellWidth: 8  },  // eje
         5: { cellWidth: 18 },  // tipo
-        6: { cellWidth: 60 },  // título
-        7: { cellWidth: 26 },  // evaluador
+        6: { cellWidth: 55 },  // título
+        7: { cellWidth: 24 },  // evaluador
+        8: { cellWidth: 20 },  // estado
       },
     })
 
