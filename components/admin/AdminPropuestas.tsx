@@ -411,7 +411,7 @@ export default function AdminPropuestas() {
     const estadoEtq = (e: string) => ESTADOS_PROPUESTA.find(s => s.valor === e)?.etiqueta ?? e
 
     autoTable(doc, {
-      head: [['Apellido y nombre', 'Mail', 'Coautores / Participantes', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador', 'Estado', '#']],
+      head: [['#', 'Apellido y nombre', 'Mail', 'Coautores / Participantes', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador', 'Estado']],
       body: ordenadas.map((p, idx) => {
         // Para panel: participantes en la columna de coautores
         const coautoresCell = p.tipo === 'panel'
@@ -429,17 +429,18 @@ export default function AdminPropuestas() {
           },
         }
 
-        const nombreCell = {
-          content:  p.autor.nombre,
-          styles:   { fontStyle: 'bold' as const },
-        }
-
         const numCell = {
           content: String(idx + 1),
           styles:  { halign: 'center' as const, textColor: [160, 160, 170] as [number,number,number] },
         }
 
+        const nombreCell = {
+          content: p.autor.nombre,
+          styles:  { fontStyle: 'bold' as const },
+        }
+
         return [
+          numCell,
           nombreCell,
           p.autor.email,
           coautoresCell,
@@ -449,22 +450,21 @@ export default function AdminPropuestas() {
           p.titulo,
           p.evaluador ?? '',
           estadoCell,
-          numCell,
         ]
       }),
       styles:     { fontSize: 7, cellPadding: 2 },
       headStyles: { fillColor: [35, 22, 81] },
       columnStyles: {
-        0: { cellWidth: 32 },  // nombre
-        1: { cellWidth: 34 },  // email
-        2: { cellWidth: 28 },  // coautores / participantes
-        3: { cellWidth: 27 },  // institución
-        4: { cellWidth: 8  },  // eje
-        5: { cellWidth: 18 },  // tipo
-        6: { cellWidth: 55 },  // título
-        7: { cellWidth: 24 },  // evaluador
-        8: { cellWidth: 20 },  // estado
-        9: { cellWidth: 8  },  // nº fila
+        0: { cellWidth: 8  },  // nº fila
+        1: { cellWidth: 32 },  // nombre
+        2: { cellWidth: 34 },  // email
+        3: { cellWidth: 28 },  // coautores / participantes
+        4: { cellWidth: 27 },  // institución
+        5: { cellWidth: 8  },  // eje
+        6: { cellWidth: 18 },  // tipo
+        7: { cellWidth: 55 },  // título
+        8: { cellWidth: 24 },  // evaluador
+        9: { cellWidth: 20 },  // estado
       },
     })
 
