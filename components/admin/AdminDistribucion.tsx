@@ -223,7 +223,7 @@ function ZonaContenido({
         minHeight:     24,
       }}
     >
-      {/* Mesa / pósters: propuestas asignadas como chips draggables */}
+      {/* Mesa / pósters / panel con propuesta: chips draggables */}
       {mostrarChips && asignadas.map(p => (
         <PropuestaChip
           key={p.id}
@@ -233,7 +233,14 @@ function ZonaContenido({
         />
       ))}
 
-      {/* Panel / conferencia / otro: participantes como texto */}
+      {/* Panel sin propuesta asignada: participantes manuales como texto */}
+      {act.tipo === 'panel' && asignadas.length === 0 && nombres.map((n, i) => (
+        <span key={i} style={{ fontSize: '0.76rem', color: 'rgba(35,22,81,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {n}
+        </span>
+      ))}
+
+      {/* Conferencia / otro: participantes como texto */}
       {!mostrarChips && nombres.map((n, i) => (
         <span key={i} style={{ fontSize: '0.76rem', color: 'rgba(35,22,81,0.65)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {n}
