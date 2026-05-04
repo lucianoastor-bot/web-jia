@@ -411,8 +411,8 @@ export default function AdminPropuestas() {
     const estadoEtq = (e: string) => ESTADOS_PROPUESTA.find(s => s.valor === e)?.etiqueta ?? e
 
     autoTable(doc, {
-      head: [['Apellido y nombre', 'Mail', 'Coautores / Participantes', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador', 'Estado']],
-      body: ordenadas.map(p => {
+      head: [['Apellido y nombre', 'Mail', 'Coautores / Participantes', 'Institución', 'Eje', 'Tipo', 'Título', 'Evaluador', 'Estado', '#']],
+      body: ordenadas.map((p, idx) => {
         // Para panel: participantes en la columna de coautores
         const coautoresCell = p.tipo === 'panel'
           ? (p.participantes ?? []).map(pa => pa.nombre).join(', ')
@@ -429,8 +429,18 @@ export default function AdminPropuestas() {
           },
         }
 
+        const nombreCell = {
+          content:  p.autor.nombre,
+          styles:   { fontStyle: 'bold' as const },
+        }
+
+        const numCell = {
+          content: String(idx + 1),
+          styles:  { halign: 'center' as const, textColor: [160, 160, 170] as [number,number,number] },
+        }
+
         return [
-          p.autor.nombre,
+          nombreCell,
           p.autor.email,
           coautoresCell,
           p.autor.institucion,
@@ -439,6 +449,7 @@ export default function AdminPropuestas() {
           p.titulo,
           p.evaluador ?? '',
           estadoCell,
+          numCell,
         ]
       }),
       styles:     { fontSize: 7, cellPadding: 2 },
@@ -453,6 +464,7 @@ export default function AdminPropuestas() {
         6: { cellWidth: 55 },  // título
         7: { cellWidth: 24 },  // evaluador
         8: { cellWidth: 20 },  // estado
+        9: { cellWidth: 8  },  // nº fila
       },
     })
 
