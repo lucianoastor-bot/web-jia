@@ -11,7 +11,7 @@ import {
 import { useActividades }      from '@/lib/hooks/useActividades'
 import { usePropuestas }       from '@/lib/hooks/usePropuestas'
 import { useInvitados }        from '@/lib/hooks/useInvitados'
-import { actualizarActividad } from '@/lib/services/actividades'
+import { actualizarActividad, actualizarParticipantesPanel } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
 import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA } from '@/congreso.config'
 import type { Actividad, Propuesta, Invitado, ParticipantePanel } from '@/types'
@@ -193,8 +193,8 @@ function ZonaContenido({
   activeItem: ActiveItem | null
 }) {
   const aceptaPropuestas = !!PROPUESTAS_COMPATIBLES[act.tipo]
-  // Solo mesa y pósters muestran chips draggables; panel/conferencia/otro muestran nombres
-  const mostrarChips = act.tipo === 'mesa' || act.tipo === 'pósters'
+  // Mesa, pósters y panel muestran chips draggables; conferencia/otro muestran nombres
+  const mostrarChips = act.tipo === 'mesa' || act.tipo === 'pósters' || act.tipo === 'panel'
 
   const { setNodeRef, isOver } = useDroppable({
     id:       `prop-${act.id}`,
@@ -686,11 +686,12 @@ function DetalleModal({
 // Panel derecho: propuestas sin asignar, droppable para desasignar
 
 function PoolPropuestas({
-  propuestas, activeItem, onAgregar,
+  propuestas, actividades, activeItem, onAgregar,
 }: {
-  propuestas: Propuesta[]
-  activeItem: ActiveItem | null
-  onAgregar?: () => void
+  propuestas:  Propuesta[]
+  actividades: Actividad[]
+  activeItem:  ActiveItem | null
+  onAgregar?:  () => void
 }) {
   const isPropDragging = activeItem?.type === 'propuesta'
   const { setNodeRef, isOver } = useDroppable({
@@ -699,8 +700,13 @@ function PoolPropuestas({
     disabled: !isPropDragging,
   })
 
+  // Incluye propuestas sin actividadId Y huérfanas (actividadId apunta a actividad
+  // que ya no existe, p.ej. porque fue eliminada sin desasignar antes)
+  const actividadIds = useMemo(() => new Set(actividades.map(a => a.id)), [actividades])
+
   const sinAsignar = propuestas.filter(p =>
-    !p.actividadId && (SOLO_APROBADAS ? p.estado === 'aceptada' : true)
+    (!p.actividadId || !actividadIds.has(p.actividadId)) &&
+    (SOLO_APROBADAS ? p.estado === 'aceptada' : true)
   )
 
   return (
@@ -838,6 +844,26 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
       if (!(compatibles as string[]).includes(prop.tipo)) return
 
       await asignarPropuesta(item.id, actividadId)
+
+      // Para paneles: auto-poblar participantes desde el autor y participantes de la propuesta
+      if (act.tipo === 'panel') {
+        const nuevos: ParticipantePanel[] = [
+          {
+            nombre:     prop.autor.nombre,
+            ...(prop.autor.institucion && { institucion: prop.autor.institucion }),
+          },
+          ...((prop.participantes ?? []) as { nombre: string; institucion?: string }[]).map(p => ({
+            nombre: p.nombre,
+            ...(p.institucion && { institucion: p.institucion }),
+          })),
+        ]
+        await actualizarParticipantesPanel(actividadId, [
+          ...(act.participantes ?? []),
+          ...nuevos,
+        ])
+        await recargarActs()
+      }
+
       await recargarP()
     }
 
@@ -938,6 +964,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
         {/* ── Panel derecho: pool de propuestas ── */}
         <PoolPropuestas
           propuestas={propuestas}
+          actividades={actividades}
           activeItem={activeItem}
           onAgregar={onAgregar}
         />

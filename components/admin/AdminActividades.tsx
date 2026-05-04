@@ -153,6 +153,12 @@ export default function AdminActividades() {
 
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar esta actividad?')) return
+    // Desasignar propuestas antes de eliminar para evitar huérfanas en el pool
+    const asignadas = propuestas.filter(p => p.actividadId === id)
+    if (asignadas.length > 0) {
+      await Promise.all(asignadas.map(p => desasignarPropuesta(p.id)))
+      await cargarP()
+    }
     await eliminarActividad(id)
     setMensaje('Actividad eliminada.')
     if (editando === id) handleCancelar()
