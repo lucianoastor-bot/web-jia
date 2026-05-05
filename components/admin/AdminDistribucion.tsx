@@ -2,6 +2,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import jsPDF      from 'jspdf'
+import autoTable  from 'jspdf-autotable'
 import {
   DndContext, DragOverlay,
   PointerSensor, useSensor, useSensors,
@@ -218,7 +220,6 @@ function ZonaContenido({
         display:       'flex',
         flexDirection: 'column',
         gap:           '3px',
-        overflow:      'hidden',
         transition:    'background 0.12s',
         minHeight:     24,
       }}
@@ -323,7 +324,7 @@ function TarjetaActividad({
     <div style={{
       position:      'absolute',
       top:           `${top}px`,
-      height:        `${h}px`,
+      minHeight:     `${h}px`,
       left: 2, right: 2,
       background:    'var(--c-white)',
       borderLeft:    `4px solid ${color}`,
@@ -332,7 +333,6 @@ function TarjetaActividad({
       display:       'flex',
       flexDirection: 'column',
       opacity:       isDragging ? 0.25 : 1,
-      overflow:      'hidden',
       zIndex:        1,
     }}>
       <HandleActividad act={act} isDragging={isDragging} onVerDetalle={onVerDetalle} />
@@ -882,6 +882,161 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
     }
   }
 
+  // ── PDF ──────────────────────────────────────────────────
+
+  const descargarPDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+    // Propuestas huérfanas también van al pool en el PDF
+    const actividadIdsSet = new Set(actividades.map(a => a.id))
+    const sinAsignar = propuestas.filter(p =>
+      (!p.actividadId || !actividadIdsSet.has(p.actividadId)) &&
+      (SOLO_APROBADAS ? p.estado === 'aceptada' : true)
+    )
+
+    // ── Página 1: propuestas sin asignar ──────────────────────
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.setTextColor(35, 22, 81)
+    doc.text('Propuestas sin asignar', 14, 16)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    doc.setTextColor(130, 130, 140)
+    doc.text(`${sinAsignar.length} propuesta${sinAsignar.length !== 1 ? 's' : ''}`, 14, 21)
+
+    if (sinAsignar.length === 0) {
+      doc.text('Todas las propuestas están asignadas a una actividad.', 14, 30)
+    } else {
+      autoTable(doc, {
+        startY: 25,
+        head: [['#', 'Tipo', 'Eje', 'Autor', 'Título', 'Estado']],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: sinAsignar.map((p, i): any[] => [
+          { content: String(i + 1), styles: { halign: 'center', textColor: [160, 160, 170] as [number,number,number] } },
+          TIPOS_PROPUESTA.find(t => t.valor === p.tipo)?.etiqueta ?? p.tipo,
+          p.eje,
+          { content: p.autor.nombre, styles: { fontStyle: 'bold' as const } },
+          p.titulo,
+          ESTADOS_PROPUESTA.find(e => e.valor === p.estado)?.etiqueta ?? p.estado,
+        ]),
+        styles:     { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [35, 22, 81] },
+        alternateRowStyles: { fillColor: [240, 250, 249] },
+        columnStyles: {
+          0: { cellWidth: 8   },  // #
+          1: { cellWidth: 22  },  // tipo
+          2: { cellWidth: 8   },  // eje
+          3: { cellWidth: 45  },  // autor
+          4: { cellWidth: 145 },  // título
+          5: { cellWidth: 22  },  // estado
+        },
+      })
+    }
+
+    // ── Una página por día ────────────────────────────────────
+    for (const dia of FECHAS_JORNADA) {
+      doc.addPage()
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.setTextColor(35, 22, 81)
+      doc.text(dia.etiqueta, 14, 16)
+
+      const actsDia = actividades
+        .filter(a => a.fecha === dia.valor)
+        .sort((a, b) => {
+          const hA = a.horaInicio ?? '99:99'
+          const hB = b.horaInicio ?? '99:99'
+          if (hA !== hB) return hA.localeCompare(hB)
+          return (a.sala ?? '').localeCompare(b.sala ?? '', 'es')
+        })
+
+      if (actsDia.length === 0) {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(7)
+        doc.setTextColor(160, 160, 170)
+        doc.text('Sin actividades para este día.', 14, 26)
+        continue
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body: any[][] = []
+
+      for (const act of actsDia) {
+        const hora   = act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : 'Sin horario'
+        const sala   = act.sala ?? 'Sin sala'
+        const tipo   = tipoLabel(act)
+        const titulo = act.titulo || '(sin título)'
+
+        // Encabezado de sección
+        body.push([{
+          content: `${hora}  ·  ${sala.toUpperCase()}\n${tipo.toUpperCase()}  ·  ${titulo}`,
+          colSpan: 5,
+          styles: {
+            fillColor:   [35, 22, 81] as [number,number,number],
+            textColor:   [255, 255, 255] as [number,number,number],
+            fontStyle:   'bold' as const,
+            fontSize:    7,
+            cellPadding: { top: 4, bottom: 3, left: 5, right: 5 },
+          },
+        }])
+
+        const asignadas = propuestas.filter(p => p.actividadId === act.id)
+        const inv       = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+
+        if (act.tipo === 'conferencia') {
+          if (inv) {
+            body.push([`  •  ${inv.nombre}`, inv.institucion ?? '', inv.rol ?? '', '', ''])
+          } else {
+            body.push([{ content: '(sin conferencista asignado)', colSpan: 5,
+              styles: { fontStyle: 'italic' as const, textColor: [160,160,170] as [number,number,number] } }])
+          }
+        } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
+          if (asignadas.length === 0) {
+            body.push([{ content: '(sin propuestas asignadas)', colSpan: 5,
+              styles: { fontStyle: 'italic' as const, textColor: [160,160,170] as [number,number,number] } }])
+          } else {
+            for (const p of asignadas) {
+              const nombres = [p.autor.nombre, ...(p.coautores ?? []).map(c => c.nombre)].join(' · ')
+              const pert    = PERTENENCIAS.find(x => x.valor === p.autor.pertenencia)?.etiqueta ?? ''
+              const estado  = ESTADOS_PROPUESTA.find(x => x.valor === p.estado)?.etiqueta ?? ''
+              body.push([`  •  ${nombres}`, pert, p.titulo, p.eje, estado])
+            }
+          }
+        } else {
+          // panel, otro: participantes de act.participantes
+          const parts = act.participantes ?? []
+          if (parts.length === 0) {
+            body.push([{ content: '(sin participantes)', colSpan: 5,
+              styles: { fontStyle: 'italic' as const, textColor: [160,160,170] as [number,number,number] } }])
+          } else {
+            for (const p of parts) {
+              body.push([`  •  ${p.nombre}`, p.institucion ?? '', p.tituloPonencia ?? '', '', ''])
+            }
+          }
+        }
+      }
+
+      autoTable(doc, {
+        startY: 22,
+        head:   [['Nombre(s)', 'Pertenencia / Institución', 'Título de la presentación', 'Eje', 'Estado']],
+        body,
+        styles:             { fontSize: 7, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
+        headStyles:         { fillColor: [35, 22, 81], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [240, 250, 249] },
+        columnStyles: {
+          0: { cellWidth: 65  },
+          1: { cellWidth: 45  },
+          2: { cellWidth: 115 },
+          3: { cellWidth: 12  },
+          4: { cellWidth: 20  },
+        },
+      })
+    }
+
+    doc.save(`distribucion-${new Date().toISOString().slice(0, 10)}.pdf`)
+  }
+
   // ── DragOverlay content ──────────────────────────────────
 
   const overlayActividadAct = activeItem?.type === 'actividad'
@@ -907,7 +1062,16 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
 
         {/* ── Columna izquierda: grilla ── */}
         <div>
-          <h2 className="admin-module__title">Distribución</h2>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '0.25rem' }}>
+            <h2 className="admin-module__title" style={{ margin: 0 }}>Distribución</h2>
+            <button
+              className="admin-btn admin-btn--ghost"
+              style={{ fontSize: '0.78rem', padding: '0.2rem 0.6rem', marginLeft: 'auto' }}
+              onClick={descargarPDF}
+            >
+              ↓ PDF
+            </button>
+          </div>
 
           {/* Tabs por día */}
           <div style={{ display: 'flex', marginBottom: '1.75rem', borderBottom: '1px solid rgba(35,22,81,0.1)' }}>
