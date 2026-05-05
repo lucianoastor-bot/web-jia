@@ -885,7 +885,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
   // ── PDF ──────────────────────────────────────────────────
 
   const descargarPDF = () => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
     // ── Colores por tipo (RGB) ────────────────────────────────
     const TYPE_RGB: Record<string, [number, number, number]> = {
@@ -903,7 +903,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
       Math.round(255 + a * (b - 255)),
     ]
 
-    // ── Layout A4 landscape ───────────────────────────────────
+    // ── Layout A4 portrait ────────────────────────────────────
     const ML = 10, MR = 8, MT = 8, MB = 6
     const TITLE_H  = 10   // alto bloque título
     const ROOM_H   = 8    // alto cabecera de salas
@@ -914,8 +914,8 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
 
     const gridL    = ML + TIME_W
     const gridT    = MT + TITLE_H + ROOM_H
-    const gridR    = 297 - MR
-    const gridB    = 210 - MB
+    const gridR    = 210 - MR       // A4 portrait: 210mm de ancho
+    const gridB    = 297 - MB       // A4 portrait: 297mm de alto
     const gridW    = gridR - gridL
     const gridH    = gridB - gridT
     const mmPerMin = gridH / TOTAL_M
@@ -958,12 +958,12 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
         headStyles:         { fillColor: [35, 22, 81] },
         alternateRowStyles: { fillColor: [240, 250, 249] },
         columnStyles: {
-          0: { cellWidth: 8   },
-          1: { cellWidth: 22  },
-          2: { cellWidth: 8   },
-          3: { cellWidth: 45  },
-          4: { cellWidth: 145 },
-          5: { cellWidth: 22  },
+          0: { cellWidth: 6   },  // #
+          1: { cellWidth: 20  },  // tipo
+          2: { cellWidth: 6   },  // eje
+          3: { cellWidth: 38  },  // autor
+          4: { cellWidth: 100 },  // título
+          5: { cellWidth: 20  },  // estado
         },
       })
     }
