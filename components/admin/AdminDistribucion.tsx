@@ -887,28 +887,63 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
   const descargarPDF = () => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
-    // Propuestas huérfanas también van al pool en el PDF
-    const actividadIdsSet = new Set(actividades.map(a => a.id))
+    // ── Colores por tipo (RGB) ────────────────────────────────
+    const TYPE_RGB: Record<string, [number, number, number]> = {
+      conferencia: [ 77, 204, 189],
+      panel:       [124,  92, 191],
+      mesa:        [232, 162,  58],
+      pósters:     [ 58, 116, 171],
+      otro:        [136, 136, 136],
+    }
+    const tipoRgb = (tipo: string): [number, number, number] => TYPE_RGB[tipo] ?? [136, 136, 136]
+    // Mezcla el color con blanco al α dado (simula un fondo translúcido)
+    const lighten = ([r, g, b]: [number, number, number], a = 0.10): [number, number, number] => [
+      Math.round(255 + a * (r - 255)),
+      Math.round(255 + a * (g - 255)),
+      Math.round(255 + a * (b - 255)),
+    ]
+
+    // ── Layout A4 landscape ───────────────────────────────────
+    const ML = 10, MR = 8, MT = 8, MB = 6
+    const TITLE_H  = 10   // alto bloque título
+    const ROOM_H   = 8    // alto cabecera de salas
+    const TIME_W   = 12   // ancho columna de horas
+    const DAY_S    = toMin('08:00')
+    const DAY_E    = toMin('21:00')
+    const TOTAL_M  = DAY_E - DAY_S
+
+    const gridL    = ML + TIME_W
+    const gridT    = MT + TITLE_H + ROOM_H
+    const gridR    = 297 - MR
+    const gridB    = 210 - MB
+    const gridW    = gridR - gridL
+    const gridH    = gridB - gridT
+    const mmPerMin = gridH / TOTAL_M
+
+    const timeToY  = (t: string) => gridT + (toMin(t) - DAY_S) * mmPerMin
+    const HOUR_LBL = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
+
+    // ── Página 1: propuestas sin asignar (tabla) ──────────────
+    const actIdSet   = new Set(actividades.map(a => a.id))
     const sinAsignar = propuestas.filter(p =>
-      (!p.actividadId || !actividadIdsSet.has(p.actividadId)) &&
+      (!p.actividadId || !actIdSet.has(p.actividadId)) &&
       (SOLO_APROBADAS ? p.estado === 'aceptada' : true)
     )
 
-    // ── Página 1: propuestas sin asignar ──────────────────────
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(11)
     doc.setTextColor(35, 22, 81)
-    doc.text('Propuestas sin asignar', 14, 16)
+    doc.text('Propuestas sin asignar', ML, MT + 7)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
     doc.setTextColor(130, 130, 140)
-    doc.text(`${sinAsignar.length} propuesta${sinAsignar.length !== 1 ? 's' : ''}`, 14, 21)
+    doc.text(`${sinAsignar.length} propuesta${sinAsignar.length !== 1 ? 's' : ''}`, ML, MT + 12)
 
     if (sinAsignar.length === 0) {
-      doc.text('Todas las propuestas están asignadas a una actividad.', 14, 30)
+      doc.text('Todas las propuestas están asignadas a una actividad.', ML, MT + 20)
     } else {
       autoTable(doc, {
-        startY: 25,
+        startY: MT + 15,
         head: [['#', 'Tipo', 'Eje', 'Autor', 'Título', 'Estado']],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         body: sinAsignar.map((p, i): any[] => [
@@ -919,119 +954,172 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
           p.titulo,
           ESTADOS_PROPUESTA.find(e => e.valor === p.estado)?.etiqueta ?? p.estado,
         ]),
-        styles:     { fontSize: 7, cellPadding: 2 },
-        headStyles: { fillColor: [35, 22, 81] },
+        styles:             { fontSize: 7, cellPadding: 2 },
+        headStyles:         { fillColor: [35, 22, 81] },
         alternateRowStyles: { fillColor: [240, 250, 249] },
         columnStyles: {
-          0: { cellWidth: 8   },  // #
-          1: { cellWidth: 22  },  // tipo
-          2: { cellWidth: 8   },  // eje
-          3: { cellWidth: 45  },  // autor
-          4: { cellWidth: 145 },  // título
-          5: { cellWidth: 22  },  // estado
+          0: { cellWidth: 8   },
+          1: { cellWidth: 22  },
+          2: { cellWidth: 8   },
+          3: { cellWidth: 45  },
+          4: { cellWidth: 145 },
+          5: { cellWidth: 22  },
         },
       })
     }
 
-    // ── Una página por día ────────────────────────────────────
+    // ── Una página por día: grilla gráfica ───────────────────
     for (const dia of FECHAS_JORNADA) {
       doc.addPage()
 
+      // Título del día
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(11)
+      doc.setFontSize(10)
       doc.setTextColor(35, 22, 81)
-      doc.text(dia.etiqueta, 14, 16)
+      doc.text(dia.etiqueta, ML, MT + 7)
 
       const actsDia = actividades
-        .filter(a => a.fecha === dia.valor)
-        .sort((a, b) => {
-          const hA = a.horaInicio ?? '99:99'
-          const hB = b.horaInicio ?? '99:99'
-          if (hA !== hB) return hA.localeCompare(hB)
-          return (a.sala ?? '').localeCompare(b.sala ?? '', 'es')
-        })
+        .filter(a => a.fecha === dia.valor && a.horaInicio && a.horaFin)
 
       if (actsDia.length === 0) {
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(7)
         doc.setTextColor(160, 160, 170)
-        doc.text('Sin actividades para este día.', 14, 26)
+        doc.text('Sin actividades para este día.', ML, MT + TITLE_H + 5)
         continue
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const body: any[][] = []
+      // Salas del día ordenadas igual que en la grilla
+      const salas = [...new Set(actsDia.map(a => a.sala ?? ''))].sort((a, b) => {
+        if (!a && b) return 1
+        if (a && !b) return -1
+        return a.localeCompare(b, 'es')
+      })
+      const colW    = gridW / salas.length
+      const salaToX = (sala: string) => gridL + salas.indexOf(sala ?? '') * colW
 
+      // ── Cabecera de salas ──
+      const roomY = MT + TITLE_H
+      doc.setFillColor(35, 22, 81)
+      doc.rect(gridL, roomY, gridW, ROOM_H, 'F')
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(6)
+      doc.setTextColor(255, 255, 255)
+      salas.forEach((sala, i) => {
+        const cx = gridL + i * colW + colW / 2
+        const label = sala || 'Sin sala'
+        // Truncar si no cabe en el ancho de columna (aprox 1 char ≈ 1.6mm a 6pt)
+        const maxChars = Math.floor(colW / 1.55)
+        doc.text(label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label,
+          cx, roomY + ROOM_H * 0.65, { align: 'center' })
+      })
+
+      // ── Fondo de grilla ──
+      doc.setFillColor(250, 251, 253)
+      doc.rect(gridL, gridT, gridW, gridH, 'F')
+
+      // ── Líneas de hora + etiquetas ──
+      doc.setFont('helvetica', 'normal')
+      HOUR_LBL.forEach(h => {
+        const y = timeToY(h)
+        doc.setFontSize(5.5)
+        doc.setTextColor(140, 140, 155)
+        doc.text(h, ML + TIME_W - 1.5, y + 1, { align: 'right' })
+        doc.setDrawColor(210, 212, 228)
+        doc.setLineWidth(0.15)
+        doc.line(gridL, y, gridR, y)
+      })
+
+      // ── Separadores verticales entre salas ──
+      doc.setDrawColor(200, 202, 218)
+      doc.setLineWidth(0.2)
+      for (let i = 1; i < salas.length; i++) {
+        const x = gridL + i * colW
+        doc.line(x, gridT, x, gridB)
+      }
+
+      // ── Tarjetas de actividad ──
       for (const act of actsDia) {
-        const hora   = act.horaInicio && act.horaFin ? `${act.horaInicio}–${act.horaFin}` : 'Sin horario'
-        const sala   = act.sala ?? 'Sin sala'
-        const tipo   = tipoLabel(act)
-        const titulo = act.titulo || '(sin título)'
+        const GAP = 1.2
+        const ax  = salaToX(act.sala ?? '') + GAP
+        const ay  = timeToY(act.horaInicio!)
+        const aw  = colW - GAP * 2
+        const ah  = Math.max((toMin(act.horaFin!) - toMin(act.horaInicio!)) * mmPerMin - 0.5, 3)
+        const rgb = tipoRgb(act.tipo)
+        const fill = lighten(rgb, 0.10)
 
-        // Encabezado de sección
-        body.push([{
-          content: `${hora}  ·  ${sala.toUpperCase()}\n${tipo.toUpperCase()}  ·  ${titulo}`,
-          colSpan: 5,
-          styles: {
-            fillColor:   [35, 22, 81] as [number,number,number],
-            textColor:   [255, 255, 255] as [number,number,number],
-            fontStyle:   'bold' as const,
-            fontSize:    7,
-            cellPadding: { top: 4, bottom: 3, left: 5, right: 5 },
-          },
-        }])
+        // Fondo y borde
+        doc.setFillColor(fill[0], fill[1], fill[2])
+        doc.setDrawColor(rgb[0], rgb[1], rgb[2])
+        doc.setLineWidth(0.15)
+        doc.roundedRect(ax, ay, aw, ah, 0.5, 0.5, 'FD')
 
-        const asignadas = propuestas.filter(p => p.actividadId === act.id)
-        const inv       = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+        // Barra de color izquierda
+        const barW = 1.8
+        doc.setFillColor(rgb[0], rgb[1], rgb[2])
+        doc.rect(ax, ay, barW, ah, 'F')
 
-        if (act.tipo === 'conferencia') {
-          if (inv) {
-            body.push([`  •  ${inv.nombre}`, inv.institucion ?? '', inv.rol ?? '', '', ''])
-          } else {
-            body.push([{ content: '(sin conferencista asignado)', colSpan: 5,
-              styles: { fontStyle: 'italic' as const, textColor: [160,160,170] as [number,number,number] } }])
+        // Texto
+        const tx   = ax + barW + 1.2
+        const tw   = aw - barW - 2.0
+        let   ty   = ay + 3.2
+        const maxY = ay + ah - 1.0
+
+        // Tipo
+        if (ah >= 5 && ty < maxY) {
+          doc.setFont('helvetica', 'bold')
+          doc.setFontSize(4.5)
+          doc.setTextColor(rgb[0], rgb[1], rgb[2])
+          doc.text(tipoLabel(act).toUpperCase(), tx, ty)
+          ty += 2.8
+        }
+
+        // Título
+        if (ah >= 8 && ty < maxY) {
+          doc.setFont('helvetica', 'bold')
+          doc.setFontSize(5.5)
+          doc.setTextColor(35, 22, 81)
+          const lines  = doc.splitTextToSize(act.titulo || '(sin título)', tw) as string[]
+          const nLines = Math.min(lines.length, Math.floor((maxY - ty) / 2.4))
+          if (nLines > 0) {
+            doc.text(lines.slice(0, nLines), tx, ty)
+            ty += nLines * 2.4 + 0.8
           }
-        } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
-          if (asignadas.length === 0) {
-            body.push([{ content: '(sin propuestas asignadas)', colSpan: 5,
-              styles: { fontStyle: 'italic' as const, textColor: [160,160,170] as [number,number,number] } }])
+        }
+
+        // Participantes
+        if (ah >= 14 && ty < maxY) {
+          const asignadas = propuestas.filter(p => p.actividadId === act.id)
+          const inv       = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+          let names: string[] = []
+          if (act.tipo === 'conferencia' && inv) {
+            names = [inv.nombre]
+          } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
+            names = asignadas.map(p => p.autor.nombre)
           } else {
-            for (const p of asignadas) {
-              const nombres = [p.autor.nombre, ...(p.coautores ?? []).map(c => c.nombre)].join(' · ')
-              const pert    = PERTENENCIAS.find(x => x.valor === p.autor.pertenencia)?.etiqueta ?? ''
-              const estado  = ESTADOS_PROPUESTA.find(x => x.valor === p.estado)?.etiqueta ?? ''
-              body.push([`  •  ${nombres}`, pert, p.titulo, p.eje, estado])
-            }
+            names = (act.participantes ?? []).map(p => p.nombre)
           }
-        } else {
-          // panel, otro: participantes de act.participantes
-          const parts = act.participantes ?? []
-          if (parts.length === 0) {
-            body.push([{ content: '(sin participantes)', colSpan: 5,
-              styles: { fontStyle: 'italic' as const, textColor: [160,160,170] as [number,number,number] } }])
-          } else {
-            for (const p of parts) {
-              body.push([`  •  ${p.nombre}`, p.institucion ?? '', p.tituloPonencia ?? '', '', ''])
-            }
+
+          doc.setFont('helvetica', 'normal')
+          doc.setFontSize(4.8)
+          doc.setTextColor(60, 40, 90)
+          const lineH   = 2.2
+          const maxN    = Math.max(0, Math.floor((maxY - ty) / lineH) - 1)
+          const visible = names.slice(0, maxN)
+          visible.forEach(name => {
+            if (ty < maxY) { doc.text(`· ${name}`, tx, ty); ty += lineH }
+          })
+          if (names.length > visible.length && ty < maxY) {
+            doc.setTextColor(130, 110, 160)
+            doc.text(`+${names.length - visible.length} más`, tx, ty)
           }
         }
       }
 
-      autoTable(doc, {
-        startY: 22,
-        head:   [['Nombre(s)', 'Pertenencia / Institución', 'Título de la presentación', 'Eje', 'Estado']],
-        body,
-        styles:             { fontSize: 7, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
-        headStyles:         { fillColor: [35, 22, 81], textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [240, 250, 249] },
-        columnStyles: {
-          0: { cellWidth: 65  },
-          1: { cellWidth: 45  },
-          2: { cellWidth: 115 },
-          3: { cellWidth: 12  },
-          4: { cellWidth: 20  },
-        },
-      })
+      // ── Borde exterior de la grilla ──
+      doc.setDrawColor(180, 182, 205)
+      doc.setLineWidth(0.3)
+      doc.rect(gridL, gridT, gridW, gridH)
     }
 
     doc.save(`distribucion-${new Date().toISOString().slice(0, 10)}.pdf`)
