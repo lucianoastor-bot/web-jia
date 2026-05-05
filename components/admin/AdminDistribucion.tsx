@@ -31,7 +31,7 @@ const FECHAS_JORNADA = [0, 1, 2].map(d => {
 
 const DAY_START    = '08:00'
 const DAY_END      = '21:00'
-const PX_MIN_FLOOR = 0.9
+const PX_MIN_FLOOR = 2.0
 const PX_MIN_CAP   = 4.0
 const HORA_LABELS  = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
 const VACIA        = '__sin_sala__'
