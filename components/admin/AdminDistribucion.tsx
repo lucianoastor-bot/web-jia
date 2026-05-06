@@ -570,9 +570,19 @@ function FilaPropuesta({ prop }: { prop: Propuesta }) {
           Con: {prop.coautores.map(c => c.nombre).join(', ')}
         </p>
       )}
-      <p style={{ fontSize: '0.82rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.7)', margin: 0, lineHeight: 1.4 }}>
+      <p style={{ fontSize: '0.82rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.7)', margin: '0 0 0.25rem', lineHeight: 1.4 }}>
         {prop.titulo}
       </p>
+      {prop.resumenLink && (
+        <a
+          href={prop.resumenLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: '0.75rem', color: 'var(--c-turq)', textDecoration: 'none' }}
+        >
+          Ver resumen →
+        </a>
+      )}
     </div>
   )
 }
