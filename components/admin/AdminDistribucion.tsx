@@ -684,13 +684,17 @@ function DetalleModal({
                 </div>
           )}
 
-          {/* Panel / otro: participantes */}
+          {/* Panel / otro: propuesta asignada (si existe) o participantes manuales */}
           {(act.tipo === 'panel' || act.tipo === 'otro') && (
-            (act.participantes ?? []).length === 0
-              ? <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin participantes</p>
-              : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {(act.participantes ?? []).map((p, i) => <FilaParticipante key={i} participante={p} />)}
+            asignadas.length > 0
+              ? <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {asignadas.map(p => <FilaPropuesta key={p.id} prop={p} />)}
                 </div>
+              : (act.participantes ?? []).length === 0
+                ? <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin participantes</p>
+                : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {(act.participantes ?? []).map((p, i) => <FilaParticipante key={i} participante={p} />)}
+                  </div>
           )}
         </div>
 
