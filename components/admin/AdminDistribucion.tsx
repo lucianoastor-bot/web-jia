@@ -1057,7 +1057,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
         }
 
         // Participantes
-        if (ah >= 18 && ty < maxY) {
+        if (ah >= 12 && ty < maxY) {
           const asignadas = propuestas.filter(p => p.actividadId === act.id)
           const inv       = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
           let names: string[] = []
@@ -1065,14 +1065,19 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
             names = [inv.nombre]
           } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
             names = asignadas.map(p => p.autor.nombre)
+          } else if (act.tipo === 'panel' && asignadas.length > 0) {
+            // Panel con propuesta asignada: autor + participantes de la propuesta
+            const prop = asignadas[0]
+            names = [prop.autor.nombre, ...(prop.participantes ?? []).map(p => p.nombre)]
           } else {
+            // Panel sin propuesta o tipo 'otro': participantes manuales
             names = (act.participantes ?? []).map(p => p.nombre)
           }
 
           doc.setFont('helvetica', 'normal')
-          doc.setFontSize(6.5)
+          doc.setFontSize(7.5)
           doc.setTextColor(60, 40, 90)
-          const lineH   = 3.0
+          const lineH   = 3.5
           const maxN    = Math.max(0, Math.floor((maxY - ty) / lineH) - 1)
           const visible = names.slice(0, maxN)
           visible.forEach(name => {
