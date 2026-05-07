@@ -937,70 +937,25 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
     const timeToY  = (t: string) => gridT + (toMin(t) - DAY_S) * mmPerMin
     const HOUR_LBL = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
 
-    // ── Página 1: propuestas sin asignar (tabla) ──────────────
-    const actIdSet   = new Set(actividades.map(a => a.id))
-    const sinAsignar = propuestas.filter(p =>
-      (!p.actividadId || !actIdSet.has(p.actividadId)) &&
-      (SOLO_APROBADAS ? p.estado === 'aceptada' : true)
-    )
-
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(11)
-    doc.setTextColor(35, 22, 81)
-    doc.text('Propuestas sin asignar', ML, MT + 7)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(7)
-    doc.setTextColor(130, 130, 140)
-    doc.text(`${sinAsignar.length} propuesta${sinAsignar.length !== 1 ? 's' : ''}`, ML, MT + 12)
-
-    if (sinAsignar.length === 0) {
-      doc.text('Todas las propuestas están asignadas a una actividad.', ML, MT + 20)
-    } else {
-      autoTable(doc, {
-        startY: MT + 15,
-        head: [['#', 'Tipo', 'Eje', 'Autor', 'Título', 'Estado']],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        body: sinAsignar.map((p, i): any[] => [
-          { content: String(i + 1), styles: { halign: 'center', textColor: [160, 160, 170] as [number,number,number] } },
-          TIPOS_PROPUESTA.find(t => t.valor === p.tipo)?.etiqueta ?? p.tipo,
-          p.eje,
-          { content: p.autor.nombre, styles: { fontStyle: 'bold' as const } },
-          p.titulo,
-          ESTADOS_PROPUESTA.find(e => e.valor === p.estado)?.etiqueta ?? p.estado,
-        ]),
-        styles:             { fontSize: 7, cellPadding: 2 },
-        headStyles:         { fillColor: [35, 22, 81] },
-        alternateRowStyles: { fillColor: [240, 250, 249] },
-        columnStyles: {
-          0: { cellWidth: 6   },  // #
-          1: { cellWidth: 20  },  // tipo
-          2: { cellWidth: 6   },  // eje
-          3: { cellWidth: 38  },  // autor
-          4: { cellWidth: 100 },  // título
-          5: { cellWidth: 20  },  // estado
-        },
-      })
-    }
-
     // ── Una página por día: grilla gráfica ───────────────────
-    for (const dia of FECHAS_JORNADA) {
-      doc.addPage()
+    FECHAS_JORNADA.forEach((dia, diaIdx) => {
+      if (diaIdx > 0) doc.addPage()   // primera jornada usa la página inicial
 
       // Título del día
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(10)
+      doc.setFontSize(13)
       doc.setTextColor(35, 22, 81)
-      doc.text(dia.etiqueta, ML, MT + 7)
+      doc.text(dia.etiqueta, ML, MT + 8)
 
       const actsDia = actividades
         .filter(a => a.fecha === dia.valor && a.horaInicio && a.horaFin)
 
       if (actsDia.length === 0) {
         doc.setFont('helvetica', 'normal')
-        doc.setFontSize(7)
+        doc.setFontSize(9)
         doc.setTextColor(160, 160, 170)
         doc.text('Sin actividades para este día.', ML, MT + TITLE_H + 5)
-        continue
+        return
       }
 
       // Salas del día ordenadas igual que en la grilla
@@ -1017,15 +972,15 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
       doc.setFillColor(35, 22, 81)
       doc.rect(gridL, roomY, gridW, ROOM_H, 'F')
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(6)
+      doc.setFontSize(8)
       doc.setTextColor(255, 255, 255)
       salas.forEach((sala, i) => {
         const cx = gridL + i * colW + colW / 2
         const label = sala || 'Sin sala'
-        // Truncar si no cabe en el ancho de columna (aprox 1 char ≈ 1.6mm a 6pt)
-        const maxChars = Math.floor(colW / 1.55)
+        // Truncar si no cabe (aprox 1 char ≈ 2mm a 8pt)
+        const maxChars = Math.floor(colW / 2.0)
         doc.text(label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label,
-          cx, roomY + ROOM_H * 0.65, { align: 'center' })
+          cx, roomY + ROOM_H * 0.68, { align: 'center' })
       })
 
       // ── Fondo de grilla ──
@@ -1036,9 +991,9 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
       doc.setFont('helvetica', 'normal')
       HOUR_LBL.forEach(h => {
         const y = timeToY(h)
-        doc.setFontSize(5.5)
+        doc.setFontSize(7.5)
         doc.setTextColor(140, 140, 155)
-        doc.text(h, ML + TIME_W - 1.5, y + 1, { align: 'right' })
+        doc.text(h, ML + TIME_W - 1.5, y + 1.2, { align: 'right' })
         doc.setDrawColor(210, 212, 228)
         doc.setLineWidth(0.15)
         doc.line(gridL, y, gridR, y)
@@ -1058,7 +1013,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
         const ax  = salaToX(act.sala ?? '') + GAP
         const ay  = timeToY(act.horaInicio!)
         const aw  = colW - GAP * 2
-        const ah  = Math.max((toMin(act.horaFin!) - toMin(act.horaInicio!)) * mmPerMin - 0.5, 3)
+        const ah  = Math.max((toMin(act.horaFin!) - toMin(act.horaInicio!)) * mmPerMin - 0.5, 4)
         const rgb = tipoRgb(act.tipo)
         const fill = lighten(rgb, 0.10)
 
@@ -1069,40 +1024,40 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
         doc.roundedRect(ax, ay, aw, ah, 0.5, 0.5, 'FD')
 
         // Barra de color izquierda
-        const barW = 1.8
+        const barW = 2.0
         doc.setFillColor(rgb[0], rgb[1], rgb[2])
         doc.rect(ax, ay, barW, ah, 'F')
 
         // Texto
-        const tx   = ax + barW + 1.2
-        const tw   = aw - barW - 2.0
-        let   ty   = ay + 3.2
-        const maxY = ay + ah - 1.0
+        const tx   = ax + barW + 1.5
+        const tw   = aw - barW - 2.5
+        let   ty   = ay + 4.5
+        const maxY = ay + ah - 1.5
 
         // Tipo
-        if (ah >= 5 && ty < maxY) {
+        if (ah >= 6 && ty < maxY) {
           doc.setFont('helvetica', 'bold')
-          doc.setFontSize(4.5)
+          doc.setFontSize(6)
           doc.setTextColor(rgb[0], rgb[1], rgb[2])
           doc.text(tipoLabel(act).toUpperCase(), tx, ty)
-          ty += 2.8
+          ty += 3.5
         }
 
         // Título
-        if (ah >= 8 && ty < maxY) {
+        if (ah >= 10 && ty < maxY) {
           doc.setFont('helvetica', 'bold')
-          doc.setFontSize(5.5)
+          doc.setFontSize(7.5)
           doc.setTextColor(35, 22, 81)
           const lines  = doc.splitTextToSize(act.titulo || '(sin título)', tw) as string[]
-          const nLines = Math.min(lines.length, Math.floor((maxY - ty) / 2.4))
+          const nLines = Math.min(lines.length, Math.floor((maxY - ty) / 3.2))
           if (nLines > 0) {
             doc.text(lines.slice(0, nLines), tx, ty)
-            ty += nLines * 2.4 + 0.8
+            ty += nLines * 3.2 + 1.0
           }
         }
 
         // Participantes
-        if (ah >= 14 && ty < maxY) {
+        if (ah >= 18 && ty < maxY) {
           const asignadas = propuestas.filter(p => p.actividadId === act.id)
           const inv       = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
           let names: string[] = []
@@ -1115,9 +1070,9 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
           }
 
           doc.setFont('helvetica', 'normal')
-          doc.setFontSize(4.8)
+          doc.setFontSize(6.5)
           doc.setTextColor(60, 40, 90)
-          const lineH   = 2.2
+          const lineH   = 3.0
           const maxN    = Math.max(0, Math.floor((maxY - ty) / lineH) - 1)
           const visible = names.slice(0, maxN)
           visible.forEach(name => {
@@ -1134,7 +1089,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
       doc.setDrawColor(180, 182, 205)
       doc.setLineWidth(0.3)
       doc.rect(gridL, gridT, gridW, gridH)
-    }
+    })
 
     doc.save(`distribucion-${new Date().toISOString().slice(0, 10)}.pdf`)
   }
