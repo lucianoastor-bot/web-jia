@@ -523,13 +523,43 @@ export default function AdminPropuestas() {
 
   // ── Render ─────────────────────────────────────────────────
 
+  const idxEditando = editando ? propuestasFiltradas.findIndex(p => p.id === editando) : -1
+  const propAnterior = idxEditando > 0 ? propuestasFiltradas[idxEditando - 1] : null
+  const propSiguiente = idxEditando >= 0 && idxEditando < propuestasFiltradas.length - 1
+    ? propuestasFiltradas[idxEditando + 1] : null
+
   return (
     <div className="admin-module">
 
       {/* ── Formulario ── */}
-      <h2 className="admin-module__title">
-        {editando ? 'Editar propuesta' : 'Agregar propuesta'}
-      </h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <h2 className="admin-module__title" style={{ margin: 0 }}>
+          {editando ? 'Editar propuesta' : 'Agregar propuesta'}
+        </h2>
+        {editando && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--c-muted, #888)' }}>
+            <button
+              type="button"
+              onClick={() => propAnterior && handleEditar(propAnterior)}
+              disabled={!propAnterior}
+              title={propAnterior ? `Anterior: ${propAnterior.titulo}` : 'Primera propuesta'}
+              style={{ background: 'none', border: '1px solid currentColor', borderRadius: '4px', padding: '2px 8px', cursor: propAnterior ? 'pointer' : 'not-allowed', opacity: propAnterior ? 1 : 0.35, fontSize: '1rem' }}
+            >
+              ←
+            </button>
+            <span>{idxEditando + 1} / {propuestasFiltradas.length}</span>
+            <button
+              type="button"
+              onClick={() => propSiguiente && handleEditar(propSiguiente)}
+              disabled={!propSiguiente}
+              title={propSiguiente ? `Siguiente: ${propSiguiente.titulo}` : 'Última propuesta'}
+              style={{ background: 'none', border: '1px solid currentColor', borderRadius: '4px', padding: '2px 8px', cursor: propSiguiente ? 'pointer' : 'not-allowed', opacity: propSiguiente ? 1 : 0.35, fontSize: '1rem' }}
+            >
+              →
+            </button>
+          </div>
+        )}
+      </div>
 
       <form className="admin-form" onSubmit={handleSubmit}>
 
@@ -858,14 +888,32 @@ export default function AdminPropuestas() {
         {/* Link al resumen */}
         <div className="admin-form__field admin-form__field--full">
           <label className="admin-form__label">Link al resumen (URL)</label>
-          <input
-            className="admin-form__input"
-            type="url"
-            name="resumenLink"
-            value={form.resumenLink}
-            onChange={handleChange}
-            placeholder="https://docs.google.com/..."
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              className="admin-form__input"
+              type="url"
+              name="resumenLink"
+              value={form.resumenLink}
+              onChange={handleChange}
+              placeholder="https://docs.google.com/..."
+              style={{ flex: 1 }}
+            />
+            {form.resumenLink && (
+              <a
+                href={form.resumenLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Abrir link en nueva pestaña"
+                style={{ color: 'var(--c-turq)', flexShrink: 0, lineHeight: 1 }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+            )}
+          </div>
         </div>
 
         {mensaje && <p className="admin-form__msg">{mensaje}</p>}
