@@ -152,7 +152,7 @@ export default function AdminParticipantes() {
             <div className="admin-list__item-info" style={{ flex: 1 }}>
               <p className="admin-list__item-name">{p.nombre}</p>
               {(p.email || p.dni) && (
-                <p className="admin-list__item-sub">
+                <p className="admin-list__item-sub" style={{ fontSize: '0.8rem', fontWeight: 500 }}>
                   {[p.email, p.dni ? `DNI ${p.dni}` : ''].filter(Boolean).join('  ·  ')}
                 </p>
               )}
