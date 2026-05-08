@@ -7,8 +7,6 @@ import { usePropuestas }     from '@/lib/hooks/usePropuestas'
 import { useAcreditaciones } from '@/lib/hooks/useAcreditaciones'
 import { upsertAcreditacion } from '@/lib/services/acreditaciones'
 import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO, PERTENENCIAS } from '@/congreso.config'
-import type { Propuesta } from '@/types'
-
 // ── Tipos ─────────────────────────────────────────────────────
 
 type Persona = {
@@ -26,11 +24,6 @@ type EditandoState = {
   email:     string   // necesario para guardar en Firestore
   tipo:      'pertenencia' | 'pago'
   valorTemp: string
-}
-
-type ModalState = {
-  ids: string[]
-  idx: number
 }
 
 // ── Constantes ────────────────────────────────────────────────
@@ -81,14 +74,15 @@ const badgeBase: React.CSSProperties = {
 
 // ── Componente ────────────────────────────────────────────────
 
-export default function AdminParticipantes() {
+type Props = { onIrAPropuesta?: (id: string) => void }
+
+export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
   const { invitados,  loading: loadInv  } = useInvitados()
   const { propuestas, loading: loadProp } = usePropuestas()
   const { acreditaciones, loading: loadAcred, cargar: cargarAcred } = useAcreditaciones()
 
   const [filtro,    setFiltro]    = useState<string>('todas')
   const [editando,  setEditando]  = useState<EditandoState | null>(null)
-  const [modal,     setModal]     = useState<ModalState | null>(null)
   const [guardando, setGuardando] = useState(false)
 
   // ── Listado unificado ──────────────────────────────────────
@@ -253,12 +247,6 @@ export default function AdminParticipantes() {
     doc.save(`participantes-${filtro === 'todas' ? 'todos' : filtro.replace(/\//g, '-').toLowerCase()}.pdf`)
   }
 
-  // ── Propuesta modal ────────────────────────────────────────
-
-  const propuestaActiva: Propuesta | null = modal
-    ? (propuestas.find(p => p.id === modal.ids[modal.idx]) ?? null)
-    : null
-
   // ── Loading ────────────────────────────────────────────────
 
   if (loadInv || loadProp || loadAcred) return (
@@ -409,18 +397,18 @@ export default function AdminParticipantes() {
                         </span>
                       )}
 
-                      {/* Link a propuesta */}
-                      {p.propuestaIds.length > 0 && (
+                      {/* Link a propuesta — abre el formulario de edición */}
+                      {p.propuestaIds.length > 0 && onIrAPropuesta && (
                         <button
-                          onClick={() => setModal({ ids: p.propuestaIds, idx: 0 })}
+                          onClick={() => onIrAPropuesta(p.propuestaIds[0])}
                           style={{
                             background: 'none', border: 'none', padding: '1px 4px',
                             fontSize: '0.72rem', color: 'var(--c-turq)',
                             cursor: 'pointer', fontWeight: 600, letterSpacing: '0.02em',
                           }}
-                          title={p.propuestaIds.length > 1 ? `${p.propuestaIds.length} propuestas` : 'Ver propuesta'}
+                          title={p.propuestaIds.length > 1 ? `${p.propuestaIds.length} propuestas` : 'Editar propuesta'}
                         >
-                          ver propuesta{p.propuestaIds.length > 1 ? ` (${p.propuestaIds.length})` : ''} →
+                          editar propuesta{p.propuestaIds.length > 1 ? ` (${p.propuestaIds.length})` : ''} →
                         </button>
                       )}
                     </div>
@@ -484,88 +472,6 @@ export default function AdminParticipantes() {
           )
         })}
       </div>
-
-      {/* Modal de propuesta */}
-      {modal && propuestaActiva && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={() => setModal(null)}
-        >
-          <div
-            style={{ background: '#fff', borderRadius: 12, padding: '1.5rem', maxWidth: 560, width: '90%', maxHeight: '80vh', overflowY: 'auto' }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header modal */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-              <div style={{ flex: 1, paddingRight: '1rem' }}>
-                <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(35,22,81,0.4)', marginBottom: '0.3rem' }}>
-                  {propuestaActiva.tipo} · Eje {propuestaActiva.eje}
-                  {modal.ids.length > 1 && (
-                    <span style={{ marginLeft: '0.5rem' }}>
-                      · {modal.idx + 1} de {modal.ids.length}
-                    </span>
-                  )}
-                </p>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#231651', lineHeight: 1.3, margin: 0 }}>
-                  {propuestaActiva.titulo}
-                </h3>
-              </div>
-              <button
-                onClick={() => setModal(null)}
-                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'rgba(35,22,81,0.35)', padding: '0 0.2rem', flexShrink: 0 }}
-              >✕</button>
-            </div>
-
-            {/* Contenido */}
-            <div style={{ fontSize: '0.82rem', color: 'rgba(35,22,81,0.75)', lineHeight: 1.6 }}>
-              <p><strong>Autor:</strong> {propuestaActiva.autor.nombre}
-                {propuestaActiva.autor.email && <span style={{ opacity: 0.7 }}> — {propuestaActiva.autor.email}</span>}
-              </p>
-              {(propuestaActiva.coautores ?? []).length > 0 && (
-                <p><strong>Coautores:</strong> {propuestaActiva.coautores!.map(c => c.nombre).join(', ')}</p>
-              )}
-              {(propuestaActiva.participantes ?? []).length > 0 && (
-                <p><strong>Participantes:</strong> {propuestaActiva.participantes!.map(pa => pa.nombre).join(', ')}</p>
-              )}
-              {propuestaActiva.estado && (
-                <p><strong>Estado:</strong> {propuestaActiva.estado}</p>
-              )}
-              {propuestaActiva.resumen && (
-                <p style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(35,22,81,0.08)', paddingTop: '0.75rem' }}>
-                  {propuestaActiva.resumen}
-                </p>
-              )}
-              {propuestaActiva.resumenLink && (
-                <a
-                  href={propuestaActiva.resumenLink}
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ display: 'inline-block', marginTop: '0.5rem', color: '#4dccbd', fontSize: '0.8rem' }}
-                >
-                  Ver resumen →
-                </a>
-              )}
-            </div>
-
-            {/* Navegación entre propuestas */}
-            {modal.ids.length > 1 && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
-                <button
-                  className="admin-btn admin-btn--ghost"
-                  style={{ fontSize: '0.78rem', padding: '0.2rem 0.7rem' }}
-                  disabled={modal.idx === 0}
-                  onClick={() => setModal({ ...modal, idx: modal.idx - 1 })}
-                >← Anterior</button>
-                <button
-                  className="admin-btn admin-btn--ghost"
-                  style={{ fontSize: '0.78rem', padding: '0.2rem 0.7rem' }}
-                  disabled={modal.idx === modal.ids.length - 1}
-                  onClick={() => setModal({ ...modal, idx: modal.idx + 1 })}
-                >Siguiente →</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
     </div>
   )

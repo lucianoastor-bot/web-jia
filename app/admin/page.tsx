@@ -32,7 +32,8 @@ const MENU = [
 export default function Admin() {
   const { user, usuario, loading } = useAuth()
   const router  = useRouter()
-  const [active, setActive] = useState('bienvenida')
+  const [active, setActive]                 = useState('bienvenida')
+  const [propuestaEditarId, setPropuestaEditarId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!loading && (!user || !usuario)) {
@@ -55,10 +56,14 @@ export default function Admin() {
       case 'bienvenida': return <AdminBienvenida />
       case 'invitados':  return <AdminInvitados />
       case 'novedades':  return <AdminNovedades />
-      case 'propuestas':   return <AdminPropuestas />
+      case 'propuestas':   return <AdminPropuestas propuestaInicialId={propuestaEditarId} />
       case 'actividades':  return <AdminActividades />
       case 'distribuir':    return <AdminDistribucion onAgregar={() => setActive('actividades')} />
-      case 'participantes': return <AdminParticipantes />
+      case 'participantes': return (
+        <AdminParticipantes
+          onIrAPropuesta={id => { setPropuestaEditarId(id); setActive('propuestas') }}
+        />
+      )
       default:              return (
         <div className="admin-placeholder">
           <p>Módulo <strong>{active}</strong> — próximamente</p>

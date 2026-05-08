@@ -1,7 +1,7 @@
 // components/admin/AdminPropuestas.tsx
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -171,7 +171,9 @@ const BADGE_ESTADO: Record<EstadoPropuesta, string> = {
 
 // ── Componente ────────────────────────────────────────────────
 
-export default function AdminPropuestas() {
+type Props = { propuestaInicialId?: string | null }
+
+export default function AdminPropuestas({ propuestaInicialId }: Props = {}) {
   const { propuestas, loading, cargar } = usePropuestas()
 
   const [form, setForm]         = useState<DatosPropuesta>(VACIO)
@@ -304,6 +306,19 @@ export default function AdminPropuestas() {
     setEditando(null)
     setMensaje(null)
   }
+
+  // ── Apertura desde módulo externo (ej. Participantes) ──────
+  const inicialHandled = useRef<string | null>(null)
+  useEffect(() => {
+    if (!propuestaInicialId || propuestas.length === 0) return
+    if (propuestaInicialId === inicialHandled.current) return
+    const p = propuestas.find(pr => pr.id === propuestaInicialId)
+    if (p) {
+      inicialHandled.current = propuestaInicialId
+      handleEditar(p)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propuestaInicialId, propuestas])
 
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar esta propuesta?')) return
