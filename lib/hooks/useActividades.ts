@@ -12,7 +12,7 @@ export function useActividades() {
     setLoading(true)
     try {
       setActividades(await obtenerActividades())
-    } catch { } finally {
+    } finally {
       setLoading(false)
     }
   }, [])

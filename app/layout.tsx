@@ -23,6 +23,7 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(CONGRESO.url),
   title: `${CONGRESO.nombreCorto} — ${CONGRESO.siglas} — ${CONGRESO.anio}`,
   description: `${CONGRESO.nombre} — ${CONGRESO.institucion}, ${CONGRESO.universidad} - ${CONGRESO.fechaTexto} - ${CONGRESO.ciudad}, ${CONGRESO.pais}.`,
   openGraph: {

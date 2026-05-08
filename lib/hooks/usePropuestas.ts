@@ -12,7 +12,7 @@ export function usePropuestas() {
     setLoading(true)
     try {
       setPropuestas(await obtenerPropuestas())
-    } catch { } finally {
+    } finally {
       setLoading(false)
     }
   }, [])

@@ -57,7 +57,7 @@ export default function Propuestas() {
             { label: 'Notificación de propuestas aceptadas', valor: CONGRESO.notificacionResumenes, destacado: false },
             { label: 'Jornadas',                         valor: CONGRESO.fechaTexto,            destacado: false },
           ].map(({ label, valor, destacado }) => (
-            <div key={label} style={{ display: 'flex', gap: '1rem', alignItems: 'baseline', borderBottom: '1px solid rgba(35,22,81,0.07)', paddingBottom: '0.75rem' }}>
+            <div key={label} style={{ display: 'flex', gap: '1rem', alignItems: 'baseline', borderBottom: '1px solid var(--border-soft)', paddingBottom: '0.75rem' }}>
               <span style={{ fontSize: '0.88rem', color: '#555', flex: 1 }}>{label}</span>
               <span style={{ fontSize: '0.95rem', fontWeight: 600, color: destacado ? 'var(--c-coral)' : 'var(--c-dark)', whiteSpace: 'nowrap' }}>
                 {valor}
@@ -71,7 +71,7 @@ export default function Propuestas() {
 
         <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '720px', counterReset: 'none', marginBottom: '1rem' }}>
           {EJES.map((eje, i) => (
-            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'flex-start', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.75rem' }}>
+            <li key={i} style={{ display: 'flex', gap: '1.2rem', alignItems: 'flex-start', borderBottom: '1px solid var(--border-faint)', paddingBottom: '0.75rem' }}>
               <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--c-turq)', minWidth: '1.5rem', letterSpacing: '0.05em', paddingTop: '0.2rem' }}>
                 {eje.num}
               </span>
@@ -131,7 +131,7 @@ export default function Propuestas() {
               ['Extensión',  'Hasta 400 palabras'],
               ['Formato',    '.doc · .docx · .odt · .rtf'],
             ].map(([label, value]) => (
-              <tr key={label} style={{ borderBottom: '1px solid rgba(35,22,81,0.07)' }}>
+              <tr key={label} style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '0.9rem 1.5rem 0.9rem 0', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-mid)', whiteSpace: 'nowrap', verticalAlign: 'top', width: '150px' }}>
                   {label}
                 </td>
@@ -155,7 +155,7 @@ export default function Propuestas() {
               ['Asistente con certificado',              '$10.000'],
               ['Asistente estudiante de la UNR con certificado', 'Gratuito (presentar certificado de Alumno Regular)'],
             ].map(([label, value]) => (
-              <tr key={label} style={{ borderBottom: '1px solid rgba(35,22,81,0.07)' }}>
+              <tr key={label} style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '0.9rem 1.5rem 0.9rem 0', fontSize: '0.88rem', color: '#444', verticalAlign: 'top', width: '340px' }}>
                   {label}
                 </td>

@@ -34,7 +34,7 @@ useEffect(() => {
     setUser(firebaseUser)
 
     if (firebaseUser?.email) {
-      const ref  = doc(db, 'usuarios', firebaseUser.email)
+      const ref  = doc(db, 'usuarios', firebaseUser.email.toLowerCase())
       const snap = await getDoc(ref)
 
       if (snap.exists()) {

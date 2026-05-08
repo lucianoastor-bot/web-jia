@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 import { validarFoto } from '@/lib/utils/formato'
 
@@ -35,8 +35,8 @@ export default function InvitadosCarrusel() {
   const prev  = () => setCurrent(c => Math.max(0, c - 1))
   const next  = () => setCurrent(c => Math.min(total - visible, c + 1))
 
-  const touchStartX = { current: 0 }
-  const touchEndX   = { current: 0 }
+  const touchStartX = useRef(0)
+  const touchEndX   = useRef(0)
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
@@ -51,7 +51,7 @@ export default function InvitadosCarrusel() {
     <section className="invitados">
       <div className="invitados__inner">
         <h2 className="section__title">Invitados</h2>
-        <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
+        <p style={{ color: 'var(--text-faint)', fontSize: '0.82rem' }}>Cargando...</p>
       </div>
     </section>
   )

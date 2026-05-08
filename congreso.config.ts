@@ -258,7 +258,7 @@ export const EVALUADORES: string[] = [
   'María Laura Carrascal',
   'Susana Copertari',
   'Gabriel Data',
-  'Susana Daz',
+  'Susana Daz Paradot',
   'Federico Donner',
   'María Victoria González',
   'Melina Mailhou',

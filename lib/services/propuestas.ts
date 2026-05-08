@@ -3,7 +3,7 @@
 
 import {
   collection, addDoc, updateDoc, deleteDoc,
-  getDocs, doc, serverTimestamp, deleteField,
+  getDocs, doc, serverTimestamp, deleteField, runTransaction,
 } from 'firebase/firestore/lite'
 import { db } from '@/lib/firebase'
 import type { Propuesta, EstadoPropuesta } from '@/types'
@@ -40,6 +40,7 @@ export async function eliminarPropuesta(id: string) {
 // ── Actualización de datos de participante ───────────────────
 // Busca a una persona (por nombre normalizado) dentro de la propuesta
 // y actualiza sus campos en autor, coautores[] y participantes[].
+// Usa runTransaction para evitar pisar cambios concurrentes en los arrays.
 
 type DatosParticipanteUpdate = {
   pertenencia?: string
@@ -50,36 +51,44 @@ type DatosParticipanteUpdate = {
 const nc = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 
 export async function actualizarParticipanteEnPropuesta(
-  propuesta: Propuesta,
+  propuestaId: string,
   nombreClave: string,
   datos: DatosParticipanteUpdate,
 ) {
-  const updates: Record<string, unknown> = {}
+  const ref = doc(db, 'propuestas', propuestaId)
 
-  // Autor — actualización campo a campo con notación de punto
-  if (nc(propuesta.autor.nombre) === nombreClave) {
-    for (const [k, v] of Object.entries(datos)) {
-      if (v !== undefined) updates[`autor.${k}`] = v
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref)
+    if (!snap.exists()) return
+    const propuesta = snap.data() as Propuesta
+
+    const updates: Record<string, unknown> = {}
+
+    // Autor — actualización campo a campo con notación de punto
+    if (propuesta.autor && nc(propuesta.autor.nombre) === nombreClave) {
+      for (const [k, v] of Object.entries(datos)) {
+        if (v !== undefined) updates[`autor.${k}`] = v
+      }
     }
-  }
 
-  // Coautores — hay que reemplazar el array completo
-  if (propuesta.coautores?.some(c => nc(c.nombre) === nombreClave)) {
-    updates['coautores'] = propuesta.coautores!.map(c =>
-      nc(c.nombre) === nombreClave ? { ...c, ...datos } : c
-    )
-  }
+    // Coautores — reemplaza el array completo, leído fresco dentro de la tx
+    if (propuesta.coautores?.some(c => nc(c.nombre) === nombreClave)) {
+      updates['coautores'] = propuesta.coautores.map(c =>
+        nc(c.nombre) === nombreClave ? { ...c, ...datos } : c
+      )
+    }
 
-  // Participantes de panel
-  if (propuesta.participantes?.some(pa => nc(pa.nombre) === nombreClave)) {
-    updates['participantes'] = propuesta.participantes!.map(pa =>
-      nc(pa.nombre) === nombreClave ? { ...pa, ...datos } : pa
-    )
-  }
+    // Participantes de panel — idem
+    if (propuesta.participantes?.some(pa => nc(pa.nombre) === nombreClave)) {
+      updates['participantes'] = propuesta.participantes.map(pa =>
+        nc(pa.nombre) === nombreClave ? { ...pa, ...datos } : pa
+      )
+    }
 
-  if (Object.keys(updates).length > 0) {
-    await updateDoc(doc(db, 'propuestas', propuesta.id), updates)
-  }
+    if (Object.keys(updates).length > 0) {
+      tx.update(ref, updates)
+    }
+  })
 }
 
 // ── Vinculación con Actividad ─────────────────────────────────

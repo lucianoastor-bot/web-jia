@@ -15,8 +15,6 @@ export function useInvitados() {
     try {
       const snap = await getDocs(collection(db, 'invitados'))
       setInvitados(snap.docs.map(d => ({ id: d.id, ...d.data() } as Invitado)))
-    } catch {
-      // mantiene el estado anterior en caso de error
     } finally {
       setLoading(false)
     }

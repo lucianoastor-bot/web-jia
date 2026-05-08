@@ -19,6 +19,13 @@
   --content-bg: var(--c-white);
   --accent:     var(--c-turq);
 
+  /* Bordes y textos derivados de --c-dark con alpha. Para usar en estilos inline. */
+  --border-faint: rgba(35, 22, 81, 0.06);
+  --border-soft:  rgba(35, 22, 81, 0.07);
+  --border-mid:   rgba(35, 22, 81, 0.08);
+  --text-faint:   rgba(35, 22, 81, 0.3);
+  --text-muted:   rgba(35, 22, 81, 0.4);
+
   /* ── Typography ── */
   --font-serif: 'Lora', Georgia, serif;
   --font-sans:  'Outfit', sans-serif;

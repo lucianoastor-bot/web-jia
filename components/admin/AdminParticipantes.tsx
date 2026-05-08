@@ -192,7 +192,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
           : { pago: editando.valorTemp === 'true' }
 
       for (const prop of propAfectadas) {
-        await actualizarParticipanteEnPropuesta(prop, editando.clave, datos)
+        await actualizarParticipanteEnPropuesta(prop.id, editando.clave, datos)
       }
 
       await cargarP()

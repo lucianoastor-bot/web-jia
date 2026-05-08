@@ -14,7 +14,7 @@ export default function InvitadosLista() {
     })
 
   if (loading) return (
-    <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
+    <p style={{ color: 'var(--text-faint)', fontSize: '0.82rem' }}>Cargando...</p>
   )
 
   return (

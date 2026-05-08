@@ -12,7 +12,7 @@ function ListaPersonas({ nombres }: { nombres: string[] }) {
   return (
     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
       {nombres.map(nombre => (
-        <li key={nombre} style={{ fontSize: '1.05rem', color: '#444', borderBottom: '1px solid rgba(35,22,81,0.06)', paddingBottom: '0.4rem' }}>
+        <li key={nombre} style={{ fontSize: '1.05rem', color: '#444', borderBottom: '1px solid var(--border-faint)', paddingBottom: '0.4rem' }}>
           {nombre}
         </li>
       ))}

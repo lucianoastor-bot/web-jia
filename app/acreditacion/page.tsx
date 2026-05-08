@@ -14,7 +14,7 @@ export default function Acreditacion() {
 
   useEffect(() => {
     if (!loading && (!user || !usuario)) {
-      router.push('/login')
+      router.replace('/login')
     }
   }, [user, usuario, loading, router])
 
@@ -23,7 +23,7 @@ export default function Acreditacion() {
 
   const handleLogout = async () => {
     await signOut(auth)
-    router.push('/login')
+    router.replace('/login')
   }
 
   return (
@@ -57,7 +57,7 @@ export default function Acreditacion() {
         <div className="admin__content-inner">
           <div className="admin-module">
             <h2 className="admin-module__title">Acreditación</h2>
-            <p style={{ color: 'rgba(35,22,81,0.4)', fontSize: '0.85rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
               Módulo en construcción.
             </p>
           </div>

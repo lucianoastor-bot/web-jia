@@ -37,9 +37,9 @@ export default function Admin() {
 
   useEffect(() => {
     if (!loading && (!user || !usuario)) {
-      router.push('/login')
+      router.replace('/login')
     } else if (!loading && usuario && usuario.rol !== 'organizador') {
-      router.push('/acreditacion')
+      router.replace('/acreditacion')
     }
   }, [user, usuario, loading, router])
 
@@ -48,7 +48,7 @@ export default function Admin() {
 
   const handleLogout = async () => {
     await signOut(auth)
-    router.push('/login')
+    router.replace('/login')
   }
 
   const renderModule = () => {

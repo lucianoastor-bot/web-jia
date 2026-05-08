@@ -16,17 +16,21 @@ export default function Login() {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (!authLoading && usuario) {
-      router.push(usuario.rol === 'acreditacion' ? '/acreditacion' : '/admin')
+      router.replace(usuario.rol === 'acreditacion' ? '/acreditacion' : '/admin')
     }
   }, [usuario, authLoading, router])
+
+  // Sesión válida pero sin permisos cargados en `usuarios`
+  const sinPermisos = !authLoading && user && !usuario
 
   const handleLogin = async () => {
     setLoading(true)
     setError(null)
     try {
       await signInWithPopup(auth, googleProvider)
-    } catch (e) {
+    } catch {
       setError('Error al iniciar sesión. Intentá de nuevo.')
+    } finally {
       setLoading(false)
     }
   }
@@ -49,6 +53,11 @@ export default function Login() {
           </button>
 
           {error && <p className="login__error">{error}</p>}
+          {sinPermisos && (
+            <p className="login__error">
+              La cuenta {user?.email} no tiene permisos asignados. Pedí al equipo organizador que te dé de alta.
+            </p>
+          )}
         </div>
       </div>
     </main>
