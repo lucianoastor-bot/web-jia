@@ -46,7 +46,8 @@ export type Usuario = {
 // colección 'acreditaciones'. Registra pago y acreditación.
 
 export type Acreditacion = {
-  email:        string
+  nombreClave:  string   // clave(p.nombre) — identificador único, ID del doc en Firestore
+  email?:       string   // referencia, no es la clave del documento
   acreditado:   boolean
   pago:         boolean
   pertenencia?: string   // override del valor en la propuesta

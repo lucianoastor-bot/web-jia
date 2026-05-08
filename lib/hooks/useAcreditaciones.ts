@@ -14,7 +14,7 @@ export function useAcreditaciones() {
     try {
       const lista = await obtenerAcreditaciones()
       const map   = new Map<string, Acreditacion>()
-      lista.forEach(a => map.set(a.email.toLowerCase(), a))
+      lista.forEach(a => map.set(a.nombreClave, a))
       setAcreditaciones(map)
     } catch {
       // mantiene estado anterior en caso de error

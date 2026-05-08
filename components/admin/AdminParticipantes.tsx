@@ -20,8 +20,7 @@ type Persona = {
 }
 
 type EditandoState = {
-  clave:     string   // clave(p.nombre) — único por fila aunque email esté vacío
-  email:     string   // necesario para guardar en Firestore
+  clave:     string   // clave(p.nombre) — es también el ID del doc en Firestore
   tipo:      'pertenencia' | 'pago'
   valorTemp: string
 }
@@ -140,12 +139,12 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
 
   // ── Acreditaciones ─────────────────────────────────────────
 
-  const getAcred = (email: string) =>
-    acreditaciones.get(email.toLowerCase()) ?? null
+  const getAcred = (p: Persona) =>
+    acreditaciones.get(clave(p.nombre)) ?? null
 
   /** Pertenencia efectiva: override de acreditaciones si existe, si no el de la propuesta */
   const getPertenencia = (p: Persona) => {
-    const a = getAcred(p.email)
+    const a = getAcred(p)
     return a?.pertenencia ?? p.pertenencia
   }
 
@@ -156,9 +155,9 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
     setGuardando(true)
     try {
       if (editando.tipo === 'pertenencia') {
-        await upsertAcreditacion(editando.email, { pertenencia: editando.valorTemp || undefined })
+        await upsertAcreditacion(editando.clave, { pertenencia: editando.valorTemp || undefined })
       } else {
-        await upsertAcreditacion(editando.email, { pago: editando.valorTemp === 'true' })
+        await upsertAcreditacion(editando.clave, { pago: editando.valorTemp === 'true' })
       }
       await cargarAcred()
       setEditando(null)
@@ -189,7 +188,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
     doc.text(subtitulo, 10, 22)
 
     const rows = filtradas.map((p, i) => {
-      const acred      = getAcred(p.email)
+      const acred      = getAcred(p)
       const pertenencia = getPertenencia(p)
       const flags      = verFlags(p)
       const cats       = [...p.categorias]
@@ -303,7 +302,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
         )}
 
         {filtradas.map((p, i) => {
-          const acred              = getAcred(p.email)
+          const acred              = getAcred(p)
           const pertenenciaEfectiva = getPertenencia(p)
           const tieneFlags         = verFlags(p)
           const estaEditando       = editando?.clave === clave(p.nombre)
@@ -361,7 +360,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                           <span
                             title="Doble clic para editar"
                             style={{ ...badgeBase, background: s.bg, color: s.color, cursor: 'pointer', userSelect: 'none' }}
-                            onDoubleClick={() => setEditando({ clave: clave(p.nombre), email: p.email, tipo: 'pertenencia', valorTemp: val })}
+                            onDoubleClick={() => setEditando({ clave: clave(p.nombre), tipo: 'pertenencia', valorTemp: val })}
                           >
                             {val ? etiquetaP(val) : 'Sin pertenencia'}
                           </span>
@@ -378,7 +377,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                             color:      acred?.pago ? '#1a8c7e'                 : '#b03020',
                             cursor: 'pointer', userSelect: 'none',
                           }}
-                          onDoubleClick={() => setEditando({ clave: clave(p.nombre), email: p.email, tipo: 'pago', valorTemp: String(acred?.pago ?? false) })}
+                          onDoubleClick={() => setEditando({ clave: clave(p.nombre), tipo: 'pago', valorTemp: String(acred?.pago ?? false) })}
                         >
                           {acred?.pago ? 'Pagó' : 'No pagó'}
                         </span>

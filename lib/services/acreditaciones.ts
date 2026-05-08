@@ -8,9 +8,10 @@ import {
 import { db } from '@/lib/firebase'
 import type { Acreditacion } from '@/types'
 
-// ID de documento: email en minúsculas, caracteres especiales → '_'
-export const emailToId = (email: string) =>
-  email.toLowerCase().replace(/[^a-z0-9]/g, '_')
+// ID de documento: clave(p.nombre) — igual al key del Map en AdminParticipantes.
+// Usar el nombre evita el problema de participantes sin email.
+export const nombreToId = (nombreClave: string) =>
+  nombreClave.replace(/[^a-z0-9]/g, '_')
 
 export async function obtenerAcreditaciones(): Promise<Acreditacion[]> {
   const snap = await getDocs(collection(db, 'acreditaciones'))
@@ -18,20 +19,20 @@ export async function obtenerAcreditaciones(): Promise<Acreditacion[]> {
 }
 
 export async function upsertAcreditacion(
-  email: string,
-  datos: Partial<Omit<Acreditacion, 'email'>>,
+  nombreClave: string,
+  datos: Partial<Omit<Acreditacion, 'nombreClave'>>,
 ) {
-  const id  = emailToId(email)
-  const ref = doc(db, 'acreditaciones', id)
+  const id   = nombreToId(nombreClave)
+  const ref  = doc(db, 'acreditaciones', id)
   const snap = await getDoc(ref)
 
   if (snap.exists()) {
     await updateDoc(ref, datos)
   } else {
     await setDoc(ref, {
-      email:       email.toLowerCase(),
-      acreditado:  false,
-      pago:        false,
+      nombreClave,
+      acreditado: false,
+      pago:       false,
       ...datos,
     })
   }
