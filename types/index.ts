@@ -41,6 +41,17 @@ export type Usuario = {
   rol: 'organizador' | 'acreditacion'
 }
 
+// ─── Acreditacion ────────────────────────────────────────────
+// Documento por persona (clave: email normalizado) en la
+// colección 'acreditaciones'. Registra pago y acreditación.
+
+export type Acreditacion = {
+  email:        string
+  acreditado:   boolean
+  pago:         boolean
+  pertenencia?: string   // override del valor en la propuesta
+}
+
 // ─── Participante ────────────────────────────────────────────
 // Objeto embebido dentro de Propuesta. Incluye datos personales completos.
 
