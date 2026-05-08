@@ -1,7 +1,7 @@
 // components/admin/AdminParticipantes.tsx
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import type { Propuesta } from '@/types'
 import { useInvitados }  from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
@@ -92,18 +92,15 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
   const [modal,     setModal]     = useState<ModalState | null>(null)
 
   // ── Easter egg ────────────────────────────────────────────
-  const [eggHover,  setEggHover]  = useState(false)
-  const [eggOpen,   setEggOpen]   = useState(false)
-  const [asciiArt,  setAsciiArt]  = useState<string | null>(null)
+  const [eggHover, setEggHover] = useState(false)
+  const [eggOpen,  setEggOpen]  = useState(false)
+  const [asciiArt, setAsciiArt] = useState<string>('')
   const EGG_CLAVE = 'luciano astor'
 
-  const abrirEgg = async () => {
-    if (!asciiArt) {
-      const res = await fetch('/ascii-2.txt')
-      setAsciiArt(await res.text())
-    }
-    setEggOpen(true)
-  }
+  // Precarga el ASCII al montar — sin async en el click
+  useEffect(() => {
+    fetch('/ascii-2.txt').then(r => r.text()).then(setAsciiArt).catch(() => {})
+  }, [])
 
   // ── Listado unificado ──────────────────────────────────────
 
@@ -380,18 +377,19 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                       )
                       .map(cat => {
                         const s = CATEGORIA_STYLE[cat] ?? { bg: 'rgba(35,22,81,0.07)', color: 'rgba(35,22,81,0.6)' }
-                        const eggActivo = esEgg && eggHover && cat === 'Coordinación'
+                        const eggBadge  = esEgg && cat === 'Coordinación'
+                        const eggActivo = eggBadge && eggHover
                         return (
                           <span
                             key={cat}
                             style={{
                               ...badgeBase,
-                              background:  eggActivo ? 'rgba(35,116,171,0.18)' : s.bg,
-                              color:       eggActivo ? '#2374AB'               : s.color,
-                              cursor:      eggActivo ? 'pointer'               : undefined,
-                              transition:  'background 0.2s, color 0.2s',
+                              background: eggActivo ? 'rgba(35,116,171,0.18)' : s.bg,
+                              color:      eggActivo ? '#2374AB'               : s.color,
+                              cursor:     eggBadge  ? 'pointer'               : undefined,
+                              transition: 'background 0.2s, color 0.2s',
                             }}
-                            onClick={eggActivo ? abrirEgg : undefined}
+                            onClick={eggBadge ? () => setEggOpen(true) : undefined}
                           >{cat}</span>
                         )
                       })}
@@ -537,7 +535,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
               color: '#4dccbd', margin: 0, padding: '1rem',
               whiteSpace: 'pre', userSelect: 'none',
             }}>
-              {asciiArt ?? 'Cargando...'}
+              {asciiArt || 'Cargando...'}
             </pre>
           </div>
         </div>
