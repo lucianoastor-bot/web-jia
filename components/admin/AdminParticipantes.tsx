@@ -91,6 +91,20 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
   const [guardando, setGuardando] = useState(false)
   const [modal,     setModal]     = useState<ModalState | null>(null)
 
+  // ── Easter egg ────────────────────────────────────────────
+  const [eggHover,  setEggHover]  = useState(false)
+  const [eggOpen,   setEggOpen]   = useState(false)
+  const [asciiArt,  setAsciiArt]  = useState<string | null>(null)
+  const EGG_CLAVE = 'luciano astor'
+
+  const abrirEgg = async () => {
+    if (!asciiArt) {
+      const res = await fetch('/ascii-2.txt')
+      setAsciiArt(await res.text())
+    }
+    setEggOpen(true)
+  }
+
   // ── Listado unificado ──────────────────────────────────────
 
   const personas = useMemo(() => {
@@ -323,16 +337,25 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
         {filtradas.map((p, i) => {
           const tieneFlags   = verFlags(p)
           const estaEditando = editando?.clave === clave(p.nombre)
+          const esEgg        = clave(p.nombre) === EGG_CLAVE
 
           return (
-            <div key={i} style={{ borderBottom: '1px solid rgba(35,22,81,0.06)' }}>
+            <div
+              key={i}
+              style={{ borderBottom: '1px solid rgba(35,22,81,0.06)' }}
+              onMouseEnter={() => esEgg && setEggHover(true)}
+              onMouseLeave={() => esEgg && setEggHover(false)}
+            >
 
               {/* Fila principal */}
               <div className="admin-list__item" style={{ borderBottom: 'none', alignItems: 'flex-start', gap: '1rem' }}>
 
                 {/* Datos */}
                 <div className="admin-list__item-info" style={{ flex: 1 }}>
-                  <p className="admin-list__item-name">{p.nombre}</p>
+                  <p
+                    className="admin-list__item-name"
+                    style={esEgg && eggHover ? { color: '#2374AB', transition: 'color 0.2s' } : undefined}
+                  >{p.nombre}</p>
                   {(p.email || p.dni) && (
                     <p className="admin-list__item-sub" style={{ fontSize: '0.8rem', fontWeight: 500 }}>
                       {[p.email, p.dni ? `DNI ${p.dni}` : ''].filter(Boolean).join('  ·  ')}
@@ -357,7 +380,20 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                       )
                       .map(cat => {
                         const s = CATEGORIA_STYLE[cat] ?? { bg: 'rgba(35,22,81,0.07)', color: 'rgba(35,22,81,0.6)' }
-                        return <span key={cat} style={{ ...badgeBase, background: s.bg, color: s.color }}>{cat}</span>
+                        const eggActivo = esEgg && eggHover && cat === 'Coordinación'
+                        return (
+                          <span
+                            key={cat}
+                            style={{
+                              ...badgeBase,
+                              background:  eggActivo ? 'rgba(35,116,171,0.18)' : s.bg,
+                              color:       eggActivo ? '#2374AB'               : s.color,
+                              cursor:      eggActivo ? 'pointer'               : undefined,
+                              transition:  'background 0.2s, color 0.2s',
+                            }}
+                            onClick={eggActivo ? abrirEgg : undefined}
+                          >{cat}</span>
+                        )
                       })}
                   </div>
 
@@ -481,6 +517,31 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
           )
         })}
       </div>
+
+      {/* Easter egg modal */}
+      {eggOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setEggOpen(false)}
+        >
+          <div
+            style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setEggOpen(false)}
+              style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '1.2rem', cursor: 'pointer' }}
+            >✕</button>
+            <pre style={{
+              fontFamily: 'monospace', fontSize: '0.6rem', lineHeight: 1.2,
+              color: '#4dccbd', margin: 0, padding: '1rem',
+              whiteSpace: 'pre', userSelect: 'none',
+            }}>
+              {asciiArt ?? 'Cargando...'}
+            </pre>
+          </div>
+        </div>
+      )}
 
       {/* Modal de propuesta */}
       {modal && (() => {
