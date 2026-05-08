@@ -38,7 +38,7 @@ export type Noticia = {
 export type Usuario = {
   email: string
   nombre: string
-  rol: 'organizador'
+  rol: 'organizador' | 'acreditacion'
 }
 
 // ─── Participante ────────────────────────────────────────────

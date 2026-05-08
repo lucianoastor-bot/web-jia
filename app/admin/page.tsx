@@ -15,6 +15,7 @@ import AdminActividades from '@/components/admin/AdminActividades'
 import AdminPropuestas from '@/components/admin/AdminPropuestas'
 import AdminDistribucion from '@/components/admin/AdminDistribucion'
 import AdminParticipantes from '@/components/admin/AdminParticipantes'
+import Link from 'next/link'
 
 const MENU = [
   { id: 'bienvenida',   label: 'Bienvenida' },
@@ -36,6 +37,8 @@ export default function Admin() {
   useEffect(() => {
     if (!loading && (!user || !usuario)) {
       router.push('/login')
+    } else if (!loading && usuario && usuario.rol !== 'organizador') {
+      router.push('/acreditacion')
     }
   }, [user, usuario, loading, router])
 
@@ -86,6 +89,10 @@ export default function Admin() {
             </button>
           ))}
         </nav>
+
+        <Link href="/acreditacion" className="admin__nav-item" style={{ textDecoration: 'none', opacity: 0.7 }}>
+          Acreditación ↗
+        </Link>
 
         <button className="admin__logout" onClick={handleLogout}>
           Cerrar sesión

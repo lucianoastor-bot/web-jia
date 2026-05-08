@@ -16,7 +16,7 @@ export default function Login() {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (!authLoading && usuario) {
-      router.push('/admin')
+      router.push(usuario.rol === 'acreditacion' ? '/acreditacion' : '/admin')
     }
   }, [usuario, authLoading, router])
 

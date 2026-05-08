@@ -9,7 +9,7 @@ import { auth, db } from './firebase'
 type Usuario = {
   email: string
   nombre: string
-  rol: 'organizador'
+  rol: 'organizador' | 'acreditacion'
 }
 
 type AuthContextType = {
