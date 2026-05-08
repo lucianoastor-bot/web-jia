@@ -2,6 +2,7 @@
 'use client'
 
 import { useMemo, useState, useCallback } from 'react'
+import type { Propuesta } from '@/types'
 import { useInvitados }  from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { actualizarParticipanteEnPropuesta } from '@/lib/services/propuestas'
@@ -25,6 +26,11 @@ type EditandoState = {
   clave:     string   // clave(p.nombre) — identifica la fila de forma única
   tipo:      'pertenencia' | 'pago'
   valorTemp: string
+}
+
+type ModalState = {
+  ids: string[]
+  idx: number
 }
 
 // ── Constantes ────────────────────────────────────────────────
@@ -83,6 +89,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
   const [filtro,    setFiltro]    = useState<string>('todas')
   const [editando,  setEditando]  = useState<EditandoState | null>(null)
   const [guardando, setGuardando] = useState(false)
+  const [modal,     setModal]     = useState<ModalState | null>(null)
 
   // ── Listado unificado ──────────────────────────────────────
 
@@ -399,18 +406,18 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                         </span>
                       )}
 
-                      {/* Link a propuesta */}
-                      {p.propuestaIds.length > 0 && onIrAPropuesta && (
+                      {/* Link a propuesta — abre el card */}
+                      {p.propuestaIds.length > 0 && (
                         <button
-                          onClick={() => onIrAPropuesta(p.propuestaIds[0])}
+                          onClick={() => setModal({ ids: p.propuestaIds, idx: 0 })}
                           style={{
                             background: 'none', border: 'none', padding: '1px 4px',
                             fontSize: '0.72rem', color: 'var(--c-turq)',
                             cursor: 'pointer', fontWeight: 600, letterSpacing: '0.02em',
                           }}
-                          title={p.propuestaIds.length > 1 ? `${p.propuestaIds.length} propuestas` : 'Editar propuesta'}
+                          title={p.propuestaIds.length > 1 ? `${p.propuestaIds.length} propuestas` : 'Ver propuesta'}
                         >
-                          editar propuesta{p.propuestaIds.length > 1 ? ` (${p.propuestaIds.length})` : ''} →
+                          ver propuesta{p.propuestaIds.length > 1 ? ` (${p.propuestaIds.length})` : ''} →
                         </button>
                       )}
                     </div>
@@ -474,6 +481,98 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
           )
         })}
       </div>
+
+      {/* Modal de propuesta */}
+      {modal && (() => {
+        const propuesta: Propuesta | undefined = propuestas.find(pr => pr.id === modal.ids[modal.idx])
+        if (!propuesta) return null
+        return (
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => setModal(null)}
+          >
+            <div
+              style={{ background: '#fff', borderRadius: 12, padding: '1.5rem', maxWidth: 560, width: '90%', maxHeight: '80vh', overflowY: 'auto' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ flex: 1, paddingRight: '1rem' }}>
+                  <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(35,22,81,0.4)', marginBottom: '0.3rem' }}>
+                    {propuesta.tipo} · Eje {propuesta.eje}
+                    {modal.ids.length > 1 && <span style={{ marginLeft: '0.5rem' }}>· {modal.idx + 1} de {modal.ids.length}</span>}
+                  </p>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#231651', lineHeight: 1.3, margin: 0 }}>
+                    {propuesta.titulo}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setModal(null)}
+                  style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'rgba(35,22,81,0.35)', padding: '0 0.2rem', flexShrink: 0 }}
+                >✕</button>
+              </div>
+
+              {/* Contenido */}
+              <div style={{ fontSize: '0.82rem', color: 'rgba(35,22,81,0.75)', lineHeight: 1.6 }}>
+                <p>
+                  <strong>Autor:</strong> {propuesta.autor.nombre}
+                  {propuesta.autor.email && <span style={{ opacity: 0.7 }}> — {propuesta.autor.email}</span>}
+                </p>
+                {(propuesta.coautores ?? []).length > 0 && (
+                  <p><strong>Coautores:</strong> {propuesta.coautores!.map(c => c.nombre).join(', ')}</p>
+                )}
+                {(propuesta.participantes ?? []).length > 0 && (
+                  <p><strong>Participantes:</strong> {propuesta.participantes!.map(pa => pa.nombre).join(', ')}</p>
+                )}
+                {propuesta.estado && (
+                  <p><strong>Estado:</strong> {propuesta.estado}</p>
+                )}
+                {propuesta.resumen && (
+                  <p style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(35,22,81,0.08)', paddingTop: '0.75rem' }}>
+                    {propuesta.resumen}
+                  </p>
+                )}
+                {propuesta.resumenLink && (
+                  <a href={propuesta.resumenLink} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-block', marginTop: '0.5rem', color: '#4dccbd', fontSize: '0.8rem' }}>
+                    Ver resumen →
+                  </a>
+                )}
+              </div>
+
+              {/* Footer: nav + editar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {/* Prev / Next */}
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  {modal.ids.length > 1 && (
+                    <>
+                      <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.78rem', padding: '0.2rem 0.7rem' }}
+                        disabled={modal.idx === 0}
+                        onClick={() => setModal({ ...modal, idx: modal.idx - 1 })}
+                      >← Anterior</button>
+                      <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.78rem', padding: '0.2rem 0.7rem' }}
+                        disabled={modal.idx === modal.ids.length - 1}
+                        onClick={() => setModal({ ...modal, idx: modal.idx + 1 })}
+                      >Siguiente →</button>
+                    </>
+                  )}
+                </div>
+                {/* Editar */}
+                {onIrAPropuesta && (
+                  <button
+                    className="admin-btn admin-btn--primary"
+                    style={{ fontSize: '0.78rem', padding: '0.2rem 0.9rem' }}
+                    onClick={() => { setModal(null); onIrAPropuesta(propuesta.id) }}
+                  >
+                    Editar propuesta →
+                  </button>
+                )}
+              </div>
+
+            </div>
+          </div>
+        )
+      })()}
 
     </div>
   )
