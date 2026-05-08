@@ -99,7 +99,10 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
 
   // Precarga el ASCII al montar — sin async en el click
   useEffect(() => {
-    fetch('/ascii-2.txt').then(r => r.text()).then(setAsciiArt).catch(() => {})
+    fetch('/ascii-2.txt')
+      .then(r => { if (!r.ok) throw new Error(); return r.text() })
+      .then(setAsciiArt)
+      .catch(() => setAsciiArt('[ ascii art no disponible ]'))
   }, [])
 
   // ── Listado unificado ──────────────────────────────────────
@@ -531,12 +534,12 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
               style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '1.2rem', cursor: 'pointer' }}
             >✕</button>
             <pre style={{
-              fontFamily: 'monospace', fontSize: '0.6rem', lineHeight: 1.2,
-              color: '#4dccbd', margin: 0, padding: '1rem',
-              whiteSpace: 'pre', userSelect: 'none',
+              fontFamily: '"Courier New", Courier, monospace',
+              fontSize: '0.55rem', lineHeight: 1.15,
+              color: '#4dccbd', margin: 0, padding: '1.5rem',
+              whiteSpace: 'pre', overflowX: 'auto', userSelect: 'none',
             }}>
-              {asciiArt || 'Cargando...'}
-            </pre>
+{asciiArt || 'Cargando...'}</pre>
           </div>
         </div>
       )}
