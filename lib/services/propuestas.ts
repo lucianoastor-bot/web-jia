@@ -37,6 +37,51 @@ export async function eliminarPropuesta(id: string) {
   return deleteDoc(doc(db, 'propuestas', id))
 }
 
+// ── Actualización de datos de participante ───────────────────
+// Busca a una persona (por nombre normalizado) dentro de la propuesta
+// y actualiza sus campos en autor, coautores[] y participantes[].
+
+type DatosParticipanteUpdate = {
+  pertenencia?: string
+  pago?:        boolean
+  acreditado?:  boolean
+}
+
+const nc = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
+
+export async function actualizarParticipanteEnPropuesta(
+  propuesta: Propuesta,
+  nombreClave: string,
+  datos: DatosParticipanteUpdate,
+) {
+  const updates: Record<string, unknown> = {}
+
+  // Autor — actualización campo a campo con notación de punto
+  if (nc(propuesta.autor.nombre) === nombreClave) {
+    for (const [k, v] of Object.entries(datos)) {
+      if (v !== undefined) updates[`autor.${k}`] = v
+    }
+  }
+
+  // Coautores — hay que reemplazar el array completo
+  if (propuesta.coautores?.some(c => nc(c.nombre) === nombreClave)) {
+    updates['coautores'] = propuesta.coautores!.map(c =>
+      nc(c.nombre) === nombreClave ? { ...c, ...datos } : c
+    )
+  }
+
+  // Participantes de panel
+  if (propuesta.participantes?.some(pa => nc(pa.nombre) === nombreClave)) {
+    updates['participantes'] = propuesta.participantes!.map(pa =>
+      nc(pa.nombre) === nombreClave ? { ...pa, ...datos } : pa
+    )
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await updateDoc(doc(db, 'propuestas', propuesta.id), updates)
+  }
+}
+
 // ── Vinculación con Actividad ─────────────────────────────────
 
 export async function asignarPropuesta(propuestaId: string, actividadId: string) {

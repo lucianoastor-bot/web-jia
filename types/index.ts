@@ -65,6 +65,8 @@ export type Participante = {
   celular:         string   // número sin código de país
   pertenencia:     typeof PERTENENCIAS[number]['valor']
   tituloPonencia?: string   // panel: título de la ponencia individual
+  pago?:           boolean  // realizó el pago de inscripción
+  acreditado?:     boolean  // recibió la acreditación en el evento
 }
 
 // ─── ParticipantePanel ───────────────────────────────────────

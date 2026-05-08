@@ -2,11 +2,11 @@
 'use client'
 
 import { useMemo, useState, useCallback } from 'react'
-import { useInvitados }      from '@/lib/hooks/useInvitados'
-import { usePropuestas }     from '@/lib/hooks/usePropuestas'
-import { useAcreditaciones } from '@/lib/hooks/useAcreditaciones'
-import { upsertAcreditacion } from '@/lib/services/acreditaciones'
+import { useInvitados }  from '@/lib/hooks/useInvitados'
+import { usePropuestas } from '@/lib/hooks/usePropuestas'
+import { actualizarParticipanteEnPropuesta } from '@/lib/services/propuestas'
 import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO, PERTENENCIAS } from '@/congreso.config'
+
 // ── Tipos ─────────────────────────────────────────────────────
 
 type Persona = {
@@ -14,13 +14,15 @@ type Persona = {
   email:        string
   dni:          string
   institucion:  string
-  pertenencia:  string   // valor de PERTENENCIAS (puede estar vacío)
+  pertenencia:  string
+  pago:         boolean
+  acreditado:   boolean
   categorias:   string[]
-  propuestaIds: string[] // IDs de propuestas en las que aparece
+  propuestaIds: string[]
 }
 
 type EditandoState = {
-  clave:     string   // clave(p.nombre) — es también el ID del doc en Firestore
+  clave:     string   // clave(p.nombre) — identifica la fila de forma única
   tipo:      'pertenencia' | 'pago'
   valorTemp: string
 }
@@ -55,12 +57,11 @@ const PERTENENCIA_STYLE: Record<string, { bg: string; color: string }> = {
 
 // ── Helpers ───────────────────────────────────────────────────
 
-const clave       = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
-const apellidoDe  = (n: string) => n.trim().split(/\s+/).slice(-1)[0]
-const etiquetaP   = (v: string) => PERTENENCIAS.find(p => p.valor === v)?.etiqueta ?? v
+const clave      = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
+const apellidoDe = (n: string) => n.trim().split(/\s+/).slice(-1)[0]
+const etiquetaP  = (v: string) => PERTENENCIAS.find(p => p.valor === v)?.etiqueta ?? v
 
-/** Muestra flags de pago/acreditación solo para participantes que no son
- *  parte de la organización ni son exclusivamente invitados. */
+/** Muestra flags pago/acreditación solo para participantes (no org ni invitados puros) */
 const verFlags = (p: Persona) =>
   p.categorias.includes('Participante') &&
   !(p.categorias as string[]).some(c => (ORGS as readonly string[]).includes(c)) &&
@@ -77,8 +78,7 @@ type Props = { onIrAPropuesta?: (id: string) => void }
 
 export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
   const { invitados,  loading: loadInv  } = useInvitados()
-  const { propuestas, loading: loadProp } = usePropuestas()
-  const { acreditaciones, loading: loadAcred, cargar: cargarAcred } = useAcreditaciones()
+  const { propuestas, loading: loadProp, cargar: cargarP } = usePropuestas()
 
   const [filtro,    setFiltro]    = useState<string>('todas')
   const [editando,  setEditando]  = useState<EditandoState | null>(null)
@@ -92,6 +92,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
     const agregar = (
       nombre: string, categoria: string,
       email = '', dni = '', institucion = '', pertenencia = '', propuestaId = '',
+      pago = false, acreditado = false,
     ) => {
       if (!nombre.trim()) return
       const k = clave(nombre)
@@ -102,9 +103,15 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
         if (!p.dni         && dni)         p.dni         = dni
         if (!p.institucion && institucion) p.institucion = institucion
         if (!p.pertenencia && pertenencia) p.pertenencia = pertenencia
+        if (!p.pago        && pago)        p.pago        = pago
+        if (!p.acreditado  && acreditado)  p.acreditado  = acreditado
         if (propuestaId && !p.propuestaIds.includes(propuestaId)) p.propuestaIds.push(propuestaId)
       } else {
-        map.set(k, { nombre: nombre.trim(), email, dni, institucion, pertenencia, categorias: [categoria], propuestaIds: propuestaId ? [propuestaId] : [] })
+        map.set(k, {
+          nombre: nombre.trim(), email, dni, institucion, pertenencia,
+          pago, acreditado, categorias: [categoria],
+          propuestaIds: propuestaId ? [propuestaId] : [],
+        })
       }
     }
 
@@ -117,9 +124,21 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
     )
 
     propuestas.forEach(prop => {
-      agregar(prop.autor.nombre, 'Participante', prop.autor.email, prop.autor.documento, prop.autor.institucion, prop.autor.pertenencia, prop.id)
-      ;(prop.coautores    ?? []).forEach(c  => agregar(c.nombre,  'Participante', c.email,  c.documento, c.institucion,  c.pertenencia,  prop.id))
-      ;(prop.participantes ?? []).forEach(pa => agregar(pa.nombre, 'Participante', pa.email, pa.documento, pa.institucion, pa.pertenencia, prop.id))
+      agregar(prop.autor.nombre,  'Participante',
+        prop.autor.email, prop.autor.documento, prop.autor.institucion, prop.autor.pertenencia,
+        prop.id, prop.autor.pago ?? false, prop.autor.acreditado ?? false)
+
+      ;(prop.coautores ?? []).forEach(c =>
+        agregar(c.nombre, 'Participante',
+          c.email, c.documento, c.institucion, c.pertenencia,
+          prop.id, c.pago ?? false, c.acreditado ?? false)
+      )
+
+      ;(prop.participantes ?? []).forEach(pa =>
+        agregar(pa.nombre, 'Participante',
+          pa.email, pa.documento, pa.institucion, pa.pertenencia,
+          prop.id, pa.pago ?? false, pa.acreditado ?? false)
+      )
     })
 
     return [...map.values()].sort((a, b) =>
@@ -137,34 +156,32 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
     ]))
   , [personas])
 
-  // ── Acreditaciones ─────────────────────────────────────────
-
-  const getAcred = (p: Persona) =>
-    acreditaciones.get(clave(p.nombre)) ?? null
-
-  /** Pertenencia efectiva: override de acreditaciones si existe, si no el de la propuesta */
-  const getPertenencia = (p: Persona) => {
-    const a = getAcred(p)
-    return a?.pertenencia ?? p.pertenencia
-  }
-
   // ── Edición inline ─────────────────────────────────────────
+  // Guarda directamente en propuesta:autor / propuesta:coautores[]
 
   const handleGuardar = useCallback(async () => {
     if (!editando) return
     setGuardando(true)
     try {
-      if (editando.tipo === 'pertenencia') {
-        await upsertAcreditacion(editando.clave, { pertenencia: editando.valorTemp || undefined })
-      } else {
-        await upsertAcreditacion(editando.clave, { pago: editando.valorTemp === 'true' })
+      // Propuestas donde aparece esta persona
+      const persona = personas.find(p => clave(p.nombre) === editando.clave)
+      const propAfectadas = propuestas.filter(pr => persona?.propuestaIds.includes(pr.id))
+
+      const datos =
+        editando.tipo === 'pertenencia'
+          ? { pertenencia: (editando.valorTemp || undefined) as typeof PERTENENCIAS[number]['valor'] | undefined }
+          : { pago: editando.valorTemp === 'true' }
+
+      for (const prop of propAfectadas) {
+        await actualizarParticipanteEnPropuesta(prop, editando.clave, datos)
       }
-      await cargarAcred()
+
+      await cargarP()
       setEditando(null)
     } finally {
       setGuardando(false)
     }
-  }, [editando, cargarAcred])
+  }, [editando, personas, propuestas, cargarP])
 
   // ── PDF ────────────────────────────────────────────────────
 
@@ -180,34 +197,29 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
 
     doc.setFontSize(8)
     doc.setTextColor(120)
-    const subtitulo = [
-      filtro !== 'todas' ? filtro : 'Todos',
-      `${filtradas.length} personas`,
-      new Date().toLocaleDateString('es-AR'),
-    ].join('  ·  ')
-    doc.text(subtitulo, 10, 22)
+    doc.text(
+      [filtro !== 'todas' ? filtro : 'Todos', `${filtradas.length} personas`, new Date().toLocaleDateString('es-AR')].join('  ·  '),
+      10, 22,
+    )
 
     const rows = filtradas.map((p, i) => {
-      const acred      = getAcred(p)
-      const pertenencia = getPertenencia(p)
-      const flags      = verFlags(p)
-      const cats       = [...p.categorias]
+      const flags = verFlags(p)
+      const cats  = [...p.categorias]
         .sort((a, b) =>
           CATEGORIAS_ORDEN.indexOf(a as typeof CATEGORIAS_ORDEN[number]) -
           CATEGORIAS_ORDEN.indexOf(b as typeof CATEGORIAS_ORDEN[number])
         )
         .join(', ')
-
       return [
         String(i + 1),
         p.nombre,
         p.email,
         p.dni,
         p.institucion,
-        pertenencia ? etiquetaP(pertenencia) : '',
+        p.pertenencia ? etiquetaP(p.pertenencia) : '',
         cats,
-        flags ? (acred?.pago        ? 'Sí' : 'No') : '—',
-        flags ? (acred?.acreditado  ? 'Sí' : 'No') : '—',
+        flags ? (p.pago       ? 'Sí' : 'No') : '—',
+        flags ? (p.acreditado ? 'Sí' : 'No') : '—',
       ]
     })
 
@@ -248,7 +260,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
 
   // ── Loading ────────────────────────────────────────────────
 
-  if (loadInv || loadProp || loadAcred) return (
+  if (loadInv || loadProp) return (
     <div className="admin-module">
       <h2 className="admin-module__title">Participantes</h2>
       <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
@@ -302,10 +314,8 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
         )}
 
         {filtradas.map((p, i) => {
-          const acred              = getAcred(p)
-          const pertenenciaEfectiva = getPertenencia(p)
-          const tieneFlags         = verFlags(p)
-          const estaEditando       = editando?.clave === clave(p.nombre)
+          const tieneFlags   = verFlags(p)
+          const estaEditando = editando?.clave === clave(p.nombre)
 
           return (
             <div key={i} style={{ borderBottom: '1px solid rgba(35,22,81,0.06)' }}>
@@ -340,29 +350,24 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                       )
                       .map(cat => {
                         const s = CATEGORIA_STYLE[cat] ?? { bg: 'rgba(35,22,81,0.07)', color: 'rgba(35,22,81,0.6)' }
-                        return (
-                          <span key={cat} style={{ ...badgeBase, background: s.bg, color: s.color }}>
-                            {cat}
-                          </span>
-                        )
+                        return <span key={cat} style={{ ...badgeBase, background: s.bg, color: s.color }}>{cat}</span>
                       })}
                   </div>
 
-                  {/* Status badges + link a propuesta */}
+                  {/* Status badges + link */}
                   {(tieneFlags || p.propuestaIds.length > 0) && (
                     <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
 
                       {/* Pertenencia — doble clic para editar */}
                       {tieneFlags && (() => {
-                        const val = pertenenciaEfectiva
-                        const s   = PERTENENCIA_STYLE[val] ?? { bg: 'rgba(35,22,81,0.07)', color: 'rgba(35,22,81,0.5)' }
+                        const s = PERTENENCIA_STYLE[p.pertenencia] ?? { bg: 'rgba(35,22,81,0.07)', color: 'rgba(35,22,81,0.5)' }
                         return (
                           <span
                             title="Doble clic para editar"
                             style={{ ...badgeBase, background: s.bg, color: s.color, cursor: 'pointer', userSelect: 'none' }}
-                            onDoubleClick={() => setEditando({ clave: clave(p.nombre), tipo: 'pertenencia', valorTemp: val })}
+                            onDoubleClick={() => setEditando({ clave: clave(p.nombre), tipo: 'pertenencia', valorTemp: p.pertenencia })}
                           >
-                            {val ? etiquetaP(val) : 'Sin pertenencia'}
+                            {p.pertenencia ? etiquetaP(p.pertenencia) : 'Sin pertenencia'}
                           </span>
                         )
                       })()}
@@ -373,30 +378,28 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
                           title="Doble clic para editar"
                           style={{
                             ...badgeBase,
-                            background: acred?.pago ? 'rgba(77,204,189,0.18)'  : 'rgba(251,234,232,0.9)',
-                            color:      acred?.pago ? '#1a8c7e'                 : '#b03020',
+                            background: p.pago ? 'rgba(77,204,189,0.18)'  : 'rgba(251,234,232,0.9)',
+                            color:      p.pago ? '#1a8c7e'                 : '#b03020',
                             cursor: 'pointer', userSelect: 'none',
                           }}
-                          onDoubleClick={() => setEditando({ clave: clave(p.nombre), tipo: 'pago', valorTemp: String(acred?.pago ?? false) })}
+                          onDoubleClick={() => setEditando({ clave: clave(p.nombre), tipo: 'pago', valorTemp: String(p.pago) })}
                         >
-                          {acred?.pago ? 'Pagó' : 'No pagó'}
+                          {p.pago ? 'Pagó' : 'No pagó'}
                         </span>
                       )}
 
-                      {/* Acreditado — solo lectura aquí */}
+                      {/* Acreditado — lectura, se edita desde /acreditacion */}
                       {tieneFlags && (
-                        <span
-                          style={{
-                            ...badgeBase,
-                            background: acred?.acreditado ? 'rgba(77,204,189,0.18)'  : 'rgba(35,22,81,0.06)',
-                            color:      acred?.acreditado ? '#1a8c7e'                 : 'rgba(35,22,81,0.4)',
-                          }}
-                        >
-                          {acred?.acreditado ? 'Acreditado' : 'No acreditado'}
+                        <span style={{
+                          ...badgeBase,
+                          background: p.acreditado ? 'rgba(77,204,189,0.18)'  : 'rgba(35,22,81,0.06)',
+                          color:      p.acreditado ? '#1a8c7e'                 : 'rgba(35,22,81,0.4)',
+                        }}>
+                          {p.acreditado ? 'Acreditado' : 'No acreditado'}
                         </span>
                       )}
 
-                      {/* Link a propuesta — abre el formulario de edición */}
+                      {/* Link a propuesta */}
                       {p.propuestaIds.length > 0 && onIrAPropuesta && (
                         <button
                           onClick={() => onIrAPropuesta(p.propuestaIds[0])}
