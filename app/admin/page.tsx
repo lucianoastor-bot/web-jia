@@ -14,6 +14,7 @@ import AdminNovedades from '@/components/admin/AdminNovedades'
 import AdminActividades from '@/components/admin/AdminActividades'
 import AdminPropuestas from '@/components/admin/AdminPropuestas'
 import AdminDistribucion from '@/components/admin/AdminDistribucion'
+import AdminParticipantes from '@/components/admin/AdminParticipantes'
 
 const MENU = [
   { id: 'bienvenida',   label: 'Bienvenida' },
@@ -23,7 +24,8 @@ const MENU = [
   { id: 'actividades',  label: 'Actividades' },
   // { id: 'embeddings',    label: 'Generar Embeddings' },  // pendiente
   // { id: 'distribuir-ia', label: 'Distribuir con IA' },   // pendiente
-  { id: 'distribuir',   label: 'Distribución' },
+  { id: 'distribuir',     label: 'Distribución' },
+  { id: 'participantes',  label: 'Participantes' },
 ]
 
 export default function Admin() {
@@ -52,8 +54,9 @@ export default function Admin() {
       case 'novedades':  return <AdminNovedades />
       case 'propuestas':   return <AdminPropuestas />
       case 'actividades':  return <AdminActividades />
-      case 'distribuir':   return <AdminDistribucion onAgregar={() => setActive('actividades')} />
-      default:             return (
+      case 'distribuir':    return <AdminDistribucion onAgregar={() => setActive('actividades')} />
+      case 'participantes': return <AdminParticipantes />
+      default:              return (
         <div className="admin-placeholder">
           <p>Módulo <strong>{active}</strong> — próximamente</p>
         </div>
