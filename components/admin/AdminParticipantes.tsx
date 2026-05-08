@@ -4,16 +4,21 @@
 import { useMemo, useState } from 'react'
 import { useInvitados }  from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
-import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO } from '@/congreso.config'
+import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO, PERTENENCIAS } from '@/congreso.config'
 
 // ── Tipos ─────────────────────────────────────────────────────
 
 type Persona = {
-  nombre:     string
-  email:      string
-  dni:        string
-  categorias: string[]
+  nombre:      string
+  email:       string
+  dni:         string
+  institucion: string
+  pertenencia: string
+  categorias:  string[]
 }
+
+const etiquetaPertenencia = (valor: string) =>
+  PERTENENCIAS.find(p => p.valor === valor)?.etiqueta ?? valor
 
 // ── Orden canónico de categorías ──────────────────────────────
 
@@ -55,16 +60,21 @@ export default function AdminParticipantes() {
   const personas = useMemo(() => {
     const map = new Map<string, Persona>()
 
-    const agregar = (nombre: string, categoria: string, email = '', dni = '') => {
+    const agregar = (
+      nombre: string, categoria: string,
+      email = '', dni = '', institucion = '', pertenencia = '',
+    ) => {
       if (!nombre.trim()) return
       const k = clave(nombre)
       if (map.has(k)) {
         const p = map.get(k)!
         if (!p.categorias.includes(categoria)) p.categorias.push(categoria)
-        if (!p.email && email) p.email = email
-        if (!p.dni   && dni)   p.dni   = dni
+        if (!p.email       && email)       p.email       = email
+        if (!p.dni         && dni)         p.dni         = dni
+        if (!p.institucion && institucion) p.institucion = institucion
+        if (!p.pertenencia && pertenencia) p.pertenencia = pertenencia
       } else {
-        map.set(k, { nombre: nombre.trim(), email, dni, categorias: [categoria] })
+        map.set(k, { nombre: nombre.trim(), email, dni, institucion, pertenencia, categorias: [categoria] })
       }
     }
 
@@ -74,13 +84,15 @@ export default function AdminParticipantes() {
     COMITE_ACADEMICO  .forEach(n => agregar(n, 'Comité Académico'))
 
     // Invitados (email opcional en el tipo)
-    invitados.forEach(inv => agregar(inv.nombre, 'Invitado/a', inv.email ?? ''))
+    invitados.forEach(inv =>
+      agregar(inv.nombre, 'Invitado/a', inv.email ?? '', '', inv.institucion ?? '')
+    )
 
     // Participantes de propuestas: autor, coautores, participantes de panel
     propuestas.forEach(p => {
-      agregar(p.autor.nombre, 'Participante', p.autor.email, p.autor.documento)
-      ;(p.coautores   ?? []).forEach(c  => agregar(c.nombre,  'Participante', c.email,  c.documento))
-      ;(p.participantes ?? []).forEach(pa => agregar(pa.nombre, 'Participante', pa.email, pa.documento))
+      agregar(p.autor.nombre, 'Participante', p.autor.email, p.autor.documento, p.autor.institucion, p.autor.pertenencia)
+      ;(p.coautores    ?? []).forEach(c  => agregar(c.nombre,  'Participante', c.email,  c.documento, c.institucion,  c.pertenencia))
+      ;(p.participantes ?? []).forEach(pa => agregar(pa.nombre, 'Participante', pa.email, pa.documento, pa.institucion, pa.pertenencia))
     })
 
     // Voluntarios — sin datos aún; se completará desde Firestore en próxima iteración
@@ -154,6 +166,11 @@ export default function AdminParticipantes() {
               {(p.email || p.dni) && (
                 <p className="admin-list__item-sub" style={{ fontSize: '0.8rem', fontWeight: 500 }}>
                   {[p.email, p.dni ? `DNI ${p.dni}` : ''].filter(Boolean).join('  ·  ')}
+                </p>
+              )}
+              {(p.institucion || p.pertenencia) && (
+                <p className="admin-list__item-sub" style={{ fontSize: '0.78rem', fontWeight: 400, opacity: 0.75 }}>
+                  {[p.institucion, p.pertenencia ? etiquetaPertenencia(p.pertenencia) : ''].filter(Boolean).join('  ·  ')}
                 </p>
               )}
             </div>
