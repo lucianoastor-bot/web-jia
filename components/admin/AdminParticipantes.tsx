@@ -22,7 +22,8 @@ type Persona = {
 }
 
 type EditandoState = {
-  email:     string
+  clave:     string   // clave(p.nombre) — único por fila aunque email esté vacío
+  email:     string   // necesario para guardar en Firestore
   tipo:      'pertenencia' | 'pago'
   valorTemp: string
 }
@@ -317,7 +318,7 @@ export default function AdminParticipantes() {
           const acred              = getAcred(p.email)
           const pertenenciaEfectiva = getPertenencia(p)
           const tieneFlags         = verFlags(p)
-          const estaEditando       = editando?.email === p.email
+          const estaEditando       = editando?.clave === clave(p.nombre)
 
           return (
             <div key={i} style={{ borderBottom: '1px solid rgba(35,22,81,0.06)' }}>
@@ -372,7 +373,7 @@ export default function AdminParticipantes() {
                           <span
                             title="Doble clic para editar"
                             style={{ ...badgeBase, background: s.bg, color: s.color, cursor: 'pointer', userSelect: 'none' }}
-                            onDoubleClick={() => setEditando({ email: p.email, tipo: 'pertenencia', valorTemp: val })}
+                            onDoubleClick={() => setEditando({ clave: clave(p.nombre), email: p.email, tipo: 'pertenencia', valorTemp: val })}
                           >
                             {val ? etiquetaP(val) : 'Sin pertenencia'}
                           </span>
@@ -389,7 +390,7 @@ export default function AdminParticipantes() {
                             color:      acred?.pago ? '#1a8c7e'                 : '#b03020',
                             cursor: 'pointer', userSelect: 'none',
                           }}
-                          onDoubleClick={() => setEditando({ email: p.email, tipo: 'pago', valorTemp: String(acred?.pago ?? false) })}
+                          onDoubleClick={() => setEditando({ clave: clave(p.nombre), email: p.email, tipo: 'pago', valorTemp: String(acred?.pago ?? false) })}
                         >
                           {acred?.pago ? 'Pagó' : 'No pagó'}
                         </span>
