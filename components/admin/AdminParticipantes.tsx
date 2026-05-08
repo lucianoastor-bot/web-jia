@@ -251,11 +251,11 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
       styles:     { fontSize: 7.5, cellPadding: 2 },
       headStyles: { fillColor: [35, 22, 81], textColor: 255, fontStyle: 'bold', fontSize: 7 },
       columnStyles: {
-        0: { cellWidth: 8,  halign: 'center' },
-        1: { cellWidth: 48, fontStyle: 'bold' },
-        2: { cellWidth: 55 },
+        0: { cellWidth: 12, halign: 'center' },
+        1: { cellWidth: 46, fontStyle: 'bold' },
+        2: { cellWidth: 53 },
         3: { cellWidth: 20 },
-        4: { cellWidth: 48 },
+        4: { cellWidth: 46 },
         5: { cellWidth: 26 },
         6: { cellWidth: 36 },
         7: { cellWidth: 11, halign: 'center' },
@@ -274,6 +274,69 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
         }
       },
       alternateRowStyles: { fillColor: [248, 248, 252] },
+    })
+
+    // ── Tablas de resumen ──────────────────────────────────────
+
+    // Posición Y: debajo de la tabla principal, nueva página si no hay espacio
+    const mainFinalY: number = (doc as any).lastAutoTable.finalY
+    const summaryY = mainFinalY + 12 > 190 ? (doc.addPage(), 16) : mainFinalY + 12
+
+    doc.setFontSize(9)
+    doc.setTextColor(35, 22, 81)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Resumen', 10, summaryY - 4)
+    doc.setFont('helvetica', 'normal')
+
+    // Datos — por categoría
+    const porCategoria = [
+      ...CATEGORIAS_ORDEN.map(cat => [
+        cat,
+        String(filtradas.filter(p => p.categorias.includes(cat)).length),
+      ]),
+      ['TOTAL', String(filtradas.length)],
+    ]
+
+    // Datos — por procedencia (pertenencia), solo participantes con flags
+    const conFlags = filtradas.filter(p => verFlags(p))
+    const porProcedencia = [
+      ...PERTENENCIAS.map(pp => [
+        pp.etiqueta,
+        String(conFlags.filter(p => p.pertenencia === pp.valor).length),
+      ]),
+      ['Sin especificar', String(conFlags.filter(p => !p.pertenencia).length)],
+      ['TOTAL', String(conFlags.length)],
+    ]
+
+    const resumenHead   = [['Categoría', 'Total']]
+    const resumenStyles = {
+      styles:     { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [35, 22, 81] as [number,number,number], textColor: 255 as number, fontStyle: 'bold' as const, fontSize: 7.5 },
+      columnStyles: { 1: { halign: 'center' as const, cellWidth: 16 } },
+      didParseCell: (data: any) => {
+        if (data.section === 'body' && data.cell.text[0] === 'TOTAL') {
+          data.cell.styles.fontStyle = 'bold'
+          data.cell.styles.fillColor = [240, 240, 248]
+        }
+      },
+    }
+
+    autoTable(doc, {
+      startY: summaryY,
+      margin: { left: 10 },
+      tableWidth: 88,
+      head: resumenHead,
+      body: porCategoria,
+      ...resumenStyles,
+    })
+
+    autoTable(doc, {
+      startY: summaryY,
+      margin: { left: 108 },
+      tableWidth: 88,
+      head: [['Procedencia', 'Total']],
+      body: porProcedencia,
+      ...resumenStyles,
     })
 
     doc.save(`participantes-${filtro === 'todas' ? 'todos' : filtro.replace(/\//g, '-').toLowerCase()}.pdf`)
