@@ -67,11 +67,9 @@ const clave      = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 const apellidoDe = (n: string) => n.trim().split(/\s+/).slice(-1)[0]
 const etiquetaP  = (v: string) => PERTENENCIAS.find(p => p.valor === v)?.etiqueta ?? v
 
-/** Muestra flags pago/acreditación solo para participantes (no org ni invitados puros) */
-const verFlags = (p: Persona) =>
-  p.categorias.includes('Participante') &&
-  !(p.categorias as string[]).some(c => (ORGS as readonly string[]).includes(c)) &&
-  !p.categorias.includes('Invitado/a')
+/** Muestra flags pago/acreditación para cualquiera que haya presentado una propuesta.
+ *  No aplica a quienes son exclusivamente organización o exclusivamente invitados. */
+const verFlags = (p: Persona) => p.categorias.includes('Participante')
 
 const badgeBase: React.CSSProperties = {
   fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.06em',
