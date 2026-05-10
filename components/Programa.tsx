@@ -194,18 +194,13 @@ function LineaParticipante({ p, esSolo, borderColor, invitados }: {
   invitados:   Invitado[]
 }) {
   const invitado = p.invitadoId ? invitados.find(i => i.id === p.invitadoId) : undefined
-  const foto     = invitado ? (invitado.foto || '/invitados/placeholder.jpg') : undefined
   const fotoSize = esSolo ? 48 : 36
 
-  if (foto) {
-    // Con foto: fila con círculo + columna de texto (sin borde izquierdo)
+  if (invitado) {
+    // Participante vinculado a invitado: mostrar foto (o placeholder si no tiene)
     return (
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-        <img
-          src={foto}
-          alt={p.nombre}
-          style={{ width: fotoSize, height: fotoSize, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${borderColor}`, flexShrink: 0 }}
-        />
+        <FotoCirculo src={invitado.foto} alt={p.nombre} size={fotoSize} borderColor={borderColor} />
         <div style={{ minWidth: 0 }}>
           <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
             {p.nombre}
@@ -253,6 +248,25 @@ function Moderador({ nombre }: { nombre: string }) {
   )
 }
 
+const PLACEHOLDER = '/invitados/placeholder.jpg'
+
+function FotoCirculo({ src, alt, size, borderColor }: {
+  src?:        string
+  alt:         string
+  size:        number
+  borderColor: string
+}) {
+  const borderPx = size >= 80 ? 3 : 2
+  return (
+    <img
+      src={src || PLACEHOLDER}
+      alt={alt}
+      onError={e => { e.currentTarget.src = PLACEHOLDER }}
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: `${borderPx}px solid ${borderColor}`, flexShrink: 0 }}
+    />
+  )
+}
+
 // ── Tarjetas por tipo ─────────────────────────────────────────
 
 function TarjetaConferencia({ act, invitado, esSolo }: {
@@ -260,7 +274,6 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
 }) {
   const { border } = paleta('conferencia')
   const conFoto  = esSolo && !!invitado
-  const fotoSrc  = invitado?.foto || '/invitados/placeholder.jpg'
 
   return (
     <CardWrap tipo="conferencia" esSolo={esSolo}>
@@ -278,11 +291,9 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
       <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', marginBottom: invitado ? '0.9rem' : '0.5rem' }}>
 
         {conFoto && (
-          <img
-            src={fotoSrc}
-            alt={invitado!.nombre}
-            style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${border}`, flexShrink: 0, marginTop: '0.4rem' }}
-          />
+          <div style={{ marginTop: '0.4rem' }}>
+            <FotoCirculo src={invitado!.foto} alt={invitado!.nombre} size={96} borderColor={border} />
+          </div>
         )}
 
         <div style={{ flex: 1, minWidth: 0 }}>
