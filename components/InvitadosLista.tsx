@@ -11,8 +11,9 @@ const BG          = '#eef5fb'
 const PLACEHOLDER = '/invitados/placeholder.jpg'
 
 function labelFecha(fecha: string) {
-  return new Date(fecha + 'T12:00:00')
-    .toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+  const s = new Date(fecha + 'T12:00:00')
+    .toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 // ── Componente ────────────────────────────────────────────────
