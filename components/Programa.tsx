@@ -194,7 +194,7 @@ function LineaParticipante({ p, esSolo, borderColor, invitados }: {
   invitados:   Invitado[]
 }) {
   const invitado = p.invitadoId ? invitados.find(i => i.id === p.invitadoId) : undefined
-  const foto     = invitado?.foto
+  const foto     = invitado ? (invitado.foto || '/invitados/placeholder.jpg') : undefined
   const fotoSize = esSolo ? 48 : 36
 
   if (foto) {
@@ -259,7 +259,8 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
   act: Actividad; invitado?: Invitado; esSolo: boolean
 }) {
   const { border } = paleta('conferencia')
-  const conFoto = esSolo && !!invitado?.foto
+  const conFoto  = esSolo && !!invitado
+  const fotoSrc  = invitado?.foto || '/invitados/placeholder.jpg'
 
   return (
     <CardWrap tipo="conferencia" esSolo={esSolo}>
@@ -274,7 +275,7 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
 
         {conFoto && (
           <img
-            src={invitado!.foto}
+            src={fotoSrc}
             alt={invitado!.nombre}
             style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${border}`, flexShrink: 0 }}
           />
