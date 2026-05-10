@@ -107,6 +107,7 @@
 .invitado-card__foto-wrap {
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  border-radius: 50%;
   background: rgba(35, 22, 81, 0.06);
 }
 .invitado-card__foto {
@@ -208,6 +209,7 @@
   position: relative;
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  border-radius: 50%;
   background: rgba(35, 22, 81, 0.06);
   align-self: start;
 }
