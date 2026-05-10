@@ -5,8 +5,7 @@
 
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import jsPDF     from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import jsPDF from 'jspdf'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { usePropuestas }  from '@/lib/hooks/usePropuestas'
 import { useInvitados }   from '@/lib/hooks/useInvitados'
@@ -542,6 +541,8 @@ function BloqueHorario({ bloque, propuestas, invitados }: {
 }
 
 // ── PDF ───────────────────────────────────────────────────────
+// Genera un PDF con tarjetas visuales por actividad, similar al diseño web:
+// borde izquierdo de color, badge de tipo, hora/sala, título y contenido.
 
 function buildPDF(
   actividades: Actividad[],
@@ -550,99 +551,232 @@ function buildPDF(
 ) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
-  const buildContenido = (act: Actividad): string => {
-    const lines: string[] = []
+  // ── Constantes de página ──
+  const PW = 210, PH = 297
+  const ML = 10, MR = 10, HEADER_H = 22, MB = 12
+  const CW = PW - ML - MR          // 190 mm de ancho útil
+  const BORDER_W = 2.5             // barra izquierda de color
+  const PAD_H    = 4               // padding horizontal interno
+  const PAD_V    = 3.5             // padding vertical interno
+  const CARD_GAP = 2.5             // separación entre tarjetas
+  const BADGE_H  = 4               // alto del badge de tipo
+
+  // ── Helpers de color ──
+  function hexToRgb(hex: string): [number, number, number] {
+    const n = parseInt(hex.replace('#', ''), 16)
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+  }
+  function tintRgb(hex: string, alpha = 0.1): [number, number, number] {
+    const [r, g, b] = hexToRgb(hex)
+    return [
+      Math.round(255 - (255 - r) * alpha),
+      Math.round(255 - (255 - g) * alpha),
+      Math.round(255 - (255 - b) * alpha),
+    ]
+  }
+
+  // ── Altura de línea en mm ──
+  const lh = (size: number) => size * 0.352778 * 1.45
+
+  // ── Contenido tipado de cada actividad ──
+  type Linea = { txt: string; size: number; bold?: boolean; italic?: boolean; color?: [number,number,number]; wrap?: boolean }
+
+  function lineas(act: Actividad, innerW: number): Linea[] {
+    const gray:  [number,number,number] = [70,  70,  70 ]
+    const light: [number,number,number] = [120, 120, 120]
+    const out: Linea[] = []
 
     if (act.tipo === 'conferencia') {
       const inv = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
-      if (inv) lines.push(inv.nombre + (inv.institucion ? '\n' + inv.institucion : ''))
+      if (inv) {
+        out.push({ txt: inv.nombre, size: 8.5, bold: true, color: [30, 20, 60] })
+        if (inv.institucion) out.push({ txt: inv.institucion, size: 7.5, italic: true, color: light })
+        if (inv.bio) {
+          const bio = inv.bio.length > 500 ? inv.bio.slice(0, 497) + '…' : inv.bio
+          out.push({ txt: bio, size: 7.5, color: gray, wrap: true })
+        }
+      }
     } else if (act.tipo === 'panel') {
-      if (act.coordinador) lines.push('Coord.: ' + act.coordinador)
+      if (act.coordinador) out.push({ txt: 'Coordinación: ' + act.coordinador, size: 7.5, italic: true, color: light })
       const prop  = propuestas.find(p => p.actividadId === act.id)
-      const parts = prop
-        ? [prop.autor, ...(prop.participantes ?? [])]
-        : (act.participantes ?? [])
-      parts.forEach(p => {
-        lines.push('· ' + p.nombre + (p.institucion ? ' · ' + p.institucion : ''))
-      })
+      const parts = prop ? [prop.autor, ...(prop.participantes ?? [])] : (act.participantes ?? [])
+      parts.forEach(p => out.push({
+        txt: '· ' + p.nombre + (p.institucion ? ' · ' + p.institucion : ''),
+        size: 7.5, color: gray,
+      }))
     } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
       const asignadas = propuestas.filter(p => p.actividadId === act.id)
       asignadas.forEach(prop => {
         const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
-        lines.push('· ' + autores + ': ' + prop.titulo)
+        out.push({ txt: '· ' + autores + ': ' + prop.titulo, size: 7.5, color: gray, wrap: true })
       })
     } else {
-      if (act.descripcion) lines.push(act.descripcion)
-      ;(act.participantes ?? []).forEach(p => lines.push('· ' + p.nombre))
+      if (act.descripcion) out.push({ txt: act.descripcion, size: 7.5, italic: true, color: light, wrap: true })
+      ;(act.participantes ?? []).forEach(p => out.push({ txt: '· ' + p.nombre, size: 7.5, color: gray }))
     }
 
-    if (act.moderador) lines.push('Modera: ' + act.moderador)
-    return lines.join('\n')
+    if (act.moderador) out.push({ txt: 'Modera: ' + act.moderador, size: 7.5, italic: true, color: light })
+    return out
   }
 
-  FECHAS.forEach((dia, idx) => {
-    if (idx > 0) doc.addPage()
+  // ── Medir altura de una tarjeta ──
+  function medirCard(act: Actividad, w: number): number {
+    const innerW = w - BORDER_W - PAD_H * 2
+    let h = PAD_V
 
-    // Encabezado del día
-    doc.setFillColor(35, 22, 81)
-    doc.rect(0, 0, 210, 14, 'F')
+    // Badge row
+    h += BADGE_H + 2.5
+
+    // Título
+    doc.setFontSize(9.5)
+    h += doc.splitTextToSize(act.titulo, innerW).length * lh(9.5) + 1.5
+
+    // Contenido
+    for (const ln of lineas(act, innerW)) {
+      doc.setFontSize(ln.size)
+      const n = ln.wrap ? doc.splitTextToSize(ln.txt, innerW).length : 1
+      h += n * lh(ln.size)
+    }
+
+    h += PAD_V
+    return h
+  }
+
+  // ── Dibujar una tarjeta ──
+  function dibujarCard(act: Actividad, x: number, y: number, w: number): number {
+    const h        = medirCard(act, w)
+    const p        = paleta(act.tipo)
+    const [cr, cg, cb] = hexToRgb(p.border)
+    const [tr, tg, tb] = tintRgb(p.border, 0.09)
+    const innerX   = x + BORDER_W + PAD_H
+    const innerW   = w - BORDER_W - PAD_H * 2
+
+    // Fondo tintado
+    doc.setFillColor(tr, tg, tb)
+    doc.rect(x, y, w, h, 'F')
+
+    // Barra izquierda de color
+    doc.setFillColor(cr, cg, cb)
+    doc.rect(x, y, BORDER_W, h, 'F')
+
+    let cy = y + PAD_V
+
+    // ── Badge de tipo ──
+    const badgeTxt = tipoLabel(act).toUpperCase()
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(11)
-    doc.setTextColor(255, 255, 255)
-    doc.text(dia.etiqueta, 10, 9.5)
+    doc.setFontSize(6.5)
+    const badgeW = doc.getTextWidth(badgeTxt) + 3.5
 
-    // Subtítulo
+    doc.setFillColor(cr, cg, cb)
+    doc.rect(innerX, cy, badgeW, BADGE_H, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.text(badgeTxt, innerX + 1.75, cy + BADGE_H - 1.15)
+
+    // Hora y sala — alineados a la derecha del card
+    const horaParts = [
+      act.sala ?? '',
+      act.horaInicio
+        ? (act.horaFin ? `${act.horaInicio}–${act.horaFin}` : act.horaInicio)
+        : '',
+    ].filter(Boolean)
+
+    if (horaParts.length > 0) {
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(7.5)
+      doc.setTextColor(cr, cg, cb)
+      doc.text(horaParts.join('  ·  '), x + w - PAD_H, cy + BADGE_H - 1.15, { align: 'right' })
+    }
+
+    cy += BADGE_H + 2.5
+
+    // ── Título ──
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9.5)
+    doc.setTextColor(20, 12, 55)
+    const titleLines = doc.splitTextToSize(act.titulo, innerW) as string[]
+    titleLines.forEach(line => { doc.text(line, innerX, cy); cy += lh(9.5) })
+    cy += 1.5
+
+    // ── Contenido ──
+    for (const ln of lineas(act, innerW)) {
+      doc.setFont('helvetica', ln.bold ? 'bold' : ln.italic ? 'italic' : 'normal')
+      doc.setFontSize(ln.size)
+      const [r2, g2, b2] = ln.color ?? [60, 60, 60]
+      doc.setTextColor(r2, g2, b2)
+
+      const wrapped = ln.wrap
+        ? (doc.splitTextToSize(ln.txt, innerW) as string[])
+        : [ln.txt]
+      wrapped.forEach(line => { doc.text(line, innerX, cy); cy += lh(ln.size) })
+    }
+
+    return h
+  }
+
+  // ── Encabezado de día ──
+  function dibujarEncabezado(dia: typeof FECHAS[0]) {
+    doc.setFillColor(35, 22, 81)
+    doc.rect(0, 0, PW, HEADER_H, 'F')
+
+    // Línea decorativa inferior
+    doc.setFillColor(77, 204, 189)   // turquesa
+    doc.rect(0, HEADER_H - 1, PW, 1, 'F')
+
+    // Evento (derecha, chico)
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
-    doc.setTextColor(180, 180, 200)
-    doc.text('JORNADAS: LA IA EN DEBATE · FHyA UNR 2026', 10, 12.5)
+    doc.setFontSize(7)
+    doc.setTextColor(140, 130, 180)
+    doc.text('JORNADAS: LA IA EN DEBATE · FHyA UNR 2026', PW - MR, 9, { align: 'right' })
+
+    // Día (izquierda, grande)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(13)
+    doc.setTextColor(255, 255, 255)
+    doc.text(dia.etiqueta, ML, 16.5)
+  }
+
+  // ── Iteración por días ──
+  FECHAS.forEach((dia, dIdx) => {
+    if (dIdx > 0) doc.addPage()
+    dibujarEncabezado(dia)
 
     const actsDelDia = actividades
       .filter(a => a.fecha === dia.valor && a.horaInicio && a.mostrar !== false)
       .sort((a, b) => (a.horaInicio ?? '').localeCompare(b.horaInicio ?? ''))
 
     if (actsDelDia.length === 0) {
-      doc.setFont('helvetica', 'normal')
+      doc.setFont('helvetica', 'italic')
       doc.setFontSize(9)
       doc.setTextColor(160, 160, 160)
-      doc.text('Sin actividades programadas.', 10, 24)
+      doc.text('Sin actividades programadas.', ML, HEADER_H + 10)
       return
     }
 
-    const rows = actsDelDia.map(act => [
-      act.horaInicio && act.horaFin ? `${act.horaInicio}\n${act.horaFin}` : (act.horaInicio ?? ''),
-      act.sala ?? '',
-      tipoLabel(act),
-      act.titulo + (buildContenido(act) ? '\n' + buildContenido(act) : ''),
-    ])
+    const bloques = detectarBloques(actsDelDia)
+    let y = HEADER_H + 4
 
-    autoTable(doc, {
-      startY:     18,
-      head:       [['Hora', 'Sala', 'Tipo', 'Actividad']],
-      body:       rows,
-      styles:     { fontSize: 8, cellPadding: 3, valign: 'top', overflow: 'linebreak' },
-      headStyles: { fillColor: [35, 22, 81], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-      columnStyles: {
-        0: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 32 },
-        3: { cellWidth: 'auto' },
-      },
-      didParseCell: data => {
-        if (data.section === 'body' && data.column.index === 2) {
-          const act = actsDelDia[data.row.index]
-          const rgb = paleta(act?.tipo ?? 'otro').rgb
-          data.cell.styles.textColor = rgb
-          data.cell.styles.fontStyle  = 'bold'
-        }
-        if (data.section === 'body' && data.column.index === 3) {
-          data.cell.styles.fontStyle = 'bold'
-          // Resto del contenido en normal — no se puede mezclar en autotable,
-          // así que solo se resalta el título (primera línea) via fontStyle
-        }
-      },
-      margin: { left: 10, right: 10 },
-    })
+    for (const bloque of bloques) {
+      const n     = bloque.actividades.length
+      const cardW = n === 1 ? CW : (CW - CARD_GAP * (n - 1)) / n
+
+      // Altura máxima del bloque
+      const blockH = Math.max(...bloque.actividades.map(a => medirCard(a, cardW)))
+
+      // Salto de página si no hay espacio
+      if (y + blockH > PH - MB) {
+        doc.addPage()
+        dibujarEncabezado(dia)
+        y = HEADER_H + 4
+      }
+
+      // Dibujar tarjetas del bloque
+      bloque.actividades.forEach((act, i) => {
+        const cx = ML + i * (cardW + CARD_GAP)
+        dibujarCard(act, cx, y, cardW)
+      })
+
+      y += blockH + CARD_GAP
+    }
   })
 
   doc.save(`programa-jia-${new Date().toISOString().slice(0, 10)}.pdf`)
