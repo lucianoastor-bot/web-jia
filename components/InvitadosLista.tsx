@@ -12,7 +12,7 @@ const PLACEHOLDER = '/invitados/placeholder.jpg'
 
 function labelFecha(fecha: string) {
   return new Date(fecha + 'T12:00:00')
-    .toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+    .toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
 }
 
 // ── Componente ────────────────────────────────────────────────
@@ -194,7 +194,6 @@ export default function InvitadosLista() {
                       fontSize: '0.75rem',
                       color: 'var(--c-dark)',
                       fontWeight: 500,
-                      textTransform: 'capitalize',
                     }}>
                       {labelFecha(act.fecha!)}
                     </span>
