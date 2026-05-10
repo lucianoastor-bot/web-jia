@@ -1,30 +1,95 @@
 'use client'
 
-import { useInvitados } from '@/lib/hooks/useInvitados'
-import { validarFoto } from '@/lib/utils/formato'
+import { useMemo } from 'react'
+import { useInvitados }   from '@/lib/hooks/useInvitados'
+import { useActividades } from '@/lib/hooks/useActividades'
+import { validarFoto }    from '@/lib/utils/formato'
+import type { Actividad } from '@/types'
 
-const COLOR   = '#2374ab'
-const BG      = '#eef5fb'
+const COLOR       = '#2374ab'
+const BG          = '#eef5fb'
 const PLACEHOLDER = '/invitados/placeholder.jpg'
 
-export default function InvitadosLista() {
-  const { invitados: todos, loading } = useInvitados()
-  const invitados = todos
-    .filter(inv => inv.confirmado)
-    .sort((a, b) => {
-      const apellido = (n: string) => n.trim().split(' ').slice(-1)[0]
-      return apellido(a.nombre).localeCompare(apellido(b.nombre), 'es')
-    })
+// ── Paleta por tipo de actividad ─────────────────────────────
+const PALETA: Record<string, { badge: string; text: string }> = {
+  conferencia: { badge: '#2374ab', text: '#fff' },
+  panel:       { badge: '#7c5cbf', text: '#fff' },
+  mesa:        { badge: '#e8a23a', text: '#fff' },
+  pósters:     { badge: '#4dccbd', text: '#fff' },
+  otro:        { badge: '#6b7280', text: '#fff' },
+}
+const paleta = (tipo: string) => PALETA[tipo] ?? PALETA.otro
 
-  if (loading) return (
+const TIPO_LABEL: Record<string, string> = {
+  conferencia: 'Conferencia',
+  panel:       'Panel',
+  mesa:        'Mesa',
+  pósters:     'Pósters',
+  otro:        'Otro',
+}
+function tipoLabel(act: Actividad) {
+  return act.tipo === 'otro' && act.descriptor
+    ? act.descriptor
+    : (TIPO_LABEL[act.tipo] ?? act.tipo)
+}
+
+function labelFecha(fecha: string) {
+  return new Date(fecha + 'T12:00:00')
+    .toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+// ── Componente ────────────────────────────────────────────────
+
+export default function InvitadosLista() {
+  const { invitados: todos,  loading: loadInv } = useInvitados()
+  const { actividades,       loading: loadAct } = useActividades()
+
+  const invitados = useMemo(() =>
+    todos
+      .filter(inv => inv.confirmado)
+      .sort((a, b) => {
+        const apellido = (n: string) => n.trim().split(' ').slice(-1)[0]
+        return apellido(a.nombre).localeCompare(apellido(b.nombre), 'es')
+      }),
+    [todos]
+  )
+
+  // Mapa invitadoId → actividades donde aparece (públicas y con horario)
+  const actPorInvitado = useMemo(() => {
+    const map = new Map<string, Actividad[]>()
+    for (const act of actividades) {
+      if (act.mostrar === false) continue
+      if (!act.fecha || !act.horaInicio)  continue
+
+      const agregar = (id: string) => {
+        const arr = map.get(id) ?? []
+        if (!arr.find(a => a.id === act.id)) arr.push(act)
+        map.set(id, arr)
+      }
+
+      // Conferencia / otro: invitadoId directo
+      if (act.invitadoId) agregar(act.invitadoId)
+
+      // Panel / otro: participantes con invitadoId
+      act.participantes?.forEach(p => { if (p.invitadoId) agregar(p.invitadoId) })
+    }
+    return map
+  }, [actividades])
+
+  if (loadInv || loadAct) return (
     <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
   )
 
   return (
     <div className="invitados-pagina__grilla" id="conferencias">
       {invitados.map((inv) => {
-        const fotoSrc = validarFoto(inv.foto) || PLACEHOLDER
+        const fotoSrc  = validarFoto(inv.foto) || PLACEHOLDER
         const hayLinks = inv.linkedin || inv.instagram || inv.web || inv.academia || inv.facebook || inv.youtube
+        const acts     = (actPorInvitado.get(inv.id) ?? [])
+          .sort((a, b) => {
+            if (a.fecha !== b.fecha) return (a.fecha ?? '').localeCompare(b.fecha ?? '')
+            return (a.horaInicio ?? '').localeCompare(b.horaInicio ?? '')
+          })
 
         return (
           <article
@@ -122,6 +187,66 @@ export default function InvitadosLista() {
                 )}
               </div>
             </div>
+
+            {/* ── Agenda de actividades ── */}
+            {acts.length > 0 && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.45rem',
+                borderTop: `1px solid rgba(35,116,171,0.15)`,
+                paddingTop: '0.85rem',
+              }}>
+                {acts.map(act => {
+                  const p = paleta(act.tipo)
+                  return (
+                    <div key={act.id} style={{ display: 'flex', alignItems: 'baseline', gap: '0.55rem', flexWrap: 'wrap' }}>
+                      {/* Tipo badge */}
+                      <span style={{
+                        fontSize: '0.58rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        padding: '0.18em 0.55em',
+                        background: p.badge,
+                        color: p.text,
+                        borderRadius: 3,
+                        flexShrink: 0,
+                        lineHeight: 1.4,
+                      }}>
+                        {tipoLabel(act)}
+                      </span>
+
+                      {/* Fecha */}
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--c-dark)',
+                        fontWeight: 500,
+                        textTransform: 'capitalize',
+                      }}>
+                        {labelFecha(act.fecha!)}
+                      </span>
+
+                      {/* Hora */}
+                      <span style={{ fontSize: '0.75rem', color: '#666' }}>
+                        {act.horaInicio}{act.horaFin ? `–${act.horaFin}` : ''}
+                      </span>
+
+                      {/* Sala */}
+                      {act.sala && (
+                        <span style={{
+                          fontSize: '0.72rem',
+                          color: p.badge,
+                          fontWeight: 600,
+                        }}>
+                          {act.sala}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
             {/* ── Bio ── */}
             {inv.bio && (
