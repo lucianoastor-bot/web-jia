@@ -16,13 +16,7 @@ export default function Programa() {
         <h1 className="section__title">Programa</h1>
         <div className="placeholder">
           <div>
-            <span className="placeholder__icon">📅</span>
-            <p className="placeholder__title">En elaboración</p>
-            <p className="placeholder__text">
-              El programa estará disponible una vez finalizado<br />
-              el plazo de envío de propuestas y completado<br />
-              el proceso de evaluación.
-            </p>
+            <p className="placeholder__title">Próximamente</p>
           </div>
         </div>
       </div>

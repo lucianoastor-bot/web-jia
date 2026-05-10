@@ -11,9 +11,9 @@ export default function SeccionResumenes() {
       <p className="section__body" style={{ marginTop: '1rem', fontSize: '1.5rem' }}>
         La convocatoria está abierta hasta el {CONGRESO.plazoResumenes}. Se aceptan ponencias de investigación, relatos de experiencia, paneles y pósters.
       </p>
-      <div style={{ margin: '2.5rem 0' }}>
+      {/* <div style={{ margin: '2.5rem 0' }}>
         <PlazoTimeline />
-      </div>
+      </div> */}
       <div className="plazo-timeline__cta" style={{ display: 'flex' }}>
         <a href="/propuestas" className="btn btn--primary" style={{ display: 'inline-flex', width: 'fit-content' }}>
           Envío de Resúmenes

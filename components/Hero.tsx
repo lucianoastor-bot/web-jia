@@ -70,8 +70,8 @@ export default function Hero() {
         </div>
 
         <div className="hero__actions">
-          <Link href="/propuestas" className="btn btn--primary">
-            Envío de resúmenes
+          <Link href="/programa" className="btn btn--primary">
+            Programa
           </Link>
           <Link href="/contacto" className="btn btn--ghost">
             Contacto
