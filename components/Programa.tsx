@@ -216,27 +216,61 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
   act: Actividad; invitado?: Invitado; esSolo: boolean
 }) {
   const { border } = paleta('conferencia')
-  const inner = (
-    <>
-      <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
+  const conFoto = esSolo && !!invitado?.foto
 
-      {invitado && (
-        <div style={{ marginBottom: esSolo ? '0.9rem' : 0 }}>
-          <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 0.12rem', color: 'var(--c-dark)' }}>
-            {invitado.nombre}
-          </p>
-          <p style={{ fontSize: '0.82rem', color: 'rgba(35,22,81,0.48)', margin: 0 }}>
-            {[invitado.rol, invitado.institucion].filter(Boolean).join(' · ')}
-          </p>
+  return (
+    <CardWrap tipo="conferencia" esSolo={esSolo}>
+
+      {/* Badge de tipo */}
+      <div style={{ marginBottom: '0.5rem' }}>
+        <Label color={border}>{tipoLabel(act)}</Label>
+      </div>
+
+      {/* Fila superior: foto (si existe) + columna derecha con título, nombre, hora/sala */}
+      <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', marginBottom: conFoto || invitado ? '0.9rem' : 0 }}>
+
+        {conFoto && (
+          <img
+            src={invitado!.foto}
+            alt={invitado!.nombre}
+            style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${border}`, flexShrink: 0 }}
+          />
+        )}
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Título */}
+          <h3 style={{ margin: '0 0 0.45rem', fontSize: esSolo ? '1.25rem' : '1rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25 }}>
+            {act.titulo}
+          </h3>
+
+          {/* Nombre e institución del invitado */}
+          {invitado && (
+            <>
+              <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 0.1rem', color: 'var(--c-dark)' }}>
+                {invitado.nombre}
+              </p>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(35,22,81,0.48)', margin: '0 0 0.35rem' }}>
+                {[invitado.rol, invitado.institucion].filter(Boolean).join(' · ')}
+              </p>
+            </>
+          )}
+
+          {/* Hora y sala — siempre en la columna derecha, no puede desbordar */}
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <SalaBadge sala={act.sala} />
+            <Hora act={act} />
+          </div>
         </div>
-      )}
+      </div>
 
+      {/* Bio — full width, debajo de la fila foto+datos */}
       {esSolo && invitado?.bio && (
         <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.62)', lineHeight: 1.65, margin: '0 0 0.85rem' }}>
           {invitado.bio}
         </p>
       )}
 
+      {/* Resumen — full width */}
       {esSolo && act.resumen && (
         <>
           <Divisor label="Resumen" />
@@ -247,26 +281,8 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
       )}
 
       {act.moderador && <Moderador nombre={act.moderador} />}
-    </>
+    </CardWrap>
   )
-
-  // Cuando es solo + tiene foto: grid con foto a la izquierda
-  if (esSolo && invitado?.foto) {
-    return (
-      <CardWrap tipo="conferencia" esSolo={esSolo}>
-        <div style={{ display: 'grid', gridTemplateColumns: '116px 1fr', gap: '1.75rem', alignItems: 'start' }}>
-          <img
-            src={invitado.foto}
-            alt={invitado.nombre}
-            style={{ width: 116, height: 116, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${border}` }}
-          />
-          <div>{inner}</div>
-        </div>
-      </CardWrap>
-    )
-  }
-
-  return <CardWrap tipo="conferencia" esSolo={esSolo}>{inner}</CardWrap>
 }
 
 function TarjetaPanel({ act, propuesta, esSolo }: {
