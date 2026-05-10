@@ -85,7 +85,12 @@ function makeBloque(acts: Actividad[], finGrupo: string): Bloque {
 
 // ── Helpers de participantes ──────────────────────────────────
 
-type PartSimple = { nombre: string; institucion?: string; tituloPonencia?: string }
+type PartSimple = {
+  nombre:          string
+  institucion?:    string
+  tituloPonencia?: string
+  invitadoId?:     string   // → foto si existe en la colección invitados
+}
 
 function participantesPanel(act: Actividad, propuesta?: Propuesta): PartSimple[] {
   if (propuesta) {
@@ -94,11 +99,13 @@ function participantesPanel(act: Actividad, propuesta?: Propuesta): PartSimple[]
       : [{ nombre: propuesta.autor.nombre, institucion: propuesta.autor.institucion, tituloPonencia: propuesta.titulo }]
     const extras = (propuesta.participantes ?? []).map(p => ({
       nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
+      // Participante de propuesta no tiene invitadoId — solo los ParticipantePanel lo tienen
     }))
     return [...base, ...extras]
   }
   return (act.participantes ?? []).map(p => ({
     nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
+    invitadoId: p.invitadoId,
   }))
 }
 
@@ -178,11 +185,45 @@ function CardHeader({
   )
 }
 
-function LineaParticipante({ p, esSolo, borderColor }: {
+function LineaParticipante({ p, esSolo, borderColor, invitados }: {
   p:           PartSimple
   esSolo:      boolean
   borderColor: string
+  invitados:   Invitado[]
 }) {
+  const invitado = p.invitadoId ? invitados.find(i => i.id === p.invitadoId) : undefined
+  const foto     = invitado?.foto
+  const fotoSize = esSolo ? 48 : 36
+
+  if (foto) {
+    // Con foto: fila con círculo + columna de texto (sin borde izquierdo)
+    return (
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+        <img
+          src={foto}
+          alt={p.nombre}
+          style={{ width: fotoSize, height: fotoSize, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${borderColor}`, flexShrink: 0 }}
+        />
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
+            {p.nombre}
+          </p>
+          {p.institucion && (
+            <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.45)', margin: '0 0 0.12rem' }}>
+              {p.institucion}
+            </p>
+          )}
+          {esSolo && p.tituloPonencia && (
+            <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.62)', margin: 0, lineHeight: 1.45 }}>
+              {p.tituloPonencia}
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Sin foto: borde izquierdo de color
   return (
     <div style={{ paddingLeft: '0.85rem', borderLeft: `2px solid ${borderColor}55` }}>
       <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
@@ -285,8 +326,8 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
   )
 }
 
-function TarjetaPanel({ act, propuesta, esSolo }: {
-  act: Actividad; propuesta?: Propuesta; esSolo: boolean
+function TarjetaPanel({ act, propuesta, esSolo, invitados }: {
+  act: Actividad; propuesta?: Propuesta; esSolo: boolean; invitados: Invitado[]
 }) {
   const { border } = paleta('panel')
   const partes = participantesPanel(act, propuesta)
@@ -304,7 +345,7 @@ function TarjetaPanel({ act, propuesta, esSolo }: {
       {partes.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: esSolo ? '0.9rem' : '0.45rem' }}>
           {partes.map((p, i) => (
-            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} />
+            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} invitados={invitados} />
           ))}
         </div>
       )}
@@ -366,26 +407,27 @@ function TarjetaMesa({ act, propuestas, esSolo }: {
   )
 }
 
-function TarjetaOtro({ act, esSolo }: { act: Actividad; esSolo: boolean }) {
+function TarjetaOtro({ act, esSolo, invitados }: {
+  act: Actividad; esSolo: boolean; invitados: Invitado[]
+}) {
+  const { border } = paleta('otro')
+  const partes: PartSimple[] = (act.participantes ?? []).map(p => ({
+    nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
+    invitadoId: p.invitadoId,
+  }))
+
   return (
     <CardWrap tipo="otro" esSolo={esSolo}>
       <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
       {esSolo && act.descripcion && (
-        <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.6)', lineHeight: 1.6, margin: '0 0 0.6rem' }}>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.6)', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
           {act.descripcion}
         </p>
       )}
-      {act.participantes && act.participantes.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-          {act.participantes.map((p: ParticipantePanel, i: number) => (
-            <p key={i} style={{ fontSize: '0.86rem', margin: 0, color: 'var(--c-dark)' }}>
-              {p.nombre}
-              {p.institucion && (
-                <span style={{ fontWeight: 400, color: 'rgba(35,22,81,0.42)', marginLeft: '0.4rem' }}>
-                  · {p.institucion}
-                </span>
-              )}
-            </p>
+      {partes.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: esSolo ? '0.75rem' : '0.4rem' }}>
+          {partes.map((p, i) => (
+            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} invitados={invitados} />
           ))}
         </div>
       )}
@@ -405,9 +447,9 @@ function TarjetaActividad({ act, propuestas, invitados, esSolo }: {
   const propuesta = propuestas.find(p => p.actividadId === act.id)
 
   if (act.tipo === 'conferencia') return <TarjetaConferencia act={act} invitado={invitado} esSolo={esSolo} />
-  if (act.tipo === 'panel')       return <TarjetaPanel act={act} propuesta={propuesta} esSolo={esSolo} />
+  if (act.tipo === 'panel')       return <TarjetaPanel act={act} propuesta={propuesta} esSolo={esSolo} invitados={invitados} />
   if (act.tipo === 'mesa' || act.tipo === 'pósters') return <TarjetaMesa act={act} propuestas={propuestas} esSolo={esSolo} />
-  return <TarjetaOtro act={act} esSolo={esSolo} />
+  return <TarjetaOtro act={act} esSolo={esSolo} invitados={invitados} />
 }
 
 // ── Bloque horario ────────────────────────────────────────────
