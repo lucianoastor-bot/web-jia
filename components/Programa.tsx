@@ -218,7 +218,7 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
   const { border } = paleta('conferencia')
   const inner = (
     <>
-      <CardHeader act={act} esSolo={esSolo} />
+      <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
 
       {invitado && (
         <div style={{ marginBottom: esSolo ? '0.9rem' : 0 }}>
@@ -353,7 +353,7 @@ function TarjetaMesa({ act, propuestas, esSolo }: {
 function TarjetaOtro({ act, esSolo }: { act: Actividad; esSolo: boolean }) {
   return (
     <CardWrap tipo="otro" esSolo={esSolo}>
-      <CardHeader act={act} esSolo={esSolo} />
+      <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
       {esSolo && act.descripcion && (
         <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.6)', lineHeight: 1.6, margin: '0 0 0.6rem' }}>
           {act.descripcion}
