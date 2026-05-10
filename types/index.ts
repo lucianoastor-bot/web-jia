@@ -133,4 +133,7 @@ export type Actividad = {
   // Otro
   descriptor?:   string
   descripcion?:  string
+
+  // Visibilidad pública
+  mostrar?:      boolean   // false → oculta en /programa (default: true)
 }

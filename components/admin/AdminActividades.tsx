@@ -28,13 +28,14 @@ type DatosActividad = {
   descriptor:  string
   descripcion: string
   invitadoId:  string   // conferencia
+  mostrar:     boolean  // visibilidad en /programa
 }
 
 const VACIO: DatosActividad = {
   tipo: 'conferencia', titulo: '', resumen: '',
   fecha: '', horaInicio: '', horaFin: '',
   sala: '', moderador: '', coordinador: '', descriptor: '', descripcion: '',
-  invitadoId: '',
+  invitadoId: '', mostrar: true,
 }
 
 const VACIO_PARTICIPANTE: ParticipantePanel = {
@@ -86,14 +87,19 @@ export default function AdminActividades() {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
   }
 
+  const handleMostrar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm(f => ({ ...f, mostrar: e.target.checked }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setCargando(true)
     setMensaje(null)
     try {
       const datos: Omit<Actividad, 'id'> = {
-        tipo:   form.tipo,
-        titulo: form.titulo,
+        tipo:    form.tipo,
+        titulo:  form.titulo,
+        mostrar: form.mostrar,
         ...(form.resumen    && { resumen:    form.resumen }),
         ...(form.fecha      && { fecha:      form.fecha }),
         ...(form.horaInicio && { horaInicio: form.horaInicio }),
@@ -141,6 +147,7 @@ export default function AdminActividades() {
       descriptor:  act.descriptor  ?? '',
       descripcion: act.descripcion ?? '',
       invitadoId:  act.invitadoId  ?? '',
+      mostrar:     act.mostrar     ?? true,
     })
     setEditando(act.id)
     setMensaje(null)
@@ -516,6 +523,21 @@ export default function AdminActividades() {
           />
         </div>
 
+        {/* Visibilidad */}
+        <div className="admin-form__field admin-form__field--full" style={{ marginTop: '0.25rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={form.mostrar}
+              onChange={handleMostrar}
+              style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#2374ab' }}
+            />
+            <span className="admin-form__label" style={{ margin: 0 }}>
+              Mostrar en el programa público
+            </span>
+          </label>
+        </div>
+
         {mensaje && <p className="admin-form__msg">{mensaje}</p>}
 
         <div className="admin-form__actions">
@@ -784,6 +806,11 @@ export default function AdminActividades() {
                     <span className="admin-badge admin-badge--pending" style={{ marginLeft: '0.5rem' }}>
                       {act.tipo === 'otro' && act.descriptor ? act.descriptor : tipoEtiqueta(act.tipo)}
                     </span>
+                    {act.mostrar === false && (
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', fontWeight: 600, padding: '1px 6px', background: 'rgba(107,114,128,0.12)', borderRadius: 10, color: 'rgba(107,114,128,0.8)', letterSpacing: '0.04em' }}>
+                        oculto
+                      </span>
+                    )}
                   </p>
                   <p className="admin-list__item-sub">
                     {[act.fecha, act.horaInicio && `${act.horaInicio}–${act.horaFin}`, act.sala]

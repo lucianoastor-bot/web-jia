@@ -528,7 +528,7 @@ function buildPDF(
     doc.text('JORNADAS: LA IA EN DEBATE · FHyA UNR 2026', 10, 12.5)
 
     const actsDelDia = actividades
-      .filter(a => a.fecha === dia.valor && a.horaInicio)
+      .filter(a => a.fecha === dia.valor && a.horaInicio && a.mostrar !== false)
       .sort((a, b) => (a.horaInicio ?? '').localeCompare(b.horaInicio ?? ''))
 
     if (actsDelDia.length === 0) {
@@ -591,7 +591,9 @@ export default function Programa() {
   const programaPorDia = useMemo(() =>
     FECHAS.map(dia => ({
       ...dia,
-      bloques: detectarBloques(actividades.filter(a => a.fecha === dia.valor)),
+      bloques: detectarBloques(
+        actividades.filter(a => a.fecha === dia.valor && a.mostrar !== false)
+      ),
     })),
   [actividades])
 
