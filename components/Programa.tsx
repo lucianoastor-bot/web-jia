@@ -663,7 +663,7 @@ export default function Programa() {
       <div className="section">
 
         {/* Encabezado */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <div className="section__eyebrow">10 · 11 · 12 de junio de 2026</div>
             <h1 className="section__title" style={{ margin: 0 }}>Programa</h1>
@@ -686,6 +686,11 @@ export default function Programa() {
             </button>
           )}
         </div>
+
+        {/* Aviso */}
+        <p style={{ fontSize: '1rem', color: 'rgba(35,22,81,0.55)', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+          A partir del 20 de mayo estará disponible el programa completo con las propuestas de ponencias, relatos, pósters y paneles.
+        </p>
 
         {loading && (
           <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.9rem' }}>Cargando programa...</p>
