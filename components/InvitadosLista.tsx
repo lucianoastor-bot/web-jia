@@ -10,29 +10,6 @@ const COLOR       = '#2374ab'
 const BG          = '#eef5fb'
 const PLACEHOLDER = '/invitados/placeholder.jpg'
 
-// ── Paleta por tipo de actividad ─────────────────────────────
-const PALETA: Record<string, { badge: string; text: string }> = {
-  conferencia: { badge: '#2374ab', text: '#fff' },
-  panel:       { badge: '#7c5cbf', text: '#fff' },
-  mesa:        { badge: '#e8a23a', text: '#fff' },
-  pósters:     { badge: '#4dccbd', text: '#fff' },
-  otro:        { badge: '#6b7280', text: '#fff' },
-}
-const paleta = (tipo: string) => PALETA[tipo] ?? PALETA.otro
-
-const TIPO_LABEL: Record<string, string> = {
-  conferencia: 'Conferencia',
-  panel:       'Panel',
-  mesa:        'Mesa',
-  pósters:     'Pósters',
-  otro:        'Otro',
-}
-function tipoLabel(act: Actividad) {
-  return act.tipo === 'otro' && act.descriptor
-    ? act.descriptor
-    : (TIPO_LABEL[act.tipo] ?? act.tipo)
-}
-
 function labelFecha(fecha: string) {
   return new Date(fecha + 'T12:00:00')
     .toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -151,6 +128,19 @@ export default function InvitadosLista() {
                   {inv.rol}{inv.institucion ? ` · ${inv.institucion}` : ''}
                 </p>
 
+                {acts.map(act => (
+                  <p key={act.id} style={{
+                    fontSize: '0.83rem',
+                    fontWeight: 500,
+                    color: '#111',
+                    margin: 0,
+                    lineHeight: 1.35,
+                    fontStyle: 'italic',
+                  }}>
+                    {act.titulo}
+                  </p>
+                ))}
+
                 {hayLinks && (
                   <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.4rem', flexWrap: 'wrap' }}>
                     {inv.linkedin && (
@@ -197,54 +187,31 @@ export default function InvitadosLista() {
                 borderTop: `1px solid rgba(35,116,171,0.15)`,
                 paddingTop: '0.85rem',
               }}>
-                {acts.map(act => {
-                  const p = paleta(act.tipo)
-                  return (
-                    <div key={act.id} style={{ display: 'flex', alignItems: 'baseline', gap: '0.55rem', flexWrap: 'wrap' }}>
-                      {/* Tipo badge */}
-                      <span style={{
-                        fontSize: '0.58rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        padding: '0.18em 0.55em',
-                        background: p.badge,
-                        color: p.text,
-                        borderRadius: 3,
-                        flexShrink: 0,
-                        lineHeight: 1.4,
-                      }}>
-                        {tipoLabel(act)}
-                      </span>
+                {acts.map(act => (
+                  <div key={act.id} style={{ display: 'flex', alignItems: 'baseline', gap: '0.55rem', flexWrap: 'wrap' }}>
+                    {/* Fecha */}
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--c-dark)',
+                      fontWeight: 500,
+                      textTransform: 'capitalize',
+                    }}>
+                      {labelFecha(act.fecha!)}
+                    </span>
 
-                      {/* Fecha */}
-                      <span style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--c-dark)',
-                        fontWeight: 500,
-                        textTransform: 'capitalize',
-                      }}>
-                        {labelFecha(act.fecha!)}
-                      </span>
+                    {/* Hora */}
+                    <span style={{ fontSize: '0.75rem', color: '#666' }}>
+                      {act.horaInicio}{act.horaFin ? `–${act.horaFin}` : ''}
+                    </span>
 
-                      {/* Hora */}
-                      <span style={{ fontSize: '0.75rem', color: '#666' }}>
-                        {act.horaInicio}{act.horaFin ? `–${act.horaFin}` : ''}
+                    {/* Sala */}
+                    {act.sala && (
+                      <span style={{ fontSize: '0.72rem', color: COLOR, fontWeight: 600 }}>
+                        {act.sala}
                       </span>
-
-                      {/* Sala */}
-                      {act.sala && (
-                        <span style={{
-                          fontSize: '0.72rem',
-                          color: p.badge,
-                          fontWeight: 600,
-                        }}>
-                          {act.sala}
-                        </span>
-                      )}
-                    </div>
-                  )
-                })}
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 
