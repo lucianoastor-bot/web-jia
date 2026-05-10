@@ -119,19 +119,21 @@ function Label({ children, color }: { children: ReactNode; color: string }) {
   )
 }
 
-function Hora({ act }: { act: Actividad }) {
+function Hora({ act, color }: { act: Actividad; color?: string }) {
   if (!act.horaInicio || !act.horaFin) return null
   return (
-    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(35,22,81,0.38)', flexShrink: 0 }}>
+    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: color ?? 'rgba(35,22,81,0.38)', flexShrink: 0 }}>
       {act.horaInicio} – {act.horaFin}
     </span>
   )
 }
 
-function SalaBadge({ sala }: { sala?: string }) {
+function SalaBadge({ sala, color }: { sala?: string; color?: string }) {
   if (!sala) return null
+  const bg  = color ? `${color}18` : 'rgba(35,22,81,0.06)'
+  const txt = color ?? 'rgba(35,22,81,0.45)'
   return (
-    <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '1px 8px', background: 'rgba(35,22,81,0.06)', borderRadius: 12, color: 'rgba(35,22,81,0.45)' }}>
+    <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 9px', background: bg, borderRadius: 12, color: txt, border: `1px solid ${color ? color + '35' : 'transparent'}` }}>
       {sala}
     </span>
   )
@@ -162,16 +164,16 @@ function CardWrap({ tipo, esSolo, children }: { tipo: string; esSolo: boolean; c
 }
 
 function CardHeader({
-  act, esSolo, extra,
-}: { act: Actividad; esSolo: boolean; extra?: ReactNode }) {
+  act, esSolo, sala,
+}: { act: Actividad; esSolo: boolean; sala?: string }) {
   const { border } = paleta(act.tipo)
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.3rem' }}>
         <Label color={border}>{tipoLabel(act)}</Label>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {extra}
-          <Hora act={act} />
+          <SalaBadge sala={sala} color={border} />
+          <Hora act={act} color={border} />
         </div>
       </div>
       <h3 style={{
@@ -298,8 +300,8 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
 
           {/* Hora y sala — siempre en la columna derecha, no puede desbordar */}
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <SalaBadge sala={act.sala} />
-            <Hora act={act} />
+            <SalaBadge sala={act.sala} color={border} />
+            <Hora act={act} color={border} />
           </div>
         </div>
       </div>
@@ -334,7 +336,7 @@ function TarjetaPanel({ act, propuesta, esSolo, invitados }: {
 
   return (
     <CardWrap tipo="panel" esSolo={esSolo}>
-      <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
+      <CardHeader act={act} esSolo={esSolo} sala={act.sala} />
 
       {act.coordinador && (
         <p style={{ fontSize: '0.78rem', color: 'rgba(35,22,81,0.48)', margin: '-0.4rem 0 0.75rem' }}>
@@ -372,7 +374,7 @@ function TarjetaMesa({ act, propuestas, esSolo }: {
 
   return (
     <CardWrap tipo={act.tipo} esSolo={esSolo}>
-      <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
+      <CardHeader act={act} esSolo={esSolo} sala={act.sala} />
 
       {asignadas.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: esSolo ? '1.1rem' : '0.6rem' }}>
@@ -418,7 +420,7 @@ function TarjetaOtro({ act, esSolo, invitados }: {
 
   return (
     <CardWrap tipo="otro" esSolo={esSolo}>
-      <CardHeader act={act} esSolo={esSolo} extra={<SalaBadge sala={act.sala} />} />
+      <CardHeader act={act} esSolo={esSolo} sala={act.sala} />
       {esSolo && act.descripcion && (
         <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.6)', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
           {act.descripcion}
