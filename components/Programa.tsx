@@ -265,25 +265,29 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
   return (
     <CardWrap tipo="conferencia" esSolo={esSolo}>
 
-      {/* Badge de tipo */}
-      <div style={{ marginBottom: '0.5rem' }}>
+      {/* Fila tipo + sala + hora — igual que el resto de las actividades */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.3rem' }}>
         <Label color={border}>{tipoLabel(act)}</Label>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <SalaBadge sala={act.sala} color={border} />
+          <Hora act={act} color={border} />
+        </div>
       </div>
 
-      {/* Fila superior: foto (si existe) + columna derecha con título, nombre, hora/sala */}
-      <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', marginBottom: conFoto || invitado ? '0.9rem' : 0 }}>
+      {/* Fila: foto + columna derecha con título y datos del invitado */}
+      <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', marginBottom: invitado ? '0.9rem' : '0.5rem' }}>
 
         {conFoto && (
           <img
             src={fotoSrc}
             alt={invitado!.nombre}
-            style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${border}`, flexShrink: 0 }}
+            style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${border}`, flexShrink: 0, marginTop: '0.4rem' }}
           />
         )}
 
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Título */}
-          <h3 style={{ margin: '0 0 0.45rem', fontSize: esSolo ? '1.25rem' : '1rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25 }}>
+          <h3 style={{ margin: '0.15rem 0 0.5rem', fontSize: esSolo ? '1.25rem' : '1rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25 }}>
             {act.titulo}
           </h3>
 
@@ -293,17 +297,11 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
               <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 0.1rem', color: 'var(--c-dark)' }}>
                 {invitado.nombre}
               </p>
-              <p style={{ fontSize: '0.8rem', color: 'rgba(35,22,81,0.48)', margin: '0 0 0.35rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(35,22,81,0.48)', margin: 0 }}>
                 {[invitado.rol, invitado.institucion].filter(Boolean).join(' · ')}
               </p>
             </>
           )}
-
-          {/* Hora y sala — siempre en la columna derecha, no puede desbordar */}
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <SalaBadge sala={act.sala} color={border} />
-            <Hora act={act} color={border} />
-          </div>
         </div>
       </div>
 
