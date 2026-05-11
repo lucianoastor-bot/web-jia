@@ -785,7 +785,7 @@ function buildPDF(
 // ── Componente principal ──────────────────────────────────────
 
 export default function Programa() {
-  const { actividades, loading: loadActs } = useActividades()
+  const { actividades, loading: loadActs, error: errorActs, cargar: recargar } = useActividades()
   const { propuestas,  loading: loadProps } = usePropuestas()
   const { invitados,   loading: loadInvs  } = useInvitados()
   const [diaActivo, setDiaActivo] = useState(FECHAS[0].valor)
@@ -801,8 +801,8 @@ export default function Programa() {
     })),
   [actividades])
 
-  const diaData = programaPorDia.find(d => d.valor === diaActivo)
-  const hayPrograma = !loading && actividades.some(a => a.fecha)
+  const diaData    = programaPorDia.find(d => d.valor === diaActivo)
+  const hayPrograma = !loading && !errorActs && actividades.some(a => a.fecha)
 
   return (
     <main className="page">
@@ -842,7 +842,30 @@ export default function Programa() {
           <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.9rem' }}>Cargando programa...</p>
         )}
 
-        {!loading && !hayPrograma && (
+        {!loading && errorActs && (
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: 'rgba(35,22,81,0.45)' }}>
+            <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
+              No se pudo cargar el programa. Verificá tu conexión e intentá nuevamente.
+            </p>
+            <button
+              onClick={recargar}
+              style={{
+                padding: '0.5rem 1.4rem',
+                background: 'var(--c-dark)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
+        {!loading && !errorActs && !hayPrograma && (
           <div className="placeholder">
             <div>
               <p className="placeholder__title">Próximamente</p>
