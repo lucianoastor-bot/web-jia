@@ -26,8 +26,8 @@ type PersonaAcred = {
   acreditado:   boolean
   requierePago: boolean
   propuestaIds: string[]
-  invitadoId?:  string   // presente si viene de la colección 'invitados'
-  rolInvitado?: string   // rol (ej: "Conferencista") — solo para invitados
+  invitadoId?:         string   // presente si viene de la colección 'invitados'
+  institucionInvitado?: string  // institución — solo para invitados
 }
 
 type Editando = { clave: string; campo: 'dni' | 'cuil'; valor: string }
@@ -79,8 +79,8 @@ function buildPersonas(propuestas: Propuesta[], invitados: Invitado[]): PersonaA
     const k = nc(inv.nombre)
     if (map.has(k)) {
       const p = map.get(k)!
-      p.invitadoId  = inv.id
-      p.rolInvitado = inv.rol
+      p.invitadoId          = inv.id
+      p.institucionInvitado = inv.institucion
       if (!p.acreditado && inv.acreditado) p.acreditado = true
       if (!p.dni && inv.documento) p.dni = inv.documento
       if (!p.cuil && inv.cuil)     p.cuil = inv.cuil
@@ -91,7 +91,7 @@ function buildPersonas(propuestas: Propuesta[], invitados: Invitado[]): PersonaA
         pertenencia: '', pago: false, requierePago: false,
         acreditado: inv.acreditado ?? false,
         propuestaIds: [],
-        invitadoId: inv.id, rolInvitado: inv.rol,
+        invitadoId: inv.id, institucionInvitado: inv.institucion,
       })
     }
   })
@@ -362,7 +362,12 @@ export default function Acreditacion() {
                       </span>
                     ) : (
                       <button
-                        onClick={() => guardar(persona.clave, { pago: !persona.pago })}
+                        onClick={() => {
+                          const msg = persona.pago
+                            ? `¿Quitar el pago de ${persona.nombre}?`
+                            : `¿Confirmar pago de ${persona.nombre}?`
+                          if (window.confirm(msg)) guardar(persona.clave, { pago: !persona.pago })
+                        }}
                         title={persona.pago ? 'Quitar pago' : 'Marcar como pagado'}
                         style={{
                           padding: '0.3em 0.65em', borderRadius: 20, border: 'none', cursor: 'pointer',
@@ -439,8 +444,8 @@ export default function Acreditacion() {
                     {/* Pertenencia/Rol + Requiere boleta */}
                     {esInvitado ? (
                       <div>
-                        <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', display: 'block', marginBottom: '0.25rem' }}>Rol</span>
-                        <span style={{ fontSize: '0.88rem', color: 'var(--c-dark)' }}>{persona.rolInvitado || '—'}</span>
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', display: 'block', marginBottom: '0.25rem' }}>Institución</span>
+                        <span style={{ fontSize: '0.88rem', color: 'var(--c-dark)' }}>{persona.institucionInvitado || '—'}</span>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
