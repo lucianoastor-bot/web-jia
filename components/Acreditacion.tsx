@@ -123,6 +123,10 @@ export default function Acreditacion() {
   // optimista para evitar recargar la lista entera con cada cambio menor.
   const [overrides, setOverrides] = useState<Map<string, Partial<PersonaAcred>>>(new Map())
 
+  // Claves acreditadas en esta sesión — permanecen visibles en el filtro
+  // 'pendientes' aunque su estado cambie, hasta que se pulse "Actualizar".
+  const [acreditadosEnSesion, setAcreditadosEnSesion] = useState<Set<string>>(new Set())
+
   const applyOverride = (clave: string, patch: Partial<PersonaAcred>) =>
     setOverrides(prev => new Map(prev).set(clave, { ...(prev.get(clave) ?? {}), ...patch }))
 
@@ -147,10 +151,10 @@ export default function Acreditacion() {
     let lista = personas
     if (q.length >= 2)
       lista = lista.filter(p => nc(p.nombre).includes(q) || p.dni.includes(q) || p.email.toLowerCase().includes(q))
-    if (filtro === 'pendientes')  lista = lista.filter(p => !p.acreditado)
+    if (filtro === 'pendientes')  lista = lista.filter(p => !p.acreditado || acreditadosEnSesion.has(p.clave))
     if (filtro === 'acreditados') lista = lista.filter(p => p.acreditado)
     return lista
-  }, [personas, busqueda, filtro])
+  }, [personas, busqueda, filtro, acreditadosEnSesion])
 
   // ── Escritura en Firestore (en background, sin recargar) ──
   const escribir = useCallback(async (clave: string, datos: DatosParticipanteUpdate) => {
@@ -189,10 +193,12 @@ export default function Acreditacion() {
     escribir(clave, datos)   // fire and forget — no await
   }, [escribir])
 
-  // Acreditar: override + await + refresca stats pero no scroll
+  // Acreditar: override + await. Si se acredita, queda visible en 'pendientes'
+  // hasta que el usuario pulse "Actualizar" (se limpia acreditadosEnSesion).
   const acreditar = useCallback(async (clave: string, valor: boolean) => {
     setAcreditando(prev => new Set([...prev, clave]))
     applyOverride(clave, { acreditado: valor })
+    if (valor) setAcreditadosEnSesion(prev => new Set([...prev, clave]))
     try {
       await escribir(clave, { acreditado: valor })
     } finally {
@@ -237,7 +243,7 @@ export default function Acreditacion() {
           <p style={{ fontSize: '0.82rem', fontWeight: 600, margin: 0 }}>{usuario?.nombre}</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button onClick={() => { setOverrides(new Map()); cargar() }} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '0.3rem 0.7rem', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem' }}>
+          <button onClick={() => { setOverrides(new Map()); setAcreditadosEnSesion(new Set()); cargar() }} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '0.3rem 0.7rem', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem' }}>
             ↺ Actualizar
           </button>
           {usuario?.rol === 'organizador' && (
