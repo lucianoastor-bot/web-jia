@@ -18,6 +18,10 @@ export type Invitado = {
   academia?:  string
   facebook?:  string
   youtube?:   string
+  // Acreditación — se guardan directamente en el documento del invitado
+  acreditado?: boolean
+  documento?:  string
+  cuil?:       string
 }
 
 export type Eje = {

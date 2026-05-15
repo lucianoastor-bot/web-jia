@@ -3,13 +3,15 @@
 
 import { useMemo, useState, useCallback } from 'react'
 import { signOut } from 'firebase/auth'
+import { doc, updateDoc } from 'firebase/firestore/lite'
 import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/firebase'
+import { auth, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/auth-context'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
+import { useInvitados } from '@/lib/hooks/useInvitados'
 import { actualizarParticipanteEnPropuesta, type DatosParticipanteUpdate } from '@/lib/services/propuestas'
 import { PERTENENCIAS } from '@/congreso.config'
-import type { Propuesta } from '@/types'
+import type { Propuesta, Invitado } from '@/types'
 
 // ── Tipos ─────────────────────────────────────────────────────
 
@@ -24,6 +26,8 @@ type PersonaAcred = {
   acreditado:   boolean
   requierePago: boolean
   propuestaIds: string[]
+  invitadoId?:  string   // presente si viene de la colección 'invitados'
+  rolInvitado?: string   // rol (ej: "Conferencista") — solo para invitados
 }
 
 type Editando = { clave: string; campo: 'dni' | 'cuil'; valor: string }
@@ -34,10 +38,10 @@ type Filtro   = 'pendientes' | 'todos' | 'acreditados'
 const nc = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 
 
-function buildPersonas(propuestas: Propuesta[]): PersonaAcred[] {
+function buildPersonas(propuestas: Propuesta[], invitados: Invitado[]): PersonaAcred[] {
   const map = new Map<string, PersonaAcred>()
 
-  const agregar = (
+  const agregarDePropuesta = (
     nombre: string, email: string, dni: string, cuil: string,
     pertenencia: string, pago: boolean, acreditado: boolean,
     requierePago: boolean, propuestaId: string,
@@ -61,11 +65,35 @@ function buildPersonas(propuestas: Propuesta[]): PersonaAcred[] {
 
   propuestas.forEach(prop => {
     const a = prop.autor
-    agregar(a.nombre, a.email, a.documento ?? '', a.cuil ?? '', a.pertenencia, a.pago ?? false, a.acreditado ?? false, a.requierePago ?? false, prop.id)
+    agregarDePropuesta(a.nombre, a.email, a.documento ?? '', a.cuil ?? '', a.pertenencia, a.pago ?? false, a.acreditado ?? false, a.requierePago ?? false, prop.id)
     ;(prop.coautores ?? []).forEach(c =>
-      agregar(c.nombre, c.email, c.documento ?? '', c.cuil ?? '', c.pertenencia, c.pago ?? false, c.acreditado ?? false, c.requierePago ?? false, prop.id))
+      agregarDePropuesta(c.nombre, c.email, c.documento ?? '', c.cuil ?? '', c.pertenencia, c.pago ?? false, c.acreditado ?? false, c.requierePago ?? false, prop.id))
     ;(prop.participantes ?? []).forEach(pa =>
-      agregar(pa.nombre, pa.email, pa.documento ?? '', pa.cuil ?? '', pa.pertenencia, pa.pago ?? false, pa.acreditado ?? false, pa.requierePago ?? false, prop.id))
+      agregarDePropuesta(pa.nombre, pa.email, pa.documento ?? '', pa.cuil ?? '', pa.pertenencia, pa.pago ?? false, pa.acreditado ?? false, pa.requierePago ?? false, prop.id))
+  })
+
+  // Invitados — si ya existe por nombre (también es autor de propuesta),
+  // solo se agrega el invitadoId. Si no existe, se crea la entrada.
+  invitados.forEach(inv => {
+    if (!inv.nombre.trim()) return
+    const k = nc(inv.nombre)
+    if (map.has(k)) {
+      const p = map.get(k)!
+      p.invitadoId  = inv.id
+      p.rolInvitado = inv.rol
+      if (!p.acreditado && inv.acreditado) p.acreditado = true
+      if (!p.dni && inv.documento) p.dni = inv.documento
+      if (!p.cuil && inv.cuil)     p.cuil = inv.cuil
+    } else {
+      map.set(k, {
+        clave: k, nombre: inv.nombre.trim(),
+        email: inv.email ?? '', dni: inv.documento ?? '', cuil: inv.cuil ?? '',
+        pertenencia: '', pago: false, requierePago: false,
+        acreditado: inv.acreditado ?? false,
+        propuestaIds: [],
+        invitadoId: inv.id, rolInvitado: inv.rol,
+      })
+    }
   })
 
   return [...map.values()].sort((a, b) => {
@@ -78,8 +106,12 @@ function buildPersonas(propuestas: Propuesta[]): PersonaAcred[] {
 
 export default function Acreditacion() {
   const { usuario } = useAuth()
-  const { propuestas, loading, cargar } = usePropuestas()
+  const { propuestas, loading: loadingProps, cargar: cargarProps } = usePropuestas()
+  const { invitados, loading: loadingInvs,  cargar: cargarInvs  } = useInvitados()
   const router = useRouter()
+
+  const loading = loadingProps || loadingInvs
+  const cargar  = useCallback(() => { cargarProps(); cargarInvs() }, [cargarProps, cargarInvs])
 
   const [busqueda,   setBusqueda]   = useState('')
   const [filtro,     setFiltro]     = useState<Filtro>('pendientes')
@@ -96,7 +128,7 @@ export default function Acreditacion() {
 
   // ── Lista de personas con overrides aplicados ─────────────
   const personas = useMemo(() => {
-    const base = buildPersonas(propuestas)
+    const base = buildPersonas(propuestas, invitados)
     return base.map(p => {
       const o = overrides.get(p.clave)
       return o ? { ...p, ...o } : p
@@ -105,9 +137,9 @@ export default function Acreditacion() {
 
   const stats = useMemo(() => ({
     total:       personas.length,
-    conPago:     personas.filter(p => p.pago).length,
+    conPago:     personas.filter(p => !p.invitadoId && p.pago).length,
     acreditados: personas.filter(p => p.acreditado).length,
-    pendientes:  personas.filter(p => p.pago && !p.acreditado).length,
+    pendientes:  personas.filter(p => !p.acreditado).length,
   }), [personas])
 
   const resultados = useMemo(() => {
@@ -124,9 +156,23 @@ export default function Acreditacion() {
   const escribir = useCallback(async (clave: string, datos: DatosParticipanteUpdate) => {
     const persona = personas.find(p => p.clave === clave)
     if (!persona) return
-    const props = propuestas.filter(p => persona.propuestaIds.includes(p.id))
-    for (const prop of props) {
-      await actualizarParticipanteEnPropuesta(prop, clave, datos)
+
+    // Actualizar en todas las propuestas donde aparece
+    if (persona.propuestaIds.length > 0) {
+      const props = propuestas.filter(p => persona.propuestaIds.includes(p.id))
+      for (const prop of props) {
+        await actualizarParticipanteEnPropuesta(prop, clave, datos)
+      }
+    }
+
+    // Actualizar en la colección 'invitados' si corresponde
+    if (persona.invitadoId) {
+      const patch: Record<string, unknown> = {}
+      if (datos.acreditado !== undefined) patch.acreditado = datos.acreditado
+      if (datos.documento  !== undefined) patch.documento  = datos.documento
+      if (datos.cuil       !== undefined) patch.cuil       = datos.cuil
+      if (Object.keys(patch).length > 0)
+        await updateDoc(doc(db, 'invitados', persona.invitadoId), patch)
     }
   }, [personas, propuestas])
 
@@ -267,8 +313,7 @@ export default function Acreditacion() {
           {resultados.map(persona => {
             const expandido  = expandidos.has(persona.clave)
             const enAccion   = acreditando.has(persona.clave)
-            const editDNI    = editando?.clave === persona.clave && editando.campo === 'dni'
-            const editCUIL   = editando?.clave === persona.clave && editando.campo === 'cuil'
+            const esInvitado = !!persona.invitadoId
 
             return (
               <div
@@ -299,26 +344,37 @@ export default function Acreditacion() {
                     </span>
                   </div>
 
-                  {/* Email + pago + acreditar */}
+                  {/* Email + badge + acreditar */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(35,22,81,0.42)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {persona.email || '—'}
                     </p>
 
-                    {/* Badge PAGÓ */}
-                    <button
-                      onClick={() => guardar(persona.clave, { pago: !persona.pago })}
-                      title={persona.pago ? 'Quitar pago' : 'Marcar como pagado'}
-                      style={{
-                        padding: '0.3em 0.65em', borderRadius: 20, border: 'none', cursor: 'pointer',
+                    {/* Badge: invitado (no paga) o pago toggle */}
+                    {esInvitado ? (
+                      <span style={{
+                        padding: '0.3em 0.65em', borderRadius: 20,
                         fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em',
                         textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0,
-                        background: persona.pago ? '#dcf5e7' : '#fde8e8',
-                        color:      persona.pago ? '#1e6b35' : '#9b1c1c',
-                      }}
-                    >
-                      {persona.pago ? '✓ Pagó' : '✗ Sin pago'}
-                    </button>
+                        background: '#eef0fb', color: '#3a3a8c',
+                      }}>
+                        Invitado/a
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => guardar(persona.clave, { pago: !persona.pago })}
+                        title={persona.pago ? 'Quitar pago' : 'Marcar como pagado'}
+                        style={{
+                          padding: '0.3em 0.65em', borderRadius: 20, border: 'none', cursor: 'pointer',
+                          fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em',
+                          textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0,
+                          background: persona.pago ? '#dcf5e7' : '#fde8e8',
+                          color:      persona.pago ? '#1e6b35' : '#9b1c1c',
+                        }}
+                      >
+                        {persona.pago ? '✓ Pagó' : '✗ Sin pago'}
+                      </button>
+                    )}
 
                     {/* Botón Acreditar */}
                     <button
@@ -380,32 +436,39 @@ export default function Acreditacion() {
                       })}
                     </div>
 
-                    {/* Pertenencia + Requiere boleta (columna) */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                    {/* Pertenencia/Rol + Requiere boleta */}
+                    {esInvitado ? (
                       <div>
-                        <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', display: 'block', marginBottom: '0.25rem' }}>Pertenencia</span>
-                        <select
-                          value={persona.pertenencia}
-                          onChange={e => guardar(persona.clave, { pertenencia: e.target.value })}
-                          style={{ padding: '0.35rem 0.6rem', border: '1px solid rgba(35,22,81,0.2)', borderRadius: 6, fontSize: '0.85rem', color: 'var(--c-dark)', background: '#fff', cursor: 'pointer' }}
-                        >
-                          {!persona.pertenencia && <option value="">— seleccionar —</option>}
-                          {PERTENENCIAS.map(p => (
-                            <option key={p.valor} value={p.valor}>{p.etiqueta}</option>
-                          ))}
-                        </select>
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', display: 'block', marginBottom: '0.25rem' }}>Rol</span>
+                        <span style={{ fontSize: '0.88rem', color: 'var(--c-dark)' }}>{persona.rolInvitado || '—'}</span>
                       </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                        <div>
+                          <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', display: 'block', marginBottom: '0.25rem' }}>Pertenencia</span>
+                          <select
+                            value={persona.pertenencia}
+                            onChange={e => guardar(persona.clave, { pertenencia: e.target.value })}
+                            style={{ padding: '0.35rem 0.6rem', border: '1px solid rgba(35,22,81,0.2)', borderRadius: 6, fontSize: '0.85rem', color: 'var(--c-dark)', background: '#fff', cursor: 'pointer' }}
+                          >
+                            {!persona.pertenencia && <option value="">— seleccionar —</option>}
+                            {PERTENENCIAS.map(p => (
+                              <option key={p.valor} value={p.valor}>{p.etiqueta}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.83rem', color: 'rgba(35,22,81,0.65)', cursor: 'pointer', userSelect: 'none' }}>
-                        <input
-                          type="checkbox"
-                          checked={persona.requierePago}
-                          onChange={e => guardar(persona.clave, { requierePago: e.target.checked })}
-                          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--c-dark)' }}
-                        />
-                        Requiere boleta de pago
-                      </label>
-                    </div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.83rem', color: 'rgba(35,22,81,0.65)', cursor: 'pointer', userSelect: 'none' }}>
+                          <input
+                            type="checkbox"
+                            checked={persona.requierePago}
+                            onChange={e => guardar(persona.clave, { requierePago: e.target.checked })}
+                            style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--c-dark)' }}
+                          />
+                          Requiere boleta de pago
+                        </label>
+                      </div>
+                    )}
 
                     {/* Desacreditar (solo si está acreditado) */}
                     {persona.acreditado && (
