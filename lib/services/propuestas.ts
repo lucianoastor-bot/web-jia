@@ -41,10 +41,13 @@ export async function eliminarPropuesta(id: string) {
 // Busca a una persona (por nombre normalizado) dentro de la propuesta
 // y actualiza sus campos en autor, coautores[] y participantes[].
 
-type DatosParticipanteUpdate = {
-  pertenencia?: string
-  pago?:        boolean
-  acreditado?:  boolean
+export type DatosParticipanteUpdate = {
+  pertenencia?:  string
+  pago?:         boolean
+  acreditado?:   boolean
+  documento?:    string   // DNI — editable desde acreditación
+  cuil?:         string
+  requierePago?: boolean
 }
 
 const nc = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')

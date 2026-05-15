@@ -61,12 +61,14 @@ export type Participante = {
   institucion:     string
   email:           string
   documento:       string   // DNI / Pasaporte
+  cuil?:           string   // CUIL (se carga en el mostrador si falta)
   celularCodigo:   string   // ej: '+54'
   celular:         string   // número sin código de país
   pertenencia:     typeof PERTENENCIAS[number]['valor']
   tituloPonencia?: string   // panel: título de la ponencia individual
   pago?:           boolean  // realizó el pago de inscripción
   acreditado?:     boolean  // recibió la acreditación en el evento
+  requierePago?:   boolean  // se le enviará la boleta de pago
 }
 
 // ─── ParticipantePanel ───────────────────────────────────────
