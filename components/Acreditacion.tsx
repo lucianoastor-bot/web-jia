@@ -8,7 +8,7 @@ import { auth } from '@/lib/firebase'
 import { useAuth } from '@/lib/auth-context'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
 import { actualizarParticipanteEnPropuesta, type DatosParticipanteUpdate } from '@/lib/services/propuestas'
-import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO, PERTENENCIAS } from '@/congreso.config'
+import { PERTENENCIAS } from '@/congreso.config'
 import type { Propuesta } from '@/types'
 
 // ── Tipos ─────────────────────────────────────────────────────
@@ -33,9 +33,6 @@ type Filtro   = 'pendientes' | 'todos' | 'acreditados'
 
 const nc = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 
-const ORGS = new Set([
-  ...COORDINADORES, ...COMITE_ORGANIZADOR, ...COMITE_ACADEMICO,
-].map(nc))
 
 function buildPersonas(propuestas: Propuesta[]): PersonaAcred[] {
   const map = new Map<string, PersonaAcred>()
@@ -47,7 +44,6 @@ function buildPersonas(propuestas: Propuesta[]): PersonaAcred[] {
   ) => {
     if (!nombre.trim()) return
     const k = nc(nombre)
-    if (ORGS.has(k)) return
     if (map.has(k)) {
       const p = map.get(k)!
       if (!p.email        && email)        p.email        = email
@@ -284,63 +280,61 @@ export default function Acreditacion() {
                 }}
               >
                 {/* ── Fila principal (siempre visible) ── */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
+                <div style={{ padding: '0.75rem 1rem 0.65rem' }}>
 
-                  {/* Nombre + email — clickeable para expandir */}
+                  {/* Nombre + chevron */}
                   <div
                     onClick={() => toggleExpandido(persona.clave)}
-                    style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.5rem' }}
                   >
                     <p style={{
-                      margin: 0, fontWeight: 700, fontSize: '0.92rem',
+                      margin: 0, fontWeight: 700, fontSize: '0.92rem', flex: 1, minWidth: 0,
                       color: persona.acreditado ? '#1e6b35' : 'var(--c-dark)',
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>
                       {persona.acreditado && <span style={{ marginRight: '0.35rem' }}>✓</span>}
                       {persona.nombre}
                     </p>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(35,22,81,0.42)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {persona.email || '—'}
-                    </p>
+                    <span style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.7rem', userSelect: 'none', flexShrink: 0 }}>
+                      {expandido ? '▲' : '▼'}
+                    </span>
                   </div>
 
-                  {/* Badge PAGÓ */}
-                  <button
-                    onClick={() => guardar(persona.clave, { pago: !persona.pago })}
-                    title={persona.pago ? 'Quitar pago' : 'Marcar como pagado'}
-                    style={{
-                      padding: '0.3em 0.7em', borderRadius: 20, border: 'none', cursor: 'pointer',
-                      fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em',
-                      textTransform: 'uppercase', whiteSpace: 'nowrap',
-                      background: persona.pago ? '#dcf5e7' : '#fde8e8',
-                      color:      persona.pago ? '#1e6b35' : '#9b1c1c',
-                    }}
-                  >
-                    {persona.pago ? '✓ Pagó' : '✗ Sin pago'}
-                  </button>
+                  {/* Email + pago + acreditar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(35,22,81,0.42)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {persona.email || '—'}
+                    </p>
 
-                  {/* Botón Acreditar */}
-                  <button
-                    onClick={() => acreditar(persona.clave, !persona.acreditado)}
-                    disabled={enAccion}
-                    style={{
-                      padding: '0.5rem 1.1rem', border: 'none', borderRadius: 7,
-                      fontSize: '0.85rem', fontWeight: 700, cursor: enAccion ? 'default' : 'pointer',
-                      background: persona.acreditado ? '#e6f4ec' : 'var(--c-dark)',
-                      color:      persona.acreditado ? '#1e6b35' : '#fff',
-                      whiteSpace: 'nowrap', minWidth: 110,
-                    }}
-                  >
-                    {enAccion ? '...' : persona.acreditado ? '✓ Acreditado/a' : 'Acreditar →'}
-                  </button>
+                    {/* Badge PAGÓ */}
+                    <button
+                      onClick={() => guardar(persona.clave, { pago: !persona.pago })}
+                      title={persona.pago ? 'Quitar pago' : 'Marcar como pagado'}
+                      style={{
+                        padding: '0.3em 0.65em', borderRadius: 20, border: 'none', cursor: 'pointer',
+                        fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em',
+                        textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0,
+                        background: persona.pago ? '#dcf5e7' : '#fde8e8',
+                        color:      persona.pago ? '#1e6b35' : '#9b1c1c',
+                      }}
+                    >
+                      {persona.pago ? '✓ Pagó' : '✗ Sin pago'}
+                    </button>
 
-                  {/* Chevron */}
-                  <span
-                    onClick={() => toggleExpandido(persona.clave)}
-                    style={{ cursor: 'pointer', color: 'rgba(35,22,81,0.3)', fontSize: '0.75rem', userSelect: 'none', flexShrink: 0 }}
-                  >
-                    {expandido ? '▲' : '▼'}
-                  </span>
+                    {/* Botón Acreditar */}
+                    <button
+                      onClick={() => acreditar(persona.clave, !persona.acreditado)}
+                      disabled={enAccion}
+                      style={{
+                        padding: '0.45rem 1rem', border: 'none', borderRadius: 7,
+                        fontSize: '0.82rem', fontWeight: 700, cursor: enAccion ? 'default' : 'pointer',
+                        background: persona.acreditado ? '#e6f4ec' : 'var(--c-dark)',
+                        color:      persona.acreditado ? '#1e6b35' : '#fff',
+                        whiteSpace: 'nowrap', flexShrink: 0,
+                      }}
+                    >
+                      {enAccion ? '...' : persona.acreditado ? '✓ Acreditado/a' : 'Acreditar →'}
+                    </button>
+                  </div>
                 </div>
 
                 {/* ── Detalle expandido ── */}
@@ -386,8 +380,8 @@ export default function Acreditacion() {
                       })}
                     </div>
 
-                    {/* Pertenencia + Requiere boleta */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                    {/* Pertenencia + Requiere boleta (columna) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                       <div>
                         <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(35,22,81,0.4)', display: 'block', marginBottom: '0.25rem' }}>Pertenencia</span>
                         <select
@@ -402,7 +396,7 @@ export default function Acreditacion() {
                         </select>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.83rem', color: 'rgba(35,22,81,0.65)', cursor: 'pointer', userSelect: 'none', marginTop: '0.15rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.83rem', color: 'rgba(35,22,81,0.65)', cursor: 'pointer', userSelect: 'none' }}>
                         <input
                           type="checkbox"
                           checked={persona.requierePago}
