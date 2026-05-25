@@ -508,30 +508,20 @@ function BloqueHorario({ bloque, propuestas, invitados }: {
 
   return (
     <div style={{ marginBottom: '1.75rem' }}>
-      {/* Franja horaria */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.85rem' }}>
-        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'rgba(35,22,81,0.35)', flexShrink: 0 }}>
-          {bloque.horaInicio} – {bloque.horaFin}
-        </span>
-        <div style={{ flex: 1, height: 1, background: 'rgba(35,22,81,0.1)' }} />
+      {/* Cabeceras de sala — actúan también como separador de bloque */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
+        {salas.map(sala => (
+          <div key={sala} style={{
+            flex: 1,
+            fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.1em', color: 'rgba(35,22,81,0.38)',
+            textAlign: 'center', paddingBottom: '0.4rem',
+            borderBottom: '2px solid rgba(35,22,81,0.08)',
+          }}>
+            {sala || ''}
+          </div>
+        ))}
       </div>
-
-      {/* Headers de sala */}
-      {salas.some(s => !!s) && (
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
-          {salas.map(sala => (
-            <div key={sala} style={{
-              flex: 1,
-              fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.1em', color: 'rgba(35,22,81,0.38)',
-              textAlign: 'center', paddingBottom: '0.4rem',
-              borderBottom: '2px solid rgba(35,22,81,0.08)',
-            }}>
-              {sala || '—'}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Columnas */}
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
