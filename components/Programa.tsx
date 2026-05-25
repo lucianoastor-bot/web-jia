@@ -211,17 +211,18 @@ function CardHeader({
   )
 }
 
-function LineaParticipante({ p, esSolo, borderColor, invitados }: {
+function LineaParticipante({ p, esSolo, borderColor, invitados, destacado }: {
   p:           PartSimple
   esSolo:      boolean
   borderColor: string
   invitados:   Invitado[]
+  destacado?:  boolean
 }) {
   const invitado = p.invitadoId ? invitados.find(i => i.id === p.invitadoId) : undefined
   const fotoSize = esSolo ? 48 : 36
 
   const nombreNode = (
-    <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
+    <p style={{ fontSize: destacado ? '0.95rem' : '0.88rem', fontWeight: destacado ? 700 : 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
       {p.nombre}
       {(p.esCoordinador || p.rol) && (
         <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(35,22,81,0.42)', marginLeft: '0.4rem' }}>
@@ -330,7 +331,7 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
           {/* Nombre e institución del invitado */}
           {invitado && (
             <>
-              <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 0.1rem', color: 'var(--c-dark)' }}>
+              <p style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 0.1rem', color: 'var(--c-dark)' }}>
                 {invitado.nombre}
               </p>
               <p style={{ fontSize: '0.8rem', color: 'rgba(35,22,81,0.48)', margin: 0 }}>
@@ -376,7 +377,7 @@ function TarjetaPanel({ act, propuesta, esSolo, invitados }: {
       {partes.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: esSolo ? '0.9rem' : '0.45rem' }}>
           {partes.map((p, i) => (
-            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} invitados={invitados} />
+            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} invitados={invitados} destacado={!propuesta} />
           ))}
         </div>
       )}
@@ -458,7 +459,7 @@ function TarjetaOtro({ act, esSolo, invitados }: {
       {partes.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: esSolo ? '0.75rem' : '0.4rem' }}>
           {partes.map((p, i) => (
-            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} invitados={invitados} />
+            <LineaParticipante key={i} p={p} esSolo={esSolo} borderColor={border} invitados={invitados} destacado />
           ))}
         </div>
       )}
