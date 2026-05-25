@@ -95,33 +95,37 @@ type PartSimple = {
 const ncP = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
 
 function participantesPanel(act: Actividad, propuesta?: Propuesta): PartSimple[] {
-  // Construir lista base sin el coordinador como línea especial
+  // Nombre del coordinador: explícito en la actividad, o el autor de la propuesta.
+  // En paneles cargados como propuesta, el autor ES el coordinador; su título
+  // en propuesta.titulo es el del panel (no su ponencia individual). Los
+  // participantes, incluyendo al coordinador, se listan en propuesta.participantes[]
+  // con sus títulos individuales correctos.
+  const coordName = act.coordinador ?? propuesta?.autor.nombre
+
   let partes: PartSimple[] = propuesta
-    ? [
-        // Autor solo si no hay coordinador dedicado
-        ...( act.coordinador
-              ? []
-              : [{ nombre: propuesta.autor.nombre, institucion: propuesta.autor.institucion, tituloPonencia: propuesta.titulo }]
-           ),
-        ...(propuesta.participantes ?? []).map(p => ({
-          nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
-        })),
-      ]
+    ? (propuesta.participantes ?? []).map(p => ({
+        nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
+      }))
     : (act.participantes ?? []).map(p => ({
         nombre: p.nombre, institucion: p.institucion,
         tituloPonencia: p.tituloPonencia, invitadoId: p.invitadoId,
       }))
 
-  // Coordinador: si ya aparece en la lista se marca; si no, se agrega al frente
-  if (act.coordinador) {
-    const coordNc = ncP(act.coordinador)
+  // Coordinador: marcar en la lista si ya aparece, o agregar al frente si no está.
+  if (coordName) {
+    const coordNc = ncP(coordName)
     const idx = partes.findIndex(p => ncP(p.nombre) === coordNc)
     if (idx >= 0) {
       partes[idx] = { ...partes[idx], esCoordinador: true }
       const [coord] = partes.splice(idx, 1)
       partes.unshift(coord)
     } else {
-      partes.unshift({ nombre: act.coordinador, esCoordinador: true })
+      // No está en participantes: agregar con los datos del autor si coincide
+      const fromAutor = propuesta && ncP(propuesta.autor.nombre) === coordNc
+      partes.unshift(fromAutor
+        ? { nombre: propuesta!.autor.nombre, institucion: propuesta!.autor.institucion, esCoordinador: true }
+        : { nombre: coordName, esCoordinador: true }
+      )
     }
   }
 
