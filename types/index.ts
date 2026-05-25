@@ -84,6 +84,7 @@ export type ParticipantePanel = {
   institucion?:    string
   tituloPonencia?: string
   invitadoId?:     string   // link a Invitado (para bio/foto en difusión)
+  rol?:            string   // etiqueta de rol para actividades tipo 'otro' (ej: "Panelista", "Disertante")
 }
 
 // ─── Propuesta ───────────────────────────────────────────────

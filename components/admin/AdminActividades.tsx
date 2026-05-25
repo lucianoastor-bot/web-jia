@@ -39,7 +39,7 @@ const VACIO: DatosActividad = {
 }
 
 const VACIO_PARTICIPANTE: ParticipantePanel = {
-  nombre: '', institucion: '', tituloPonencia: '', invitadoId: '',
+  nombre: '', institucion: '', tituloPonencia: '', invitadoId: '', rol: '',
 }
 
 // Días del congreso derivados de CONGRESO.fechaInicio
@@ -194,9 +194,10 @@ export default function AdminActividades() {
     if (!editando || !nuevoP.nombre.trim()) return
     const limpio: ParticipantePanel = {
       nombre: nuevoP.nombre.trim(),
-      ...(nuevoP.institucion   && { institucion:   nuevoP.institucion.trim() }),
+      ...(nuevoP.institucion    && { institucion:    nuevoP.institucion.trim() }),
       ...(nuevoP.tituloPonencia && { tituloPonencia: nuevoP.tituloPonencia.trim() }),
-      ...(nuevoP.invitadoId    && { invitadoId:    nuevoP.invitadoId }),
+      ...(nuevoP.invitadoId     && { invitadoId:     nuevoP.invitadoId }),
+      ...(nuevoP.rol            && { rol:            nuevoP.rol.trim() }),
     }
     await actualizarParticipantesPanel(editando, [...participantesPanel, limpio])
     setNuevoP(VACIO_PARTICIPANTE)
@@ -571,7 +572,14 @@ export default function AdminActividades() {
               <div key={idx} className="admin-list__item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div className="admin-list__item-info">
-                    <p className="admin-list__item-name">{p.nombre}</p>
+                    <p className="admin-list__item-name">
+                      {p.nombre}
+                      {p.rol && (
+                        <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(35,22,81,0.42)', marginLeft: '0.4rem' }}>
+                          ({p.rol})
+                        </span>
+                      )}
+                    </p>
                     {p.institucion && <p className="admin-list__item-sub">{p.institucion}</p>}
                     {p.tituloPonencia && (
                       <p className="admin-list__item-sub" style={{ fontStyle: 'italic' }}>
@@ -640,6 +648,18 @@ export default function AdminActividades() {
                   onChange={e => setNuevoP(p => ({ ...p, tituloPonencia: e.target.value }))}
                 />
               </div>
+              {form.tipo === 'otro' && (
+                <div className="admin-form__field">
+                  <label className="admin-form__label">Rol <span style={{ opacity: 0.5 }}>(opcional)</span></label>
+                  <input
+                    className="admin-form__input"
+                    type="text"
+                    value={nuevoP.rol ?? ''}
+                    onChange={e => setNuevoP(p => ({ ...p, rol: e.target.value }))}
+                    placeholder="ej: Disertante, Moderador/a"
+                  />
+                </div>
+              )}
             </div>
             <button
               type="button"

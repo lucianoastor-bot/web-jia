@@ -90,6 +90,7 @@ type PartSimple = {
   tituloPonencia?:  string
   invitadoId?:      string   // → foto si existe en la colección invitados
   esCoordinador?:   boolean  // se muestra "(coordinador)" junto al nombre
+  rol?:             string   // etiqueta de rol para actividades tipo 'otro'
 }
 
 const ncP = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
@@ -222,9 +223,9 @@ function LineaParticipante({ p, esSolo, borderColor, invitados }: {
   const nombreNode = (
     <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
       {p.nombre}
-      {p.esCoordinador && (
+      {(p.esCoordinador || p.rol) && (
         <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(35,22,81,0.42)', marginLeft: '0.4rem' }}>
-          (coordinador/a)
+          ({p.esCoordinador ? 'coordinador/a' : p.rol})
         </span>
       )}
     </p>
@@ -443,7 +444,7 @@ function TarjetaOtro({ act, esSolo, invitados }: {
   const { border } = paleta('otro')
   const partes: PartSimple[] = (act.participantes ?? []).map(p => ({
     nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
-    invitadoId: p.invitadoId,
+    invitadoId: p.invitadoId, rol: p.rol,
   }))
 
   return (
@@ -641,6 +642,7 @@ function buildPDF(
           // Panel cargado directamente (ej: invitados): mismo estilo que Otro
           out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
           if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+          if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
         } else {
           // Panel desde propuesta: lista compacta con títulos de ponencias
           out.push({ txt: nombre, size: 7.5, color: gray, gap: i > 0 ? 1.5 : 0 })
@@ -658,7 +660,8 @@ function buildPDF(
     } else {
       if (act.descripcion) out.push({ txt: act.descripcion, size: 7, italic: true, color: light, wrap: true })
       ;(act.participantes ?? []).forEach((p, i) => {
-        out.push({ txt: p.nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
+        const nombre = p.nombre + (p.rol ? ` (${p.rol})` : '')
+        out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
         if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
       })
     }
