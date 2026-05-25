@@ -626,7 +626,7 @@ function buildPDF(
     if (act.tipo === 'conferencia') {
       const inv = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
       if (inv) {
-        out.push({ txt: inv.nombre, size: 8.5, bold: true, color: dark })
+        out.push({ txt: inv.nombre, size: 9.5, bold: true, color: dark })
         if (inv.institucion) out.push({ txt: inv.institucion, size: 7, italic: true, color: light })
         if (inv.bio) {
           const bio = inv.bio.length > 400 ? inv.bio.slice(0, 397) + '…' : inv.bio
@@ -636,7 +636,7 @@ function buildPDF(
     } else if (act.tipo === 'panel') {
       partesPanel(act).forEach((p, i) => {
         const nombre = p.nombre + (p.esCoord ? ' (coordinador/a)' : '')
-        out.push({ txt: nombre, size: 7.5, bold: p.esCoord, color: p.esCoord ? dark : gray, gap: i > 0 ? 1.5 : 0 })
+        out.push({ txt: nombre, size: 7.5, color: gray, gap: i > 0 ? 1.5 : 0 })
         if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
         if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
       })
@@ -650,7 +650,7 @@ function buildPDF(
     } else {
       if (act.descripcion) out.push({ txt: act.descripcion, size: 7, italic: true, color: light, wrap: true })
       ;(act.participantes ?? []).forEach((p, i) => {
-        out.push({ txt: p.nombre, size: 7.5, color: gray, gap: i > 0 ? 1 : 0 })
+        out.push({ txt: p.nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
         if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
       })
     }
@@ -661,8 +661,8 @@ function buildPDF(
 
   // ── Constantes de layout interno de card ──
   const HORA_SIZE    = 7
-  const GAP_BADGE    = 1.5   // badge → hora/sala
-  const GAP_HORA     = 2.5   // hora/sala → título  (o badge → título si no hay hora)
+  const GAP_BADGE    = 0.8   // badge → hora/sala  (pegados)
+  const GAP_HORA     = 3.5   // hora/sala → título (más aire)
   const GAP_TITLE    = 2     // título → contenido
 
   // ── Medir altura de una tarjeta ──
