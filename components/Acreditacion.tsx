@@ -7,11 +7,12 @@ import { doc, updateDoc } from 'firebase/firestore/lite'
 import { useRouter } from 'next/navigation'
 import { auth, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/auth-context'
-import { usePropuestas } from '@/lib/hooks/usePropuestas'
-import { useInvitados } from '@/lib/hooks/useInvitados'
+import { usePropuestas }  from '@/lib/hooks/usePropuestas'
+import { useInvitados }   from '@/lib/hooks/useInvitados'
+import { useActividades } from '@/lib/hooks/useActividades'
 import { actualizarParticipanteEnPropuesta, type DatosParticipanteUpdate } from '@/lib/services/propuestas'
 import { PERTENENCIAS } from '@/congreso.config'
-import type { Propuesta, Invitado } from '@/types'
+import type { Propuesta, Invitado, Actividad } from '@/types'
 
 // ── Tipos ─────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ type Filtro   = 'pendientes' | 'todos' | 'acreditados'
 const nc = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 
 
-function buildPersonas(propuestas: Propuesta[], invitados: Invitado[]): PersonaAcred[] {
+function buildPersonas(propuestas: Propuesta[], invitados: Invitado[], actividades: Actividad[]): PersonaAcred[] {
   const map = new Map<string, PersonaAcred>()
 
   const agregarDePropuesta = (
@@ -71,6 +72,25 @@ function buildPersonas(propuestas: Propuesta[], invitados: Invitado[]): PersonaA
     ;(prop.participantes ?? []).forEach(pa =>
       agregarDePropuesta(pa.nombre, pa.email, pa.documento ?? '', pa.cuil ?? '', pa.pertenencia, pa.pago ?? false, pa.acreditado ?? false, pa.requierePago ?? false, prop.id))
   })
+
+  // Participantes de actividades tipo 'otro' — pueden no tener propuesta.
+  // Solo tienen nombre e institución disponibles desde este origen.
+  actividades
+    .filter(act => act.tipo === 'otro' && act.participantes?.length)
+    .forEach(act =>
+      act.participantes!.forEach(pa => {
+        if (!pa.nombre.trim()) return
+        const k = nc(pa.nombre)
+        if (!map.has(k)) {
+          map.set(k, {
+            clave: k, nombre: pa.nombre.trim(),
+            email: '', dni: '', cuil: '', pertenencia: '',
+            pago: false, acreditado: false, requierePago: false,
+            propuestaIds: [],
+          })
+        }
+      })
+    )
 
   // Invitados — si ya existe por nombre (también es autor de propuesta),
   // solo se agrega el invitadoId. Si no existe, se crea la entrada.
@@ -106,12 +126,13 @@ function buildPersonas(propuestas: Propuesta[], invitados: Invitado[]): PersonaA
 
 export default function Acreditacion() {
   const { usuario } = useAuth()
-  const { propuestas, loading: loadingProps, cargar: cargarProps } = usePropuestas()
-  const { invitados, loading: loadingInvs,  cargar: cargarInvs  } = useInvitados()
+  const { propuestas,  loading: loadingProps, cargar: cargarProps } = usePropuestas()
+  const { invitados,   loading: loadingInvs,  cargar: cargarInvs  } = useInvitados()
+  const { actividades, loading: loadingActs,  cargar: cargarActs  } = useActividades()
   const router = useRouter()
 
-  const loading = loadingProps || loadingInvs
-  const cargar  = useCallback(() => { cargarProps(); cargarInvs() }, [cargarProps, cargarInvs])
+  const loading = loadingProps || loadingInvs || loadingActs
+  const cargar  = useCallback(() => { cargarProps(); cargarInvs(); cargarActs() }, [cargarProps, cargarInvs, cargarActs])
 
   const [busqueda,   setBusqueda]   = useState('')
   const [filtro,     setFiltro]     = useState<Filtro>('pendientes')
@@ -132,12 +153,12 @@ export default function Acreditacion() {
 
   // ── Lista de personas con overrides aplicados ─────────────
   const personas = useMemo(() => {
-    const base = buildPersonas(propuestas, invitados)
+    const base = buildPersonas(propuestas, invitados, actividades)
     return base.map(p => {
       const o = overrides.get(p.clave)
       return o ? { ...p, ...o } : p
     })
-  }, [propuestas, overrides])
+  }, [propuestas, invitados, actividades, overrides])
 
   const stats = useMemo(() => ({
     total:       personas.length,
