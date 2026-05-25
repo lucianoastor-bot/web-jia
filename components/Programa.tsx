@@ -26,11 +26,11 @@ const FECHAS = [0, 1, 2].map(d => {
 // ── Paleta por tipo ───────────────────────────────────────────
 
 const PALETA: Record<string, { border: string; bg: string; rgb: [number, number, number] }> = {
-  conferencia: { border: '#2374ab', bg: '#eef5fb', rgb: [35, 116, 171]  },
-  panel:       { border: '#2e7d4f', bg: '#edf7f1', rgb: [46, 125, 79]   },
-  mesa:        { border: '#e8a23a', bg: '#fdf6ec', rgb: [232, 162, 58]  },
-  pósters:     { border: '#4dccbd', bg: '#edfaf8', rgb: [77, 204, 189]  },
-  otro:        { border: '#7c5cbf', bg: '#f3f0fb', rgb: [124, 92, 191]  },
+  conferencia: { border: '#2e7d4f', bg: '#edf7f1', rgb: [46, 125, 79]   },
+  panel:       { border: '#7c5cbf', bg: '#f3f0fb', rgb: [124, 92, 191]  },
+  mesa:        { border: '#6b7280', bg: '#f5f5f6', rgb: [107, 114, 128] },
+  pósters:     { border: '#2374ab', bg: '#eef5fb', rgb: [35, 116, 171]  },
+  otro:        { border: '#e8a23a', bg: '#fdf6ec', rgb: [232, 162, 58]  },
 }
 const paleta = (tipo: string) => PALETA[tipo] ?? PALETA.otro
 
