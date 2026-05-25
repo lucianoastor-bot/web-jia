@@ -585,63 +585,106 @@ function buildPDF(
   }
 
   // ── Altura de línea en mm ──
-  const lh = (size: number) => size * 0.352778 * 1.45
+  const lh = (size: number) => size * 0.352778 * 1.5
 
   // ── Contenido tipado de cada actividad ──
-  type Linea = { txt: string; size: number; bold?: boolean; italic?: boolean; color?: [number,number,number]; wrap?: boolean }
+  // gap: espacio extra en mm ANTES de esta línea (separación entre grupos)
+  type Linea = { txt: string; size: number; bold?: boolean; italic?: boolean; color?: [number,number,number]; wrap?: boolean; gap?: number }
+
+  // Misma lógica que participantesPanel() en la web
+  function partesPanel(act: Actividad): Array<{ nombre: string; institucion?: string; tituloPonencia?: string; esCoord: boolean }> {
+    const ncL = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
+    const prop = propuestas.find(p => p.actividadId === act.id)
+    const coordName = act.coordinador ?? prop?.autor.nombre
+
+    let parts: Array<{ nombre: string; institucion?: string; tituloPonencia?: string; esCoord: boolean }> = prop
+      ? (prop.participantes ?? []).map(p => ({ nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia, esCoord: false }))
+      : (act.participantes ?? []).map(p => ({ nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia, esCoord: false }))
+
+    if (coordName) {
+      const cn = ncL(coordName)
+      const idx = parts.findIndex(p => ncL(p.nombre) === cn)
+      if (idx >= 0) {
+        parts[idx] = { ...parts[idx], esCoord: true }
+        const [c] = parts.splice(idx, 1); parts.unshift(c)
+      } else {
+        const fromAutor = prop && ncL(prop.autor.nombre) === cn
+        parts.unshift(fromAutor
+          ? { nombre: prop!.autor.nombre, institucion: prop!.autor.institucion, esCoord: true }
+          : { nombre: coordName, esCoord: true })
+      }
+    }
+    return parts
+  }
 
   function lineas(act: Actividad, innerW: number): Linea[] {
+    const dark:  [number,number,number] = [30,  20,  60 ]
     const gray:  [number,number,number] = [70,  70,  70 ]
-    const light: [number,number,number] = [120, 120, 120]
+    const light: [number,number,number] = [130, 130, 130]
     const out: Linea[] = []
 
     if (act.tipo === 'conferencia') {
       const inv = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
       if (inv) {
-        out.push({ txt: inv.nombre, size: 8.5, bold: true, color: [30, 20, 60] })
-        if (inv.institucion) out.push({ txt: inv.institucion, size: 7.5, italic: true, color: light })
+        out.push({ txt: inv.nombre, size: 8.5, bold: true, color: dark })
+        if (inv.institucion) out.push({ txt: inv.institucion, size: 7, italic: true, color: light })
         if (inv.bio) {
-          const bio = inv.bio.length > 500 ? inv.bio.slice(0, 497) + '…' : inv.bio
-          out.push({ txt: bio, size: 7.5, color: gray, wrap: true })
+          const bio = inv.bio.length > 400 ? inv.bio.slice(0, 397) + '…' : inv.bio
+          out.push({ txt: bio, size: 7, color: gray, wrap: true, gap: 1.5 })
         }
       }
     } else if (act.tipo === 'panel') {
-      if (act.coordinador) out.push({ txt: 'Coordinación: ' + act.coordinador, size: 7.5, italic: true, color: light })
-      const prop  = propuestas.find(p => p.actividadId === act.id)
-      const parts = prop ? [prop.autor, ...(prop.participantes ?? [])] : (act.participantes ?? [])
-      parts.forEach(p => out.push({
-        txt: '· ' + p.nombre + (p.institucion ? ' · ' + p.institucion : ''),
-        size: 7.5, color: gray,
-      }))
+      partesPanel(act).forEach((p, i) => {
+        const nombre = p.nombre + (p.esCoord ? ' (coordinador/a)' : '')
+        out.push({ txt: nombre, size: 7.5, bold: p.esCoord, color: p.esCoord ? dark : gray, gap: i > 0 ? 1.5 : 0 })
+        if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+        if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+      })
     } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
-      const asignadas = propuestas.filter(p => p.actividadId === act.id)
-      asignadas.forEach(prop => {
+      propuestas.filter(p => p.actividadId === act.id).forEach((prop, i) => {
         const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
-        out.push({ txt: '· ' + autores + ': ' + prop.titulo, size: 7.5, color: gray, wrap: true })
+        out.push({ txt: autores, size: 7.5, bold: true, color: dark, gap: i > 0 ? 2 : 0 })
+        if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 6.5, color: light })
+        out.push({ txt: prop.titulo, size: 7, italic: true, color: gray, wrap: true })
       })
     } else {
-      if (act.descripcion) out.push({ txt: act.descripcion, size: 7.5, italic: true, color: light, wrap: true })
-      ;(act.participantes ?? []).forEach(p => out.push({ txt: '· ' + p.nombre, size: 7.5, color: gray }))
+      if (act.descripcion) out.push({ txt: act.descripcion, size: 7, italic: true, color: light, wrap: true })
+      ;(act.participantes ?? []).forEach((p, i) => {
+        out.push({ txt: p.nombre, size: 7.5, color: gray, gap: i > 0 ? 1 : 0 })
+        if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+      })
     }
 
-    if (act.moderador) out.push({ txt: 'Modera: ' + act.moderador, size: 7.5, italic: true, color: light })
+    if (act.moderador) out.push({ txt: 'Modera: ' + act.moderador, size: 7, italic: true, color: light, gap: 2 })
     return out
   }
+
+  // ── Constantes de layout interno de card ──
+  const HORA_SIZE    = 7
+  const GAP_BADGE    = 1.5   // badge → hora/sala
+  const GAP_HORA     = 2.5   // hora/sala → título  (o badge → título si no hay hora)
+  const GAP_TITLE    = 2     // título → contenido
 
   // ── Medir altura de una tarjeta ──
   function medirCard(act: Actividad, w: number): number {
     const innerW = w - BORDER_W - PAD_H * 2
     let h = PAD_V
 
-    // Badge row
-    h += BADGE_H + 2.5
+    // Badge
+    h += BADGE_H + GAP_BADGE
+
+    // Hora/sala en su propia línea
+    const haHora = !!(act.horaInicio || act.sala)
+    if (haHora) h += lh(HORA_SIZE) + GAP_HORA
+    else         h += GAP_HORA - GAP_BADGE   // ajuste si no hay hora
 
     // Título
     doc.setFontSize(9.5)
-    h += doc.splitTextToSize(act.titulo, innerW).length * lh(9.5) + 1.5
+    h += doc.splitTextToSize(act.titulo, innerW).length * lh(9.5) + GAP_TITLE
 
     // Contenido
     for (const ln of lineas(act, innerW)) {
+      h += ln.gap ?? 0
       doc.setFontSize(ln.size)
       const n = ln.wrap ? doc.splitTextToSize(ln.txt, innerW).length : 1
       h += n * lh(ln.size)
@@ -653,12 +696,12 @@ function buildPDF(
 
   // ── Dibujar una tarjeta ──
   function dibujarCard(act: Actividad, x: number, y: number, w: number): number {
-    const h        = medirCard(act, w)
-    const p        = paleta(act.tipo)
-    const [cr, cg, cb] = hexToRgb(p.border)
-    const [tr, tg, tb] = tintRgb(p.border, 0.09)
-    const innerX   = x + BORDER_W + PAD_H
-    const innerW   = w - BORDER_W - PAD_H * 2
+    const h             = medirCard(act, w)
+    const p             = paleta(act.tipo)
+    const [cr, cg, cb]  = hexToRgb(p.border)
+    const [tr, tg, tb]  = tintRgb(p.border, 0.09)
+    const innerX        = x + BORDER_W + PAD_H
+    const innerW        = w - BORDER_W - PAD_H * 2
 
     // Fondo tintado
     doc.setFillColor(tr, tg, tb)
@@ -675,28 +718,26 @@ function buildPDF(
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(6.5)
     const badgeW = doc.getTextWidth(badgeTxt) + 3.5
-
     doc.setFillColor(cr, cg, cb)
     doc.rect(innerX, cy, badgeW, BADGE_H, 'F')
     doc.setTextColor(255, 255, 255)
-    doc.text(badgeTxt, innerX + 1.75, cy + BADGE_H - 1.15)
+    doc.text(badgeTxt, innerX + 1.75, cy + BADGE_H - 1.1)
+    cy += BADGE_H + GAP_BADGE
 
-    // Hora y sala — alineados a la derecha del card
+    // ── Hora · Sala — línea propia debajo del badge ──
     const horaParts = [
-      act.sala ?? '',
-      act.horaInicio
-        ? (act.horaFin ? `${act.horaInicio}–${act.horaFin}` : act.horaInicio)
-        : '',
+      act.sala,
+      act.horaInicio ? (act.horaFin ? `${act.horaInicio}–${act.horaFin}` : act.horaInicio) : '',
     ].filter(Boolean)
-
     if (horaParts.length > 0) {
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(7.5)
+      doc.setFontSize(HORA_SIZE)
       doc.setTextColor(cr, cg, cb)
-      doc.text(horaParts.join('  ·  '), x + w - PAD_H, cy + BADGE_H - 1.15, { align: 'right' })
+      doc.text(horaParts.join('  ·  '), innerX, cy + lh(HORA_SIZE) * 0.78)
+      cy += lh(HORA_SIZE) + GAP_HORA
+    } else {
+      cy += GAP_HORA - GAP_BADGE
     }
-
-    cy += BADGE_H + 2.5
 
     // ── Título ──
     doc.setFont('helvetica', 'bold')
@@ -704,18 +745,16 @@ function buildPDF(
     doc.setTextColor(20, 12, 55)
     const titleLines = doc.splitTextToSize(act.titulo, innerW) as string[]
     titleLines.forEach(line => { doc.text(line, innerX, cy); cy += lh(9.5) })
-    cy += 1.5
+    cy += GAP_TITLE
 
     // ── Contenido ──
     for (const ln of lineas(act, innerW)) {
+      cy += ln.gap ?? 0
       doc.setFont('helvetica', ln.bold ? 'bold' : ln.italic ? 'italic' : 'normal')
       doc.setFontSize(ln.size)
       const [r2, g2, b2] = ln.color ?? [60, 60, 60]
       doc.setTextColor(r2, g2, b2)
-
-      const wrapped = ln.wrap
-        ? (doc.splitTextToSize(ln.txt, innerW) as string[])
-        : [ln.txt]
+      const wrapped = ln.wrap ? (doc.splitTextToSize(ln.txt, innerW) as string[]) : [ln.txt]
       wrapped.forEach(line => { doc.text(line, innerX, cy); cy += lh(ln.size) })
     }
 
