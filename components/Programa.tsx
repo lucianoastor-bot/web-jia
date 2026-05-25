@@ -26,11 +26,11 @@ const FECHAS = [0, 1, 2].map(d => {
 // ── Paleta por tipo ───────────────────────────────────────────
 
 const PALETA: Record<string, { border: string; bg: string; rgb: [number, number, number] }> = {
-  conferencia: { border: '#2374ab', bg: '#eef5fb', rgb: [35, 116, 171] },
-  panel:       { border: '#7c5cbf', bg: '#f3f0fb', rgb: [124, 92, 191] },
+  conferencia: { border: '#2374ab', bg: '#eef5fb', rgb: [35, 116, 171]  },
+  panel:       { border: '#2e7d4f', bg: '#edf7f1', rgb: [46, 125, 79]   },
   mesa:        { border: '#e8a23a', bg: '#fdf6ec', rgb: [232, 162, 58]  },
   pósters:     { border: '#4dccbd', bg: '#edfaf8', rgb: [77, 204, 189]  },
-  otro:        { border: '#6b7280', bg: '#f5f5f6', rgb: [107, 114, 128] },
+  otro:        { border: '#7c5cbf', bg: '#f3f0fb', rgb: [124, 92, 191]  },
 }
 const paleta = (tipo: string) => PALETA[tipo] ?? PALETA.otro
 
@@ -85,27 +85,47 @@ function makeBloque(acts: Actividad[], finGrupo: string): Bloque {
 // ── Helpers de participantes ──────────────────────────────────
 
 type PartSimple = {
-  nombre:          string
-  institucion?:    string
-  tituloPonencia?: string
-  invitadoId?:     string   // → foto si existe en la colección invitados
+  nombre:           string
+  institucion?:     string
+  tituloPonencia?:  string
+  invitadoId?:      string   // → foto si existe en la colección invitados
+  esCoordinador?:   boolean  // se muestra "(coordinador)" junto al nombre
 }
 
+const ncP = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
+
 function participantesPanel(act: Actividad, propuesta?: Propuesta): PartSimple[] {
-  if (propuesta) {
-    const base: PartSimple[] = act.coordinador
-      ? []
-      : [{ nombre: propuesta.autor.nombre, institucion: propuesta.autor.institucion, tituloPonencia: propuesta.titulo }]
-    const extras = (propuesta.participantes ?? []).map(p => ({
-      nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
-      // Participante de propuesta no tiene invitadoId — solo los ParticipantePanel lo tienen
-    }))
-    return [...base, ...extras]
+  // Construir lista base sin el coordinador como línea especial
+  let partes: PartSimple[] = propuesta
+    ? [
+        // Autor solo si no hay coordinador dedicado
+        ...( act.coordinador
+              ? []
+              : [{ nombre: propuesta.autor.nombre, institucion: propuesta.autor.institucion, tituloPonencia: propuesta.titulo }]
+           ),
+        ...(propuesta.participantes ?? []).map(p => ({
+          nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
+        })),
+      ]
+    : (act.participantes ?? []).map(p => ({
+        nombre: p.nombre, institucion: p.institucion,
+        tituloPonencia: p.tituloPonencia, invitadoId: p.invitadoId,
+      }))
+
+  // Coordinador: si ya aparece en la lista se marca; si no, se agrega al frente
+  if (act.coordinador) {
+    const coordNc = ncP(act.coordinador)
+    const idx = partes.findIndex(p => ncP(p.nombre) === coordNc)
+    if (idx >= 0) {
+      partes[idx] = { ...partes[idx], esCoordinador: true }
+      const [coord] = partes.splice(idx, 1)
+      partes.unshift(coord)
+    } else {
+      partes.unshift({ nombre: act.coordinador, esCoordinador: true })
+    }
   }
-  return (act.participantes ?? []).map(p => ({
-    nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia,
-    invitadoId: p.invitadoId,
-  }))
+
+  return partes
 }
 
 // ── Micro-componentes ─────────────────────────────────────────
@@ -195,46 +215,47 @@ function LineaParticipante({ p, esSolo, borderColor, invitados }: {
   const invitado = p.invitadoId ? invitados.find(i => i.id === p.invitadoId) : undefined
   const fotoSize = esSolo ? 48 : 36
 
+  const nombreNode = (
+    <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
+      {p.nombre}
+      {p.esCoordinador && (
+        <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(35,22,81,0.42)', marginLeft: '0.4rem' }}>
+          (coordinador/a)
+        </span>
+      )}
+    </p>
+  )
+
+  const institucionNode = p.institucion && (
+    <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.45)', margin: '0 0 0.12rem' }}>
+      {p.institucion}
+    </p>
+  )
+
+  const ponenciaNode = p.tituloPonencia && (
+    <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.62)', margin: 0, lineHeight: 1.45 }}>
+      {p.tituloPonencia}
+    </p>
+  )
+
   if (invitado) {
-    // Participante vinculado a invitado: mostrar foto (o placeholder si no tiene)
     return (
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
         <FotoCirculo src={invitado.foto} alt={p.nombre} size={fotoSize} borderColor={borderColor} />
         <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
-            {p.nombre}
-          </p>
-          {p.institucion && (
-            <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.45)', margin: '0 0 0.12rem' }}>
-              {p.institucion}
-            </p>
-          )}
-          {esSolo && p.tituloPonencia && (
-            <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.62)', margin: 0, lineHeight: 1.45 }}>
-              {p.tituloPonencia}
-            </p>
-          )}
+          {nombreNode}
+          {institucionNode}
+          {ponenciaNode}
         </div>
       </div>
     )
   }
 
-  // Sin foto: borde izquierdo de color
   return (
     <div style={{ paddingLeft: '0.85rem', borderLeft: `2px solid ${borderColor}55` }}>
-      <p style={{ fontSize: '0.88rem', fontWeight: 600, margin: '0 0 0.08rem', color: 'var(--c-dark)' }}>
-        {p.nombre}
-      </p>
-      {p.institucion && (
-        <p style={{ fontSize: '0.75rem', color: 'rgba(35,22,81,0.45)', margin: '0 0 0.12rem' }}>
-          {p.institucion}
-        </p>
-      )}
-      {esSolo && p.tituloPonencia && (
-        <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'rgba(35,22,81,0.62)', margin: 0, lineHeight: 1.45 }}>
-          {p.tituloPonencia}
-        </p>
-      )}
+      {nombreNode}
+      {institucionNode}
+      {ponenciaNode}
     </div>
   )
 }
@@ -346,12 +367,6 @@ function TarjetaPanel({ act, propuesta, esSolo, invitados }: {
   return (
     <CardWrap tipo="panel" esSolo={esSolo}>
       <CardHeader act={act} esSolo={esSolo} sala={act.sala} />
-
-      {act.coordinador && (
-        <p style={{ fontSize: '0.78rem', color: 'rgba(35,22,81,0.48)', margin: '-0.4rem 0 0.75rem' }}>
-          Coordinador/a: <strong>{act.coordinador}</strong>
-        </p>
-      )}
 
       {partes.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: esSolo ? '0.9rem' : '0.45rem' }}>
