@@ -9,7 +9,7 @@ import jsPDF from 'jspdf'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { usePropuestas }  from '@/lib/hooks/usePropuestas'
 import { useInvitados }   from '@/lib/hooks/useInvitados'
-import { CONGRESO }       from '@/congreso.config'
+import { CONGRESO, SALAS } from '@/congreso.config'
 import type { Actividad, Propuesta, Invitado, ParticipantePanel } from '@/types'
 
 // ── Fechas de jornada ─────────────────────────────────────────
@@ -634,16 +634,24 @@ function buildPDF(
         }
       }
     } else if (act.tipo === 'panel') {
+      const esDireto = !propuestas.some(p => p.actividadId === act.id)
       partesPanel(act).forEach((p, i) => {
         const nombre = p.nombre + (p.esCoord ? ' (coordinador/a)' : '')
-        out.push({ txt: nombre, size: 7.5, color: gray, gap: i > 0 ? 1.5 : 0 })
-        if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
-        if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+        if (esDireto) {
+          // Panel cargado directamente (ej: invitados): mismo estilo que Otro
+          out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
+          if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+        } else {
+          // Panel desde propuesta: lista compacta con títulos de ponencias
+          out.push({ txt: nombre, size: 7.5, color: gray, gap: i > 0 ? 1.5 : 0 })
+          if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+          if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+        }
       })
     } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
       propuestas.filter(p => p.actividadId === act.id).forEach((prop, i) => {
         const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
-        out.push({ txt: autores, size: 7.5, bold: true, color: dark, gap: i > 0 ? 2 : 0 })
+        out.push({ txt: autores, size: 7.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
         if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 6.5, color: light })
         out.push({ txt: prop.titulo, size: 7, italic: true, color: gray, wrap: true })
       })
@@ -817,8 +825,18 @@ function buildPDF(
         y = HEADER_H + 4
       }
 
+      // Ordenar actividades del bloque por orden de sala (igual que la web)
+      const ordenadas = [...bloque.actividades].sort((a, b) => {
+        const ia = SALAS.indexOf(a.sala ?? '')
+        const ib = SALAS.indexOf(b.sala ?? '')
+        if (ia === -1 && ib === -1) return 0
+        if (ia === -1) return 1
+        if (ib === -1) return -1
+        return ia - ib
+      })
+
       // Dibujar tarjetas del bloque
-      bloque.actividades.forEach((act, i) => {
+      ordenadas.forEach((act, i) => {
         const cx = ML + i * (cardW + CARD_GAP)
         dibujarCard(act, cx, y, cardW)
       })
