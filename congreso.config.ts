@@ -192,11 +192,11 @@ export const RESTRICCIONES_ACTIVIDAD = {
 // de actividades para evitar inconsistencias por tipeo manual.
 
 export const SALAS: string[] = [
-  'Salón de Actos',
-  'Sala de Lectura - Biblioteca Central',
   'Aula 301 NC',
   'Aula 302 NC',
   'Aula 303 NC',
+  'Salón de Actos',
+  'Sala de Lectura - Biblioteca Central',
 ]
 
 
