@@ -3,8 +3,9 @@
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import type { Propuesta } from '@/types'
-import { useInvitados }  from '@/lib/hooks/useInvitados'
-import { usePropuestas } from '@/lib/hooks/usePropuestas'
+import { useInvitados }   from '@/lib/hooks/useInvitados'
+import { usePropuestas }  from '@/lib/hooks/usePropuestas'
+import { useActividades } from '@/lib/hooks/useActividades'
 import { actualizarParticipanteEnPropuesta } from '@/lib/services/propuestas'
 import { COORDINADORES, COMITE_ORGANIZADOR, COMITE_ACADEMICO, PERTENENCIAS } from '@/congreso.config'
 
@@ -81,8 +82,9 @@ const badgeBase: React.CSSProperties = {
 type Props = { onIrAPropuesta?: (id: string) => void }
 
 export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
-  const { invitados,  loading: loadInv  } = useInvitados()
-  const { propuestas, loading: loadProp, cargar: cargarP } = usePropuestas()
+  const { invitados,   loading: loadInv  } = useInvitados()
+  const { propuestas,  loading: loadProp, cargar: cargarP } = usePropuestas()
+  const { actividades, loading: loadActs } = useActividades()
 
   const [filtro,    setFiltro]    = useState<string>('todas')
   const [editando,  setEditando]  = useState<EditandoState | null>(null)
@@ -160,10 +162,21 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
       )
     })
 
+    // Participantes listados directamente en actividades tipo 'otro'.
+    // Pueden no tener propuesta asociada, por eso no aparecían antes.
+    // Solo tienen nombre e institución disponibles desde este origen.
+    actividades
+      .filter(act => act.tipo === 'otro' && act.participantes?.length)
+      .forEach(act =>
+        act.participantes!.forEach(pa =>
+          agregar(pa.nombre, 'Participante', '', '', pa.institucion ?? '')
+        )
+      )
+
     return [...map.values()].sort((a, b) =>
       apellidoDe(a.nombre).localeCompare(apellidoDe(b.nombre), 'es')
     )
-  }, [invitados, propuestas])
+  }, [invitados, propuestas, actividades])
 
   const filtradas = filtro === 'todas'
     ? personas
@@ -342,7 +355,7 @@ export default function AdminParticipantes({ onIrAPropuesta }: Props = {}) {
 
   // ── Loading ────────────────────────────────────────────────
 
-  if (loadInv || loadProp) return (
+  if (loadInv || loadProp || loadActs) return (
     <div className="admin-module">
       <h2 className="admin-module__title">Participantes</h2>
       <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Cargando...</p>
