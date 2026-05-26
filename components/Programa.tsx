@@ -511,8 +511,8 @@ function BloqueHorario({ bloque, propuestas, invitados }: {
 
   return (
     <div style={{ marginBottom: '1.75rem' }}>
-      {/* Cabeceras de sala — actúan también como separador de bloque */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
+      {/* Cabeceras de sala — ocultas en móvil (la sala aparece dentro de cada card) */}
+      <div className="programa-paralelo-salas">
         {salas.map(sala => (
           <div key={sala} style={{
             flex: 1,
@@ -526,8 +526,8 @@ function BloqueHorario({ bloque, propuestas, invitados }: {
         ))}
       </div>
 
-      {/* Columnas */}
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+      {/* Columnas — en móvil se apilan verticalmente */}
+      <div className="programa-paralelo-cols">
         {salas.map(sala => (
           <div key={sala} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {actividades

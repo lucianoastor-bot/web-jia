@@ -464,3 +464,21 @@
   }
 }
 
+/* ── Programa: bloques paralelos ── */
+.programa-paralelo-salas {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.programa-paralelo-cols {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 640px) {
+  /* En móvil las salas paralelas se apilan */
+  .programa-paralelo-salas { display: none; }   /* las cabeceras de sala ya aparecen dentro de cada card */
+  .programa-paralelo-cols  { flex-direction: column; }
+}
+
