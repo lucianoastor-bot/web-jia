@@ -61,25 +61,22 @@ function detectarBloques(acts: Actividad[]): Bloque[] {
 
   const bloques: Bloque[] = []
   let grupo: Actividad[] = []
-  let finGrupo = ''
 
   for (const act of sorted) {
-    if (!grupo.length) {
-      grupo = [act]; finGrupo = act.horaFin!
-    } else if (act.horaInicio! < finGrupo) {
+    if (!grupo.length || act.horaInicio === grupo[0].horaInicio) {
       grupo.push(act)
-      if (act.horaFin! > finGrupo) finGrupo = act.horaFin!
     } else {
-      bloques.push(makeBloque(grupo, finGrupo))
-      grupo = [act]; finGrupo = act.horaFin!
+      bloques.push(makeBloque(grupo))
+      grupo = [act]
     }
   }
-  if (grupo.length) bloques.push(makeBloque(grupo, finGrupo))
+  if (grupo.length) bloques.push(makeBloque(grupo))
   return bloques
 }
 
-function makeBloque(acts: Actividad[], finGrupo: string): Bloque {
-  return { horaInicio: acts[0].horaInicio!, horaFin: finGrupo, actividades: acts, esSolo: acts.length === 1 }
+function makeBloque(acts: Actividad[]): Bloque {
+  const horaFin = acts.reduce((max, a) => a.horaFin! > max ? a.horaFin! : max, acts[0].horaFin!)
+  return { horaInicio: acts[0].horaInicio!, horaFin, actividades: acts, esSolo: acts.length === 1 }
 }
 
 // ── Helpers de participantes ──────────────────────────────────
