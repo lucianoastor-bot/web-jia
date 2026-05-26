@@ -2,8 +2,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import jsPDF      from 'jspdf'
-import autoTable  from 'jspdf-autotable'
+import jsPDF from 'jspdf'
 import {
   DndContext, DragOverlay,
   PointerSensor, useSensor, useSensors,
@@ -15,7 +14,7 @@ import { usePropuestas }       from '@/lib/hooks/usePropuestas'
 import { useInvitados }        from '@/lib/hooks/useInvitados'
 import { actualizarActividad, actualizarParticipantesPanel } from '@/lib/services/actividades'
 import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
-import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA } from '@/congreso.config'
+import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, SALAS } from '@/congreso.config'
 import type { Actividad, Propuesta, Invitado, ParticipantePanel } from '@/types'
 
 // ── Constantes ────────────────────────────────────────────────
@@ -901,200 +900,358 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
   const descargarPDF = () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
-    // ── Colores por tipo (RGB) ────────────────────────────────
-    const TYPE_RGB: Record<string, [number, number, number]> = {
-      conferencia: [ 77, 204, 189],
-      panel:       [124,  92, 191],
-      mesa:        [232, 162,  58],
-      pósters:     [ 58, 116, 171],
-      otro:        [136, 136, 136],
+    // ── Paleta por tipo (idéntica a Programa) ─────────────────
+    const PALETA_D: Record<string, string> = {
+      conferencia: '#2e7d4f',
+      panel:       '#7c5cbf',
+      mesa:        '#6b7280',
+      pósters:     '#2374ab',
+      otro:        '#e8a23a',
     }
-    const tipoRgb = (tipo: string): [number, number, number] => TYPE_RGB[tipo] ?? [136, 136, 136]
-    // Mezcla el color con blanco al α dado (simula un fondo translúcido)
-    const lighten = ([r, g, b]: [number, number, number], a = 0.10): [number, number, number] => [
-      Math.round(255 + a * (r - 255)),
-      Math.round(255 + a * (g - 255)),
-      Math.round(255 + a * (b - 255)),
-    ]
+    const borderColor = (tipo: string) => PALETA_D[tipo] ?? PALETA_D.otro
 
-    // ── Layout A4 portrait ────────────────────────────────────
-    const ML = 10, MR = 8, MT = 8, MB = 6
-    const TITLE_H  = 10   // alto bloque título
-    const ROOM_H   = 8    // alto cabecera de salas
-    const TIME_W   = 12   // ancho columna de horas
-    const DAY_S    = toMin('08:00')
-    const DAY_E    = toMin('21:00')
-    const TOTAL_M  = DAY_E - DAY_S
+    // ── Helpers de color ──────────────────────────────────────
+    function hexToRgb(hex: string): [number, number, number] {
+      const n = parseInt(hex.replace('#', ''), 16)
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+    }
+    function tintRgb(hex: string, alpha = 0.09): [number, number, number] {
+      const [r, g, b] = hexToRgb(hex)
+      return [
+        Math.round(255 - (255 - r) * alpha),
+        Math.round(255 - (255 - g) * alpha),
+        Math.round(255 - (255 - b) * alpha),
+      ]
+    }
 
-    const gridL    = ML + TIME_W
-    const gridT    = MT + TITLE_H + ROOM_H
-    const gridR    = 210 - MR       // A4 portrait: 210mm de ancho
-    const gridB    = 297 - MB       // A4 portrait: 297mm de alto
-    const gridW    = gridR - gridL
-    const gridH    = gridB - gridT
-    const mmPerMin = gridH / TOTAL_M
+    // ── Constantes de página ──────────────────────────────────
+    const PW = 210, PH = 297
+    const ML = 10, MR = 10, HEADER_H = 22, MB = 12
+    const CW       = PW - ML - MR
+    const BORDER_W = 2.5
+    const PAD_H    = 4
+    const PAD_V    = 3.5
+    const CARD_GAP = 2.5
+    const BADGE_H  = 4
+    const HORA_SIZE = 7
+    const GAP_BADGE = 0.8
+    const GAP_HORA  = 3.5
+    const GAP_TITLE = 2
+    const lh = (size: number) => size * 0.352778 * 1.5
 
-    const timeToY  = (t: string) => gridT + (toMin(t) - DAY_S) * mmPerMin
-    const HOUR_LBL = Array.from({ length: 14 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
+    // ── Tipo de línea de contenido ────────────────────────────
+    type Linea = {
+      txt:    string
+      size:   number
+      bold?:  boolean
+      italic?: boolean
+      color?: [number, number, number]
+      wrap?:  boolean
+      gap?:   number
+    }
 
-    // ── Una página por día: grilla gráfica ───────────────────
-    FECHAS_JORNADA.forEach((dia, diaIdx) => {
-      if (diaIdx > 0) doc.addPage()   // primera jornada usa la página inicial
+    // ── partesPanel (misma lógica que Programa) ───────────────
+    function partesPanel(act: Actividad) {
+      const ncL = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
+      const prop = propuestas.find(p => p.actividadId === act.id)
+      const coordName = act.coordinador ?? prop?.autor.nombre
+      type Parte = { nombre: string; institucion?: string; tituloPonencia?: string; esCoord: boolean }
+      let parts: Parte[] = prop
+        ? (prop.participantes ?? []).map(p => ({ nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia, esCoord: false }))
+        : (act.participantes ?? []).map(p => ({ nombre: p.nombre, institucion: p.institucion, tituloPonencia: p.tituloPonencia, esCoord: false }))
+      if (coordName) {
+        const cn = ncL(coordName)
+        const idx = parts.findIndex(p => ncL(p.nombre) === cn)
+        if (idx >= 0) {
+          parts[idx] = { ...parts[idx], esCoord: true }
+          const [c] = parts.splice(idx, 1); parts.unshift(c)
+        } else {
+          const fromAutor = prop && ncL(prop.autor.nombre) === cn
+          parts.unshift(fromAutor
+            ? { nombre: prop!.autor.nombre, institucion: prop!.autor.institucion, esCoord: true }
+            : { nombre: coordName, esCoord: true })
+        }
+      }
+      return parts
+    }
 
-      // Título del día
+    // ── Contenido por tipo (idéntico a Programa) ──────────────
+    function lineas(act: Actividad, innerW: number): Linea[] {
+      const dark:  [number,number,number] = [30,  20,  60]
+      const gray:  [number,number,number] = [70,  70,  70]
+      const light: [number,number,number] = [130, 130, 130]
+      const out: Linea[] = []
+
+      if (act.tipo === 'conferencia') {
+        const inv = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+        if (inv) {
+          out.push({ txt: inv.nombre, size: 9.5, bold: true, color: dark })
+          if (inv.institucion) out.push({ txt: inv.institucion, size: 7, italic: true, color: light })
+          if (inv.bio) {
+            const bio = inv.bio.length > 400 ? inv.bio.slice(0, 397) + '…' : inv.bio
+            out.push({ txt: bio, size: 7, color: gray, wrap: true, gap: 1.5 })
+          }
+        }
+      } else if (act.tipo === 'panel') {
+        const esDirecto = !propuestas.some(p => p.actividadId === act.id)
+        partesPanel(act).forEach((p, i) => {
+          const nombre = p.nombre + (p.esCoord ? ' (coordinador/a)' : '')
+          if (esDirecto) {
+            out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
+            if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+            if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+          } else {
+            out.push({ txt: nombre, size: 7.5, color: gray, gap: i > 0 ? 1.5 : 0 })
+            if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+            if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+          }
+        })
+      } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
+        propuestas.filter(p => p.actividadId === act.id).forEach((prop, i) => {
+          const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
+          out.push({ txt: autores, size: 7.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
+          if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 6.5, color: light })
+          out.push({ txt: prop.titulo, size: 7, italic: true, color: gray, wrap: true })
+        })
+      } else {
+        if (act.descripcion) out.push({ txt: act.descripcion, size: 7, italic: true, color: light, wrap: true })
+        ;(act.participantes ?? []).forEach((p, i) => {
+          const nombre = p.nombre + (p.rol ? ` (${p.rol})` : '')
+          out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
+          if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+        })
+      }
+      if (act.moderador) out.push({ txt: 'Modera: ' + act.moderador, size: 7, italic: true, color: light, gap: 2 })
+      return out
+    }
+
+    // ── Medir altura de una tarjeta ───────────────────────────
+    function medirCard(act: Actividad, w: number): number {
+      const innerW = w - BORDER_W - PAD_H * 2
+      let h = PAD_V
+      h += BADGE_H + GAP_BADGE
+      const haHora = !!(act.horaInicio || act.sala)
+      if (haHora) h += lh(HORA_SIZE) + GAP_HORA
+      else         h += GAP_HORA - GAP_BADGE
+      doc.setFontSize(9.5)
+      h += doc.splitTextToSize(act.titulo || '(sin título)', innerW).length * lh(9.5) + GAP_TITLE
+      for (const ln of lineas(act, innerW)) {
+        h += ln.gap ?? 0
+        doc.setFontSize(ln.size)
+        const n = ln.wrap ? doc.splitTextToSize(ln.txt, innerW).length : 1
+        h += n * lh(ln.size)
+      }
+      h += PAD_V
+      return h
+    }
+
+    // ── Dibujar una tarjeta ───────────────────────────────────
+    function dibujarCard(act: Actividad, x: number, y: number, w: number): number {
+      const h            = medirCard(act, w)
+      const bc           = borderColor(act.tipo)
+      const [cr, cg, cb] = hexToRgb(bc)
+      const [tr, tg, tb] = tintRgb(bc)
+      const innerX       = x + BORDER_W + PAD_H
+      const innerW       = w - BORDER_W - PAD_H * 2
+
+      // Fondo tintado
+      doc.setFillColor(tr, tg, tb)
+      doc.rect(x, y, w, h, 'F')
+      // Barra izquierda
+      doc.setFillColor(cr, cg, cb)
+      doc.rect(x, y, BORDER_W, h, 'F')
+
+      let cy = y + PAD_V
+
+      // ── Badge de tipo ──
+      const badgeTxt = tipoLabel(act).toUpperCase()
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(6.5)
+      const badgeW = doc.getTextWidth(badgeTxt) + 3.5
+      doc.setFillColor(cr, cg, cb)
+      doc.rect(innerX, cy, badgeW, BADGE_H, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.text(badgeTxt, innerX + 1.75, cy + BADGE_H - 1.1)
+
+      // Badge "OCULTO" si mostrar === false
+      if (act.mostrar === false) {
+        const ox = innerX + badgeW + 1.5
+        const hideTxt = 'OCULTO'
+        doc.setFontSize(6.5)
+        const hideW = doc.getTextWidth(hideTxt) + 3.5
+        doc.setFillColor(180, 40, 40)
+        doc.rect(ox, cy, hideW, BADGE_H, 'F')
+        doc.setTextColor(255, 255, 255)
+        doc.text(hideTxt, ox + 1.75, cy + BADGE_H - 1.1)
+      }
+
+      cy += BADGE_H + GAP_BADGE
+
+      // ── Hora · Sala ──
+      const horaParts = [
+        act.sala,
+        act.horaInicio ? (act.horaFin ? `${act.horaInicio}–${act.horaFin}` : act.horaInicio) : '',
+      ].filter(Boolean)
+      if (horaParts.length > 0) {
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(HORA_SIZE)
+        doc.setTextColor(cr, cg, cb)
+        doc.text(horaParts.join('  ·  '), innerX, cy + lh(HORA_SIZE) * 0.78)
+        cy += lh(HORA_SIZE) + GAP_HORA
+      } else {
+        cy += GAP_HORA - GAP_BADGE
+      }
+
+      // ── Título ──
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9.5)
+      doc.setTextColor(20, 12, 55)
+      const titleLines = doc.splitTextToSize(act.titulo || '(sin título)', innerW) as string[]
+      titleLines.forEach(line => { doc.text(line, innerX, cy); cy += lh(9.5) })
+      cy += GAP_TITLE
+
+      // ── Contenido ──
+      for (const ln of lineas(act, innerW)) {
+        cy += ln.gap ?? 0
+        doc.setFont('helvetica', ln.bold ? 'bold' : ln.italic ? 'italic' : 'normal')
+        doc.setFontSize(ln.size)
+        const [r2, g2, b2] = ln.color ?? [60, 60, 60]
+        doc.setTextColor(r2, g2, b2)
+        const wrapped = ln.wrap ? (doc.splitTextToSize(ln.txt, innerW) as string[]) : [ln.txt]
+        wrapped.forEach(line => { doc.text(line, innerX, cy); cy += lh(ln.size) })
+      }
+
+      return h
+    }
+
+    // ── detectarBloques ───────────────────────────────────────
+    function detectarBloques(acts: Actividad[]) {
+      const sorted = [...acts].sort((a, b) => a.horaInicio!.localeCompare(b.horaInicio!))
+      const bloques: { actividades: Actividad[]; esSolo: boolean }[] = []
+      let grupo: Actividad[] = []
+      let finGrupo = ''
+      for (const act of sorted) {
+        if (!grupo.length) {
+          grupo = [act]; finGrupo = act.horaFin!
+        } else if (act.horaInicio! < finGrupo) {
+          grupo.push(act)
+          if (act.horaFin! > finGrupo) finGrupo = act.horaFin!
+        } else {
+          bloques.push({ actividades: grupo, esSolo: grupo.length === 1 })
+          grupo = [act]; finGrupo = act.horaFin!
+        }
+      }
+      if (grupo.length) bloques.push({ actividades: grupo, esSolo: grupo.length === 1 })
+      return bloques
+    }
+
+    // ── Encabezado de página ──────────────────────────────────
+    function dibujarEncabezado(titulo: string) {
+      doc.setFillColor(35, 22, 81)
+      doc.rect(0, 0, PW, HEADER_H, 'F')
+      // Línea inferior naranja — distingue del programa público
+      doc.setFillColor(232, 162, 58)
+      doc.rect(0, HEADER_H - 1, PW, 1, 'F')
+      // Etiqueta derecha
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(140, 130, 180)
+      doc.text('DISTRIBUCIÓN INTERNA · JORNADAS IA EN DEBATE · FHyA UNR 2026', PW - MR, 9, { align: 'right' })
+      // Título del día / sección
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(13)
-      doc.setTextColor(35, 22, 81)
-      doc.text(dia.etiqueta, ML, MT + 8)
+      doc.setTextColor(255, 255, 255)
+      doc.text(titulo, ML, 16.5)
+    }
 
-      const actsDia = actividades
-        .filter(a => a.fecha === dia.valor && a.horaInicio && a.horaFin)
+    // ── Volcar una lista de actividades en página ─────────────
+    // Devuelve la nueva y tras escribir
+    function volcarActividades(acts: Actividad[], yStart: number, titulo: string): number {
+      let y = yStart
+      const bloques = detectarBloques(acts.filter(a => a.horaInicio && a.horaFin))
+      const sinHorario = acts.filter(a => !a.horaInicio || !a.horaFin)
 
-      if (actsDia.length === 0) {
-        doc.setFont('helvetica', 'normal')
+      for (const bloque of bloques) {
+        const n     = bloque.actividades.length
+        const cardW = n === 1 ? CW : (CW - CARD_GAP * (n - 1)) / n
+        const blockH = Math.max(...bloque.actividades.map(a => medirCard(a, cardW)))
+
+        if (y + blockH > PH - MB) {
+          doc.addPage()
+          dibujarEncabezado(titulo)
+          y = HEADER_H + 4
+        }
+
+        const ordenadas = [...bloque.actividades].sort((a, b) => {
+          const ia = SALAS.indexOf(a.sala ?? '')
+          const ib = SALAS.indexOf(b.sala ?? '')
+          if (ia === -1 && ib === -1) return 0
+          if (ia === -1) return 1
+          if (ib === -1) return -1
+          return ia - ib
+        })
+
+        ordenadas.forEach((act, i) => {
+          dibujarCard(act, ML + i * (cardW + CARD_GAP), y, cardW)
+        })
+
+        y += blockH + CARD_GAP
+      }
+
+      // Actividades sin horario al final
+      if (sinHorario.length > 0) {
+        y += 3
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(7)
+        doc.setTextColor(150, 140, 170)
+        doc.text('SIN HORARIO ASIGNADO', ML, y + 3.5)
+        y += 7
+
+        for (const act of sinHorario) {
+          const h = medirCard(act, CW)
+          if (y + h > PH - MB) {
+            doc.addPage()
+            dibujarEncabezado(titulo)
+            y = HEADER_H + 4
+          }
+          dibujarCard(act, ML, y, CW)
+          y += h + CARD_GAP
+        }
+      }
+
+      return y
+    }
+
+    // ── Iteración por días ────────────────────────────────────
+    FECHAS_JORNADA.forEach((dia, dIdx) => {
+      if (dIdx > 0) doc.addPage()
+      dibujarEncabezado(dia.etiqueta)
+
+      const actsDelDia = actividades
+        .filter(a => a.fecha === dia.valor)
+        .sort((a, b) => (a.horaInicio ?? 'ZZ').localeCompare(b.horaInicio ?? 'ZZ'))
+
+      if (actsDelDia.length === 0) {
+        doc.setFont('helvetica', 'italic')
         doc.setFontSize(9)
-        doc.setTextColor(160, 160, 170)
-        doc.text('Sin actividades para este día.', ML, MT + TITLE_H + 5)
+        doc.setTextColor(160, 160, 160)
+        doc.text('Sin actividades para este día.', ML, HEADER_H + 10)
         return
       }
 
-      // Salas del día ordenadas igual que en la grilla
-      const salas = [...new Set(actsDia.map(a => a.sala ?? ''))].sort((a, b) => {
-        if (!a && b) return 1
-        if (a && !b) return -1
-        return a.localeCompare(b, 'es')
-      })
-      const colW    = gridW / salas.length
-      const salaToX = (sala: string) => gridL + salas.indexOf(sala ?? '') * colW
-
-      // ── Cabecera de salas ──
-      const roomY = MT + TITLE_H
-      doc.setFillColor(35, 22, 81)
-      doc.rect(gridL, roomY, gridW, ROOM_H, 'F')
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(8)
-      doc.setTextColor(255, 255, 255)
-      salas.forEach((sala, i) => {
-        const cx = gridL + i * colW + colW / 2
-        const label = sala || 'Sin sala'
-        // Truncar si no cabe (aprox 1 char ≈ 2mm a 8pt)
-        const maxChars = Math.floor(colW / 2.0)
-        doc.text(label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label,
-          cx, roomY + ROOM_H * 0.68, { align: 'center' })
-      })
-
-      // ── Fondo de grilla ──
-      doc.setFillColor(250, 251, 253)
-      doc.rect(gridL, gridT, gridW, gridH, 'F')
-
-      // ── Líneas de hora + etiquetas ──
-      doc.setFont('helvetica', 'normal')
-      HOUR_LBL.forEach(h => {
-        const y = timeToY(h)
-        doc.setFontSize(7.5)
-        doc.setTextColor(140, 140, 155)
-        doc.text(h, ML + TIME_W - 1.5, y + 1.2, { align: 'right' })
-        doc.setDrawColor(210, 212, 228)
-        doc.setLineWidth(0.15)
-        doc.line(gridL, y, gridR, y)
-      })
-
-      // ── Separadores verticales entre salas ──
-      doc.setDrawColor(200, 202, 218)
-      doc.setLineWidth(0.2)
-      for (let i = 1; i < salas.length; i++) {
-        const x = gridL + i * colW
-        doc.line(x, gridT, x, gridB)
-      }
-
-      // ── Tarjetas de actividad ──
-      for (const act of actsDia) {
-        const GAP = 1.2
-        const ax  = salaToX(act.sala ?? '') + GAP
-        const ay  = timeToY(act.horaInicio!)
-        const aw  = colW - GAP * 2
-        const ah  = Math.max((toMin(act.horaFin!) - toMin(act.horaInicio!)) * mmPerMin - 0.5, 4)
-        const rgb = tipoRgb(act.tipo)
-        const fill = lighten(rgb, 0.10)
-
-        // Fondo y borde
-        doc.setFillColor(fill[0], fill[1], fill[2])
-        doc.setDrawColor(rgb[0], rgb[1], rgb[2])
-        doc.setLineWidth(0.15)
-        doc.roundedRect(ax, ay, aw, ah, 0.5, 0.5, 'FD')
-
-        // Barra de color izquierda
-        const barW = 2.0
-        doc.setFillColor(rgb[0], rgb[1], rgb[2])
-        doc.rect(ax, ay, barW, ah, 'F')
-
-        // Texto
-        const tx   = ax + barW + 1.5
-        const tw   = aw - barW - 2.5
-        let   ty   = ay + 4.5
-        const maxY = ay + ah - 1.5
-
-        // Tipo
-        if (ah >= 6 && ty < maxY) {
-          doc.setFont('helvetica', 'bold')
-          doc.setFontSize(6)
-          doc.setTextColor(rgb[0], rgb[1], rgb[2])
-          doc.text(tipoLabel(act).toUpperCase(), tx, ty)
-          ty += 3.5
-        }
-
-        // Título
-        if (ah >= 10 && ty < maxY) {
-          doc.setFont('helvetica', 'bold')
-          doc.setFontSize(7.5)
-          doc.setTextColor(35, 22, 81)
-          const lines  = doc.splitTextToSize(act.titulo || '(sin título)', tw) as string[]
-          const nLines = Math.min(lines.length, Math.floor((maxY - ty) / 3.2))
-          if (nLines > 0) {
-            doc.text(lines.slice(0, nLines), tx, ty)
-            ty += nLines * 3.2 + 1.0
-          }
-        }
-
-        // Participantes
-        if (ah >= 12 && ty < maxY) {
-          const asignadas = propuestas.filter(p => p.actividadId === act.id)
-          const inv       = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
-          let names: string[] = []
-          if (act.tipo === 'conferencia' && inv) {
-            names = [inv.nombre]
-          } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
-            names = asignadas.map(p => p.autor.nombre)
-          } else if (act.tipo === 'panel' && asignadas.length > 0) {
-            // Panel con propuesta asignada: autor + participantes de la propuesta
-            const prop = asignadas[0]
-            names = [prop.autor.nombre, ...(prop.participantes ?? []).map(p => p.nombre)]
-          } else {
-            // Panel sin propuesta o tipo 'otro': participantes manuales
-            names = (act.participantes ?? []).map(p => p.nombre)
-          }
-
-          doc.setFont('helvetica', 'normal')
-          doc.setFontSize(7.5)
-          doc.setTextColor(60, 40, 90)
-          const lineH   = 3.5
-          const maxN    = Math.max(0, Math.floor((maxY - ty) / lineH) - 1)
-          const visible = names.slice(0, maxN)
-          visible.forEach(name => {
-            if (ty < maxY) { doc.text(`· ${name}`, tx, ty); ty += lineH }
-          })
-          if (names.length > visible.length && ty < maxY) {
-            doc.setTextColor(130, 110, 160)
-            doc.text(`+${names.length - visible.length} más`, tx, ty)
-          }
-        }
-      }
-
-      // ── Borde exterior de la grilla ──
-      doc.setDrawColor(180, 182, 205)
-      doc.setLineWidth(0.3)
-      doc.rect(gridL, gridT, gridW, gridH)
+      volcarActividades(actsDelDia, HEADER_H + 4, dia.etiqueta)
     })
+
+    // ── Página final: sin fecha ───────────────────────────────
+    const sinFecha = actividades
+      .filter(a => !a.fecha)
+      .sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'))
+
+    if (sinFecha.length > 0) {
+      doc.addPage()
+      dibujarEncabezado('SIN FECHA ASIGNADA')
+      volcarActividades(sinFecha, HEADER_H + 4, 'SIN FECHA ASIGNADA')
+    }
 
     doc.save(`distribucion-${new Date().toISOString().slice(0, 10)}.pdf`)
   }
