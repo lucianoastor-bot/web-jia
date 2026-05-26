@@ -1125,20 +1125,21 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
     }
 
     // ── detectarBloques ───────────────────────────────────────
+    // En un programa de congreso, las actividades paralelas son las que
+    // empiezan a la misma hora. Agrupar por solapamiento transitivo produce
+    // columnas falsas cuando una actividad "puente" enlaza dos franjas que
+    // en realidad no se superponen (ej: 11-12:30 + 12-13:30 + 13-14:30).
     function detectarBloques(acts: Actividad[]) {
       const sorted = [...acts].sort((a, b) => a.horaInicio!.localeCompare(b.horaInicio!))
       const bloques: { actividades: Actividad[]; esSolo: boolean }[] = []
       let grupo: Actividad[] = []
-      let finGrupo = ''
+
       for (const act of sorted) {
-        if (!grupo.length) {
-          grupo = [act]; finGrupo = act.horaFin!
-        } else if (act.horaInicio! < finGrupo) {
+        if (!grupo.length || act.horaInicio === grupo[0].horaInicio) {
           grupo.push(act)
-          if (act.horaFin! > finGrupo) finGrupo = act.horaFin!
         } else {
           bloques.push({ actividades: grupo, esSolo: grupo.length === 1 })
-          grupo = [act]; finGrupo = act.horaFin!
+          grupo = [act]
         }
       }
       if (grupo.length) bloques.push({ actividades: grupo, esSolo: grupo.length === 1 })
