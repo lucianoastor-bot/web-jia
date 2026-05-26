@@ -900,11 +900,6 @@ export default function Programa() {
           )}
         </div>
 
-        {/* Aviso */}
-        <p style={{ fontSize: '1rem', color: 'rgba(35,22,81,0.55)', marginBottom: '2.5rem', lineHeight: 1.6 }}>
-          A partir del 20 de mayo estará disponible el programa completo con las propuestas de ponencias, relatos, pósters y paneles.
-        </p>
-
         {loading && (
           <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.9rem' }}>Cargando programa...</p>
         )}
