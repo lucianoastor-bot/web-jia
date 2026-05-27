@@ -662,28 +662,28 @@ async function buildPDF(
         if (esDireto) {
           // Panel cargado directamente (ej: invitados): mismo estilo que Otro
           out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
-          if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
-          if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+          if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light })
+          if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 8, italic: true, color: gray, wrap: true })
         } else {
           // Panel desde propuesta: lista compacta con títulos de ponencias
-          out.push({ txt: nombre, size: 7.5, color: gray, gap: i > 0 ? 1.5 : 0 })
-          if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
-          if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 7, italic: true, color: gray, wrap: true })
+          out.push({ txt: nombre, size: 8.5, color: gray, gap: i > 0 ? 1.5 : 0 })
+          if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light })
+          if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 8, italic: true, color: gray, wrap: true })
         }
       })
     } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
       propuestas.filter(p => p.actividadId === act.id).forEach((prop, i) => {
         const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
-        out.push({ txt: autores, size: 7.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
-        if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 6.5, color: light })
-        out.push({ txt: prop.titulo, size: 7, italic: true, color: gray, wrap: true })
+        out.push({ txt: autores, size: 8.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
+        if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 7.5, color: light })
+        out.push({ txt: prop.titulo, size: 8, italic: true, color: gray, wrap: true })
       })
     } else {
       if (act.descripcion) out.push({ txt: act.descripcion, size: 7, italic: true, color: light, wrap: true })
       ;(act.participantes ?? []).forEach((p, i) => {
         const nombre = p.nombre + (p.rol ? ` (${p.rol})` : '')
         out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
-        if (p.institucion) out.push({ txt: p.institucion, size: 6.5, color: light })
+        if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light })
       })
     }
 
