@@ -552,12 +552,35 @@ function BloqueHorario({ bloque, propuestas, invitados }: {
 // Genera un PDF con tarjetas visuales por actividad, similar al diseño web:
 // borde izquierdo de color, badge de tipo, hora/sala, título y contenido.
 
-function buildPDF(
+async function buildPDF(
   actividades: Actividad[],
   propuestas:  Propuesta[],
   invitados:   Invitado[],
 ) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+
+  // ── Cargar y registrar fuente Outfit ──────────────────────
+  try {
+    const [regBuf, boldBuf] = await Promise.all([
+      fetch('/fonts/Outfit-Regular.ttf').then(r => r.arrayBuffer()),
+      fetch('/fonts/Outfit-Bold.ttf').then(r => r.arrayBuffer()),
+    ])
+    const toBase64 = (buf: ArrayBuffer) => {
+      const bytes = new Uint8Array(buf)
+      let bin = ''
+      bytes.forEach(b => { bin += String.fromCharCode(b) })
+      return btoa(bin)
+    }
+    doc.addFileToVFS('Outfit-Regular.ttf', toBase64(regBuf))
+    doc.addFont('Outfit-Regular.ttf', 'Outfit', 'normal')
+    doc.addFileToVFS('Outfit-Bold.ttf', toBase64(boldBuf))
+    doc.addFont('Outfit-Bold.ttf', 'Outfit', 'bold')
+    doc.setFont('Outfit', 'normal')
+  } catch {
+    // Si falla la carga de fuente, continúa con helvetica
+    doc.setFont('helvetica', 'normal')
+  }
+  const FONT = doc.getFont().fontName   // 'Outfit' o 'helvetica' según lo que cargó
 
   // ── Constantes de página ──
   const PW = 210, PH = 297
@@ -724,7 +747,7 @@ function buildPDF(
 
     // ── Badge de tipo ──
     const badgeTxt = tipoLabel(act).toUpperCase()
-    doc.setFont('helvetica', 'bold')
+    doc.setFont(FONT, 'bold')
     doc.setFontSize(6.5)
     const badgeW = doc.getTextWidth(badgeTxt) + 3.5
     doc.setFillColor(cr, cg, cb)
@@ -739,7 +762,7 @@ function buildPDF(
       act.horaInicio ? (act.horaFin ? `${act.horaInicio}–${act.horaFin}` : act.horaInicio) : '',
     ].filter(Boolean)
     if (horaParts.length > 0) {
-      doc.setFont('helvetica', 'bold')
+      doc.setFont(FONT, 'bold')
       doc.setFontSize(HORA_SIZE)
       doc.setTextColor(cr, cg, cb)
       doc.text(horaParts.join('  ·  '), innerX, cy + lh(HORA_SIZE) * 0.78)
@@ -749,7 +772,7 @@ function buildPDF(
     }
 
     // ── Título ──
-    doc.setFont('helvetica', 'bold')
+    doc.setFont(FONT, 'bold')
     doc.setFontSize(9.5)
     doc.setTextColor(20, 12, 55)
     const titleLines = doc.splitTextToSize(act.titulo, innerW) as string[]
@@ -759,7 +782,7 @@ function buildPDF(
     // ── Contenido ──
     for (const ln of lineas(act, innerW)) {
       cy += ln.gap ?? 0
-      doc.setFont('helvetica', ln.bold ? 'bold' : ln.italic ? 'italic' : 'normal')
+      doc.setFont(FONT, ln.bold ? 'bold' : ln.italic ? 'italic' : 'normal')
       doc.setFontSize(ln.size)
       const [r2, g2, b2] = ln.color ?? [60, 60, 60]
       doc.setTextColor(r2, g2, b2)
@@ -772,23 +795,24 @@ function buildPDF(
 
   // ── Encabezado de día ──
   function dibujarEncabezado(dia: typeof FECHAS[0]) {
-    doc.setFillColor(35, 22, 81)
+    // Fondo blanco
+    doc.setFillColor(255, 255, 255)
     doc.rect(0, 0, PW, HEADER_H, 'F')
 
-    // Línea decorativa inferior
-    doc.setFillColor(77, 204, 189)   // turquesa
+    // Línea inferior turquesa
+    doc.setFillColor(77, 204, 189)   // #4DCCBD
     doc.rect(0, HEADER_H - 1, PW, 1, 'F')
 
-    // Evento (derecha, chico)
-    doc.setFont('helvetica', 'normal')
+    // Leyenda (derecha, chico) — #231651
+    doc.setFont(FONT, 'normal')
     doc.setFontSize(7)
-    doc.setTextColor(140, 130, 180)
+    doc.setTextColor(35, 22, 81)
     doc.text('JORNADAS: LA IA EN DEBATE · FHyA UNR 2026', PW - MR, 9, { align: 'right' })
 
-    // Día (izquierda, grande)
-    doc.setFont('helvetica', 'bold')
+    // Día (izquierda, grande) — #231651
+    doc.setFont(FONT, 'bold')
     doc.setFontSize(13)
-    doc.setTextColor(255, 255, 255)
+    doc.setTextColor(35, 22, 81)
     doc.text(dia.etiqueta, ML, 16.5)
   }
 
@@ -802,7 +826,7 @@ function buildPDF(
       .sort((a, b) => (a.horaInicio ?? '').localeCompare(b.horaInicio ?? ''))
 
     if (actsDelDia.length === 0) {
-      doc.setFont('helvetica', 'italic')
+      doc.setFont(FONT, 'italic')
       doc.setFontSize(9)
       doc.setTextColor(160, 160, 160)
       doc.text('Sin actividades programadas.', ML, HEADER_H + 10)
@@ -883,7 +907,7 @@ export default function Programa() {
           </div>
           {hayPrograma && (
             <button
-              onClick={() => buildPDF(actividades, propuestas, invitados)}
+              onClick={() => void buildPDF(actividades, propuestas, invitados)}
               style={{
                 padding: '0.5rem 1.2rem',
                 background: 'transparent',
