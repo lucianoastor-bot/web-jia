@@ -214,6 +214,7 @@ export const COMITE_ORGANIZADOR: string[] = [
   'Carlos Galassi',
   'Luz Jovine',
   'Lucas Martino',
+  'Pablo Masini',
   'Lorena Pafumi',
   'Ariel Papich',
   'Adelina Pasalagua',
