@@ -51,7 +51,10 @@ export async function crearActividad(datos: Omit<Actividad, 'id'>): Promise<stri
   return ref.id
 }
 
-export async function actualizarActividad(id: string, datos: Partial<Omit<Actividad, 'id'>>) {
+export async function actualizarActividad(
+  id: string,
+  datos: Partial<Omit<Actividad, 'id'>> | Record<string, unknown>,
+) {
   return updateDoc(doc(db, 'actividades', id), { ...datos })
 }
 

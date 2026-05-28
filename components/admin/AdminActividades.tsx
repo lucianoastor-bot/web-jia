@@ -4,6 +4,7 @@
 import { useState, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { deleteField } from 'firebase/firestore/lite'
 import { useActividades } from '@/lib/hooks/useActividades'
 import { useInvitados } from '@/lib/hooks/useInvitados'
 import { usePropuestas } from '@/lib/hooks/usePropuestas'
@@ -113,7 +114,24 @@ export default function AdminActividades() {
         ...(form.tipo === 'conferencia' && form.invitadoId  && { invitadoId:  form.invitadoId }),
       }
       if (editando) {
-        await actualizarActividad(editando, datos)
+        // En update, los campos opcionales vaciados deben borrarse del documento
+        // (updateDoc no elimina campos ausentes), por eso usamos deleteField().
+        const esConfOMesa = (['conferencia', 'mesa'] as TipoActividad[]).includes(form.tipo)
+        const actualizacion: Record<string, unknown> = {
+          tipo:        form.tipo,
+          titulo:      form.titulo,
+          mostrar:     form.mostrar,
+          resumen:     form.resumen    || deleteField(),
+          fecha:       form.fecha      || deleteField(),
+          horaInicio:  form.horaInicio || deleteField(),
+          horaFin:     form.horaFin    || deleteField(),
+          sala:        form.sala       || deleteField(),
+          moderador:   esConfOMesa && form.moderador          ? form.moderador  : deleteField(),
+          coordinador: form.tipo === 'panel' && form.coordinador ? form.coordinador : deleteField(),
+          descriptor:  form.tipo === 'otro'  && form.descriptor  ? form.descriptor  : deleteField(),
+          descripcion: form.tipo === 'otro'  && form.descripcion ? form.descripcion : deleteField(),
+        }
+        await actualizarActividad(editando, actualizacion)
         // Si se quitó el conferencista, eliminarlo del documento
         if (form.tipo === 'conferencia' && !form.invitadoId) {
           const prevId = actividades.find(a => a.id === editando)?.invitadoId
