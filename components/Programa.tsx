@@ -651,7 +651,7 @@ async function buildPDF(
       const inv = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
       if (inv) {
         out.push({ txt: inv.nombre, size: 9.5, bold: true, color: dark })
-        if (inv.institucion) out.push({ txt: inv.institucion, size: 7.5, color: light })
+        if (inv.institucion) out.push({ txt: inv.institucion, size: 7.5, color: light, wrap: true })
         if (inv.bio) {
           const bio = inv.bio.length > 400 ? inv.bio.slice(0, 397) + '…' : inv.bio
           out.push({ txt: bio, size: 7, color: gray, wrap: true, gap: 1.5 })
@@ -664,12 +664,12 @@ async function buildPDF(
         if (esDireto) {
           // Panel cargado directamente (ej: invitados): mismo estilo que Otro
           out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
-          if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light })
+          if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light, wrap: true })
           if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 9, italic: true, color: gray, wrap: true })
         } else {
           // Panel desde propuesta: lista compacta con títulos de ponencias
           out.push({ txt: nombre, size: 8.5, color: gray, gap: i > 0 ? 1.5 : 0 })
-          if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light })
+          if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light, wrap: true })
           if (p.tituloPonencia) out.push({ txt: p.tituloPonencia, size: 9, italic: true, color: gray, wrap: true })
         }
       })
@@ -680,7 +680,7 @@ async function buildPDF(
         .forEach((prop, i) => {
         const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
         out.push({ txt: autores, size: 8.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
-        if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 7.5, color: light })
+        if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 7.5, color: light, wrap: true })
         out.push({ txt: prop.titulo, size: 9, italic: true, color: gray, wrap: true })
       })
     } else {
@@ -688,7 +688,7 @@ async function buildPDF(
       ;(act.participantes ?? []).forEach((p, i) => {
         const nombre = p.nombre + (p.rol ? ` (${p.rol})` : '')
         out.push({ txt: nombre, size: 8.5, bold: true, color: dark, gap: i > 0 ? 1.5 : 0 })
-        if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light })
+        if (p.institucion) out.push({ txt: p.institucion, size: 7.5, color: light, wrap: true })
       })
     }
 
