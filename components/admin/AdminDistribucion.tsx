@@ -1,7 +1,7 @@
 // components/admin/AdminDistribucion.tsx
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import jsPDF from 'jspdf'
 import {
   DndContext, DragOverlay,
@@ -13,7 +13,7 @@ import { useActividades }      from '@/lib/hooks/useActividades'
 import { usePropuestas }       from '@/lib/hooks/usePropuestas'
 import { useInvitados }        from '@/lib/hooks/useInvitados'
 import { actualizarActividad, actualizarParticipantesPanel } from '@/lib/services/actividades'
-import { asignarPropuesta, desasignarPropuesta } from '@/lib/services/propuestas'
+import { asignarPropuesta, desasignarPropuesta, reordenarPropuestas } from '@/lib/services/propuestas'
 import { CONGRESO, PROPUESTAS_COMPATIBLES, TIPOS_PROPUESTA, PERTENENCIAS, ESTADOS_PROPUESTA, SALAS } from '@/congreso.config'
 import type { Actividad, Propuesta, Invitado, ParticipantePanel } from '@/types'
 
@@ -75,7 +75,7 @@ function calcPxPerMin(
     if (!act.horaInicio || !act.horaFin) continue
     const dur = toMin(act.horaFin) - toMin(act.horaInicio)
     if (dur <= 0) continue
-    const asignadas = propuestas.filter(p => p.actividadId === act.id)
+    const asignadas = asignadasDe(act.id, propuestas)
     const invNombre = act.invitadoId ? invitados.find(i => i.id === act.invitadoId)?.nombre : undefined
     const nPart  = nombresParticipantes(act, asignadas, invNombre).length
     const needed = alturaEstimada(nPart)
@@ -83,6 +83,14 @@ function calcPxPerMin(
     if (px > maxPx) maxPx = px
   }
   return maxPx
+}
+
+// ── Propuestas asignadas a una actividad, ordenadas ───────────
+
+function asignadasDe(actId: string, propuestas: Propuesta[]): Propuesta[] {
+  return propuestas
+    .filter(p => p.actividadId === actId)
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
 }
 
 // ── Helpers de presentación ───────────────────────────────────
@@ -387,7 +395,7 @@ function ColumnaSala({
       ))}
 
       {actsEnSala.map(act => {
-        const asignadas = propuestas.filter(p => p.actividadId === act.id)
+        const asignadas = asignadasDe(act.id, propuestas)
         const invNombre = act.invitadoId
           ? invitados.find(i => i.id === act.invitadoId)?.nombre
           : undefined
@@ -544,13 +552,34 @@ function MetaDato({ label, value }: { label: string; value: string }) {
   )
 }
 
-function FilaPropuesta({ prop }: { prop: Propuesta }) {
+function FilaPropuesta({
+  prop, onSubir, onBajar, esPrimero, esUltimo,
+}: {
+  prop:      Propuesta
+  onSubir?:  () => void
+  onBajar?:  () => void
+  esPrimero?: boolean
+  esUltimo?:  boolean
+}) {
   const pertEtiqueta   = PERTENENCIAS.find(p => p.valor === prop.autor.pertenencia)?.etiqueta ?? prop.autor.pertenencia ?? ''
   const estadoEtiqueta = ESTADOS_PROPUESTA.find(e => e.valor === prop.estado)?.etiqueta ?? prop.estado
   const tipoEtiqueta   = TIPOS_PROPUESTA.find(t => t.valor === prop.tipo)?.etiqueta ?? prop.tipo
 
+  const flechaBtn: CSSProperties = {
+    background: 'rgba(35,22,81,0.06)', border: 'none', borderRadius: 3,
+    width: 22, height: 20, cursor: 'pointer', color: 'var(--c-dark)',
+    fontSize: '0.7rem', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }
+
   return (
-    <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(35,22,81,0.03)', borderRadius: 3, borderLeft: '3px solid rgba(35,22,81,0.12)' }}>
+    <div style={{ display: 'flex', alignItems: 'stretch', gap: '0.5rem' }}>
+      {onSubir && onBajar && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', justifyContent: 'center', flexShrink: 0 }}>
+          <button style={{ ...flechaBtn, opacity: esPrimero ? 0.25 : 1, cursor: esPrimero ? 'default' : 'pointer' }} onClick={onSubir} disabled={esPrimero} title="Subir">↑</button>
+          <button style={{ ...flechaBtn, opacity: esUltimo ? 0.25 : 1, cursor: esUltimo ? 'default' : 'pointer' }} onClick={onBajar} disabled={esUltimo} title="Bajar">↓</button>
+        </div>
+      )}
+      <div style={{ flex: 1, padding: '0.65rem 0.85rem', background: 'rgba(35,22,81,0.03)', borderRadius: 3, borderLeft: '3px solid rgba(35,22,81,0.12)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.2rem' }}>
         <p style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0, color: 'var(--c-dark)' }}>
           {prop.autor.nombre}
@@ -582,6 +611,7 @@ function FilaPropuesta({ prop }: { prop: Propuesta }) {
           Ver resumen →
         </a>
       )}
+      </div>
     </div>
   )
 }
@@ -609,12 +639,13 @@ function FilaParticipante({ participante }: { participante: ParticipantePanel })
 // ── DetalleModal ──────────────────────────────────────────────
 
 function DetalleModal({
-  act, propuestas, invitados, onCerrar,
+  act, propuestas, invitados, onCerrar, onReordenar,
 }: {
-  act:       Actividad
-  propuestas: Propuesta[]
-  invitados:  Invitado[]
-  onCerrar:  () => void
+  act:         Actividad
+  propuestas:  Propuesta[]
+  invitados:   Invitado[]
+  onCerrar:    () => void
+  onReordenar: (idsOrdenados: string[]) => void
 }) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCerrar() }
@@ -623,8 +654,17 @@ function DetalleModal({
   }, [onCerrar])
 
   const color     = tipoColor(act.tipo)
-  const asignadas = propuestas.filter(p => p.actividadId === act.id)
+  const asignadas = asignadasDe(act.id, propuestas)
   const invitado  = act.invitadoId ? invitados.find(i => i.id === act.invitadoId) : null
+
+  // Mueve la propuesta en posición `i` una posición en `dir` (-1 sube, +1 baja)
+  const mover = (i: number, dir: -1 | 1) => {
+    const ids = asignadas.map(p => p.id)
+    const j = i + dir
+    if (j < 0 || j >= ids.length) return
+    ;[ids[i], ids[j]] = [ids[j], ids[i]]
+    onReordenar(ids)
+  }
   const fecha     = act.fecha ? FECHAS_JORNADA.find(f => f.valor === act.fecha)?.etiqueta : null
 
   return (
@@ -679,7 +719,16 @@ function DetalleModal({
             asignadas.length === 0
               ? <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin propuestas asignadas</p>
               : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {asignadas.map(p => <FilaPropuesta key={p.id} prop={p} />)}
+                  {asignadas.map((p, i) => (
+                    <FilaPropuesta
+                      key={p.id}
+                      prop={p}
+                      onSubir={asignadas.length > 1 ? () => mover(i, -1) : undefined}
+                      onBajar={asignadas.length > 1 ? () => mover(i, 1) : undefined}
+                      esPrimero={i === 0}
+                      esUltimo={i === asignadas.length - 1}
+                    />
+                  ))}
                 </div>
           )}
 
@@ -687,7 +736,16 @@ function DetalleModal({
           {(act.tipo === 'panel' || act.tipo === 'otro') && (
             asignadas.length > 0
               ? <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {asignadas.map(p => <FilaPropuesta key={p.id} prop={p} />)}
+                  {asignadas.map((p, i) => (
+                    <FilaPropuesta
+                      key={p.id}
+                      prop={p}
+                      onSubir={asignadas.length > 1 ? () => mover(i, -1) : undefined}
+                      onBajar={asignadas.length > 1 ? () => mover(i, 1) : undefined}
+                      esPrimero={i === 0}
+                      esUltimo={i === asignadas.length - 1}
+                    />
+                  ))}
                 </div>
               : (act.participantes ?? []).length === 0
                 ? <p style={{ color: 'rgba(35,22,81,0.3)', fontSize: '0.82rem' }}>Sin participantes</p>
@@ -863,7 +921,12 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
       const compatibles = PROPUESTAS_COMPATIBLES[act.tipo]?.tipos ?? []
       if (!(compatibles as string[]).includes(prop.tipo)) return
 
-      await asignarPropuesta(item.id, actividadId)
+      // Orden = al final de las ya asignadas a esta actividad
+      const yaAsignadas = asignadasDe(actividadId, propuestas)
+      const nuevoOrden  = yaAsignadas.length > 0
+        ? Math.max(...yaAsignadas.map(p => p.orden ?? 0)) + 1
+        : 0
+      await asignarPropuesta(item.id, actividadId, nuevoOrden)
 
       // Para paneles: auto-poblar participantes desde el autor y participantes de la propuesta
       if (act.tipo === 'panel') {
@@ -1007,7 +1070,7 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
           }
         })
       } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
-        propuestas.filter(p => p.actividadId === act.id).forEach((prop, i) => {
+        asignadasDe(act.id, propuestas).forEach((prop, i) => {
           const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
           out.push({ txt: autores, size: 7.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
           if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 6.5, color: light })
@@ -1396,6 +1459,10 @@ export default function AdminDistribucion({ onAgregar }: { onAgregar?: () => voi
             propuestas={propuestas}
             invitados={invitados}
             onCerrar={() => setDetalleActId(null)}
+            onReordenar={async (ids) => {
+              await reordenarPropuestas(ids)
+              await recargarP()
+            }}
           />
         )
       })()}

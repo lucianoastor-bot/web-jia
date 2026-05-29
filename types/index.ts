@@ -102,6 +102,7 @@ export type Propuesta = {
   evaluador?:      string
   resumenLink?:    string          // URL al documento del resumen
   actividadId?:    string          // se asigna al armar el programa
+  orden?:          number          // posición dentro de la actividad
   embeddings?:     number[]        // para uso futuro (similitud semántica)
   participantes?:  Participante[]  // panel: integrantes adicionales al coordinador
   descriptor?:     string          // otro: etiqueta corta

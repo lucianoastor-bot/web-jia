@@ -87,10 +87,23 @@ export async function actualizarParticipanteEnPropuesta(
 
 // ── Vinculación con Actividad ─────────────────────────────────
 
-export async function asignarPropuesta(propuestaId: string, actividadId: string) {
-  return updateDoc(doc(db, 'propuestas', propuestaId), { actividadId })
+export async function asignarPropuesta(propuestaId: string, actividadId: string, orden?: number) {
+  return updateDoc(doc(db, 'propuestas', propuestaId), {
+    actividadId,
+    ...(orden !== undefined && { orden }),
+  })
 }
 
 export async function desasignarPropuesta(propuestaId: string) {
-  return updateDoc(doc(db, 'propuestas', propuestaId), { actividadId: deleteField() })
+  return updateDoc(doc(db, 'propuestas', propuestaId), {
+    actividadId: deleteField(),
+    orden:       deleteField(),
+  })
+}
+
+// Reasigna el campo `orden` según la posición en el array (0, 1, 2, …)
+export async function reordenarPropuestas(idsOrdenados: string[]) {
+  await Promise.all(
+    idsOrdenados.map((id, i) => updateDoc(doc(db, 'propuestas', id), { orden: i }))
+  )
 }

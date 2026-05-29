@@ -397,7 +397,9 @@ function TarjetaMesa({ act, propuestas, esSolo }: {
   act: Actividad; propuestas: Propuesta[]; esSolo: boolean
 }) {
   const { border } = paleta(act.tipo)
-  const asignadas  = propuestas.filter(p => p.actividadId === act.id)
+  const asignadas  = propuestas
+    .filter(p => p.actividadId === act.id)
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
 
   return (
     <CardWrap tipo={act.tipo} esSolo={esSolo}>
@@ -672,7 +674,10 @@ async function buildPDF(
         }
       })
     } else if (act.tipo === 'mesa' || act.tipo === 'pósters') {
-      propuestas.filter(p => p.actividadId === act.id).forEach((prop, i) => {
+      propuestas
+        .filter(p => p.actividadId === act.id)
+        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        .forEach((prop, i) => {
         const autores = [prop.autor, ...(prop.coautores ?? [])].map(a => a.nombre).join(', ')
         out.push({ txt: autores, size: 8.5, bold: true, color: dark, wrap: true, gap: i > 0 ? 2 : 0 })
         if (prop.autor.institucion) out.push({ txt: prop.autor.institucion, size: 7.5, color: light })
