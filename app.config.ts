@@ -17,6 +17,7 @@ export const FORMATO = {
 export const NAVEGACION = [
   { href: '/invitados',     etiqueta: 'Invitados' },
   { href: '/programa',      etiqueta: 'Programa' },
+  { href: 'https://docs.google.com/forms/d/e/1FAIpQLScpuQXlof1T0SQFcpNMvMc7HtVQr82PRf4rjGR4O4GtawUrHg/viewform?usp=dialog', etiqueta: 'Inscripción', externo: true },
   /*{ href: '/propuestas',  etiqueta: 'Envío de resúmenes' },*/
   { href: '/#organizacion', etiqueta: 'Organización' },
   { href: '/#contacto',     etiqueta: 'Contacto' },

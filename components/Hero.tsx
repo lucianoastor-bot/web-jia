@@ -73,9 +73,14 @@ export default function Hero() {
           <Link href="/programa" className="btn btn--primary">
             Programa
           </Link>
-          <Link href="/contacto" className="btn btn--ghost">
-            Contacto
-          </Link>
+          <a
+            href={CONGRESO.formularioInscripcion}
+            className="btn btn--ghost"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Inscripción
+          </a>
         </div>
 
       </div>

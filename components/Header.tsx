@@ -65,6 +65,10 @@ export default function Header() {
                   ? <a href={enlace.href} className="nav__link" onClick={e => handleHashNav(e, enlace.href)}>
                       {enlace.etiqueta}
                     </a>
+                  : enlace.href.startsWith('http')
+                  ? <a href={enlace.href} className="nav__link" target="_blank" rel="noopener noreferrer">
+                      {enlace.etiqueta}
+                    </a>
                   : <Link href={enlace.href} className="nav__link">
                       {enlace.etiqueta}
                     </Link>
@@ -117,6 +121,18 @@ export default function Header() {
                 className="nav__link"
                 role="menuitem"
                 onClick={e => handleHashNav(e, enlace.href)}
+              >
+                {enlace.etiqueta}
+              </a>
+            : enlace.href.startsWith('http')
+            ? <a
+                key={enlace.href}
+                href={enlace.href}
+                className="nav__link"
+                role="menuitem"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
               >
                 {enlace.etiqueta}
               </a>

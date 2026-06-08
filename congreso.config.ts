@@ -27,6 +27,7 @@ export const CONGRESO = {
   logoPath:     '/logo-hya.png',
   instagram:           'https://www.instagram.com/jornadas.ia/',
   formularioResumenes: 'https://forms.gle/SKB7J1o7beuXAsGz5',
+  formularioInscripcion: 'https://docs.google.com/forms/d/e/1FAIpQLScpuQXlof1T0SQFcpNMvMc7HtVQr82PRf4rjGR4O4GtawUrHg/viewform?usp=dialog',
   plazoResumenes:          '3 de mayo de 2026',
   notificacionResumenes:   '20 de mayo de 2026',
   direccion:               'Entre Ríos 758, Rosario',
