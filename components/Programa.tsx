@@ -296,7 +296,9 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
   act: Actividad; invitado?: Invitado; esSolo: boolean
 }) {
   const { border } = paleta('conferencia')
-  const conFoto  = esSolo && !!invitado
+  // Las conferencias muestran siempre foto, bio y resumen, incluso cuando
+  // forman parte de un bloque paralelo (no dependen de esSolo).
+  const conFoto  = !!invitado
 
   return (
     <CardWrap tipo="conferencia" esSolo={esSolo}>
@@ -321,7 +323,7 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Título */}
-          <h3 style={{ margin: '0.15rem 0 0.5rem', fontSize: esSolo ? '1.25rem' : '1rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25 }}>
+          <h3 style={{ margin: '0.15rem 0 0.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--c-dark)', lineHeight: 1.25 }}>
             {act.titulo}
           </h3>
 
@@ -340,14 +342,14 @@ function TarjetaConferencia({ act, invitado, esSolo }: {
       </div>
 
       {/* Bio — full width, debajo de la fila foto+datos */}
-      {esSolo && invitado?.bio && (
+      {invitado?.bio && (
         <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.62)', lineHeight: 1.65, margin: '0 0 0.85rem' }}>
           {invitado.bio}
         </p>
       )}
 
       {/* Resumen — full width */}
-      {esSolo && act.resumen && (
+      {act.resumen && (
         <>
           <Divisor label="Resumen" />
           <p style={{ fontSize: '0.9rem', color: 'rgba(35,22,81,0.62)', lineHeight: 1.65, margin: 0 }}>
