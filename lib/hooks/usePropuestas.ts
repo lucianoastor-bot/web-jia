@@ -1,23 +1,16 @@
 // lib/hooks/usePropuestas.ts
+// ARCHIVO 2026: lee de data/propuestas.json (congelado), no de Firestore.
+'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { obtenerPropuestas } from '@/lib/services/propuestas'
 import type { Propuesta } from '@/types'
+import datos from '@/data/propuestas.json'
+
+const PROPUESTAS = datos as unknown as Propuesta[]
 
 export function usePropuestas() {
-  const [propuestas, setPropuestas] = useState<Propuesta[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const cargar = useCallback(async () => {
-    setLoading(true)
-    try {
-      setPropuestas(await obtenerPropuestas())
-    } catch { } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { cargar() }, [cargar])
-
-  return { propuestas, loading, cargar }
+  return {
+    propuestas: PROPUESTAS,
+    loading: false,
+    cargar: async () => {},
+  }
 }

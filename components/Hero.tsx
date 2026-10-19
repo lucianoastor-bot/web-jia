@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useEffect } from 'react'
-import Countdown from './Countdown'
 import { CONGRESO } from '@/congreso.config'
 
 export default function Hero() {
@@ -73,21 +72,14 @@ export default function Hero() {
           <Link href="/programa" className="btn btn--primary">
             Programa
           </Link>
-          <a
-            href={CONGRESO.formularioInscripcion}
-            className="btn btn--ghost"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Inscripción
-          </a>
+          <Link href="/contacto" className="btn btn--ghost">
+            Contacto
+          </Link>
         </div>
 
       </div>
 
       <div className="hero__scroll" aria-hidden="true">↓ scroll ↓</div>
-
-      <Countdown />
 
     </section>
   )

@@ -3,7 +3,6 @@ import { Lora, Outfit } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { AuthProvider } from '@/lib/auth-context'
 import { CONGRESO } from '@/congreso.config'
 import { Analytics } from "@vercel/analytics/next"
 
@@ -53,11 +52,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`${lora.variable} ${outfit.variable}`}>
       <body>
-        <AuthProvider>
-          <Header />
-          {children}
-          <Footer />
-        </AuthProvider>
+        <Header />
+        {children}
+        <Footer />
         <Analytics />
       </body>
     </html>

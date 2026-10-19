@@ -1,28 +1,16 @@
 // lib/hooks/useInvitados.ts
+// ARCHIVO 2026: lee de data/invitados.json (congelado), no de Firestore.
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { collection, getDocs } from 'firebase/firestore/lite'
-import { db } from '@/lib/firebase'
 import type { Invitado } from '@/types'
+import datos from '@/data/invitados.json'
+
+const INVITADOS = datos as unknown as Invitado[]
 
 export function useInvitados() {
-  const [invitados, setInvitados] = useState<Invitado[]>([])
-  const [loading, setLoading]     = useState(true)
-
-  const cargar = useCallback(async () => {
-    setLoading(true)
-    try {
-      const snap = await getDocs(collection(db, 'invitados'))
-      setInvitados(snap.docs.map(d => ({ id: d.id, ...d.data() } as Invitado)))
-    } catch {
-      // mantiene el estado anterior en caso de error
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { cargar() }, [cargar])
-
-  return { invitados, loading, cargar }
+  return {
+    invitados: INVITADOS,
+    loading: false,
+    cargar: async () => {},
+  }
 }

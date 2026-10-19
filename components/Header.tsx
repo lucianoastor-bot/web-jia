@@ -91,11 +91,6 @@ export default function Header() {
               </svg>
             </a>
           </li>
-          <li>
-            <Link href="/login" className="nav__link nav__link--login">
-              Login
-            </Link>
-          </li>
         </ul>
 
         {/* Mobile menu button */}
@@ -161,14 +156,6 @@ export default function Header() {
           </svg>
           Instagram
         </a>
-        <Link
-          href="/login"
-          className="nav__link nav__link--login"
-          role="menuitem"
-          onClick={() => setOpen(false)}
-        >
-          Login
-        </Link>
       </div>
     </>
   )
