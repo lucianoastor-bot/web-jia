@@ -1,0 +1,1473 @@
+[
+  {
+    "id": "0j07XNm3ZqYIKq2ESZsh",
+    "tipo": "poster",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1RByasU79oHWI5HTf_YQ5LcmAPMEr3zuE",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-03T13:50:08.421Z",
+    "titulo": "Programadores pedagógicos. Apps interactivas para la deducción matemática",
+    "autor": {
+      "nombre": "Diego González",
+      "institucion": "Instituto Católico de Enseñanza Superior N° 9145",
+      "email": "mod.matematica@gmail.com",
+      "documento": "33561858",
+      "celularCodigo": "+54",
+      "celular": "3462533686",
+      "pertenencia": "externo"
+    },
+    "actividadId": "WngfM3c0JOIxuU7Q9UTn",
+    "coautores": [
+      {
+        "nombre": "Graciela González",
+        "institucion": "Instituto Católico de Enseñanza Superior N° 9145",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Gabriel Data",
+    "estado": "aceptada",
+    "orden": 3
+  },
+  {
+    "id": "1umL0WjDAISorbpcZSSp",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=135zNrOQXphwHVYktu3_aKHaisbMaEQhd",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:35.556Z",
+    "titulo": "Uso de la Inteligencia Artificial y la mediación cultural en la formación de jóvenes y adultos",
+    "estado": "aceptada",
+    "autor": {
+      "nombre": "Ileana Sorgentoni",
+      "institucion": "Ministerio de Educación de la Provincia De Santa Fe - Universidad Nacional de Rosario",
+      "email": "ileana.sorgentoni.85@gmail.com",
+      "documento": "31443345",
+      "celularCodigo": "+54",
+      "celular": "3412826878",
+      "pertenencia": "externo"
+    },
+    "evaluador": "Fernando Avendaño",
+    "actividadId": "7zPuKd5xS5Cajkz8hQ4h"
+  },
+  {
+    "id": "1wJRHXO4nQU8j21puWdU",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1fIGrrPbysgooNYBkPrmsjL0TdxplOGag",
+    "eje": "07",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-01T01:49:35.366Z",
+    "titulo": "La paradoja del lazo sintético y el deterioro invisible del sueño y la salud mental cuando la Inteligencia Artificial se ofrece como refugio frente a la soledad que ella misma profundiza",
+    "autor": {
+      "nombre": "Iván Ariel Viera",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "arielvirea36@gmail.com",
+      "documento": "26999665",
+      "celularCodigo": "+54",
+      "celular": "3416841934",
+      "pertenencia": "externo"
+    },
+    "actividadId": "4kkNIuqu3W9PulRrvkeI",
+    "evaluador": "Marcela Valdata",
+    "coautores": [
+      {
+        "nombre": "Rodolfo Castelar",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "rodolfocastelau@live.com.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "pago": false
+      },
+      {
+        "nombre": "Concepción Irene Duarte",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "irene_duarte1123@hotmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "pago": false
+      },
+      {
+        "nombre": "Carlos Dante González",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "carlosg31@hotmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "estado": "aceptada",
+    "orden": 1
+  },
+  {
+    "id": "3Z9OmdkM9WGnqKXlZfNg",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=14Mmoz9mISvBsE4cp6l_Gd63ET4XQAte5",
+    "eje": "04",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-03T13:50:08.146Z",
+    "titulo": "¿Qué puede aportar la IA a la enseñanza de la Filosofía?",
+    "autor": {
+      "nombre": "Camilo Atilio Rosso",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "rossocamilo47@gmail.com",
+      "documento": "47103563",
+      "celularCodigo": "+54",
+      "celular": "3412618678",
+      "pertenencia": "estudiante"
+    },
+    "evaluador": "Melina Mailhou",
+    "estado": "revisión"
+  },
+  {
+    "id": "5r9YGk0ZwL6o6r0sxX12",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1HpWIQwZBaFQIIkBuiPFY_UV6Rs7D7NKM",
+    "eje": "04",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:35.274Z",
+    "titulo": "La clase de filosofía como dispositivo: ¿qué líneas de fuga introduce la Inteligencia Artificial?",
+    "autor": {
+      "nombre": "Juan José Granado Oggero",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "granadojj@gmail.com",
+      "documento": "30381834",
+      "celularCodigo": "+54",
+      "celular": "3413513492",
+      "pertenencia": "externo"
+    },
+    "actividadId": "7zPuKd5xS5Cajkz8hQ4h",
+    "evaluador": "María Victoria González",
+    "estado": "aceptada"
+  },
+  {
+    "id": "AJtaMz9Dutzmqjdz0YYy",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1E6k8tPLWfuIT2aBfN0QTtebxbAV-8919",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-03T22:22:37.291Z",
+    "titulo": "Regulación a destiempo: el derecho frente a la IA generativa",
+    "autor": {
+      "nombre": "Augusto Appolinari",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "augustoappolinari@gmail.com",
+      "documento": "36720235",
+      "celularCodigo": "+54",
+      "celular": "3468641704",
+      "pertenencia": "externo"
+    },
+    "eje": "09",
+    "actividadId": "hKOtk2JlKiScSiO80uyK",
+    "evaluador": "Erika Nawoczyk",
+    "estado": "aceptada"
+  },
+  {
+    "id": "CAdaUftXA3hQbHOBqLTS",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1RqLchPi3ddlOOQFgf-Q250jTedncwoMK",
+    "eje": "02",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-01T01:49:35.773Z",
+    "titulo": "La IA en la enseñanza de la producción musical en el nivel superior:  alcances, desafíos y perspectivas",
+    "coautores": [
+      {
+        "nombre": "Jorge Chemez",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "jorge.chemez99@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Morena Chiliutti Rey",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "morechiliu@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "autor": {
+      "nombre": "Cristian Villafañe",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "cristian.villafane@gmail.com",
+      "documento": "32290131",
+      "celularCodigo": "+54",
+      "celular": "3416763367",
+      "pertenencia": "comunidad"
+    },
+    "actividadId": "F3ffqm5UeGWGwjg6PKUg",
+    "estado": "aceptada",
+    "evaluador": "Gabriel Data"
+  },
+  {
+    "id": "CbOi0uPeBSojAwo94DSX",
+    "tipo": "ponencia",
+    "descriptor": "",
+    "titulo": "Texto, interacción e IAG: discutiendo el impacto de la reconfiguración de las  prácticas para una teoría interaccionista del texto",
+    "eje": "03",
+    "participantes": [],
+    "evaluador": "",
+    "resumen": "",
+    "coautores": [
+      {
+        "celular": "",
+        "institucion": "Universidad Nacional de Rosario",
+        "pertenencia": "externo",
+        "documento": "",
+        "email": "tamaracocordano@gmail.com",
+        "celularCodigo": "+54",
+        "tituloPonencia": "",
+        "nombre": "Tamara Cocordano Franquini"
+      }
+    ],
+    "autor": {
+      "celularCodigo": "+54",
+      "pertenencia": "comunidad",
+      "documento": "",
+      "email": "florenciamiranda71@gmail.com",
+      "nombre": "Florencia Miranda",
+      "tituloPonencia": "",
+      "celular": "",
+      "institucion": "Universidad Nacional de Rosario"
+    },
+    "estado": "aceptada",
+    "resumenLink": "",
+    "creado": "2026-05-21T21:40:37.694Z",
+    "actividadId": "oeZcBnbzcUEfXgW6POxq",
+    "orden": 3
+  },
+  {
+    "id": "CyauaYVQg062okTZgmGO",
+    "resumen": "",
+    "evaluador": "",
+    "participantes": [],
+    "descriptor": "",
+    "eje": "01",
+    "resumenLink": "",
+    "estado": "aceptada",
+    "coautores": [],
+    "tipo": "ponencia",
+    "creado": "2026-05-25T16:25:52.272Z",
+    "actividadId": "FDhDltmBtT8eCBuN9iXZ",
+    "titulo": "Comprender o calcular: la IA y la indeterminación en la comprensión científica",
+    "autor": {
+      "pertenencia": "comunidad",
+      "documento": "25272184",
+      "celular": "",
+      "nombre": "Luciano Astor",
+      "celularCodigo": "+54",
+      "email": "luciano.astor@gmail.com",
+      "institucion": "Universidad Nacional de Rosario"
+    },
+    "orden": 3
+  },
+  {
+    "id": "EZE0mJVTbBG2DRCoh3Kn",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1DZWXhSTD5c8shYxEnNO3p3YoXlcXOL-P",
+    "eje": "04",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-03T22:22:36.924Z",
+    "titulo": "De la sintaxis a la semántica: algunas discusiones sobre IA en Turing y Searle",
+    "autor": {
+      "nombre": "Cecilia Piacenza",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "cecipiacenza9@gmail.com",
+      "documento": "43955436",
+      "celularCodigo": "+54",
+      "celular": "3424487750",
+      "pertenencia": "estudiante"
+    },
+    "estado": "aceptada",
+    "actividadId": "FDhDltmBtT8eCBuN9iXZ",
+    "evaluador": "Mariano Balla",
+    "coautores": [
+      {
+        "nombre": "Emiliano Ybañez",
+        "institucion": "",
+        "email": "emiliano.agustin.ybanez@gmail.com",
+        "documento": "42481237;",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "estudiante",
+        "pago": false
+      }
+    ],
+    "orden": 1
+  },
+  {
+    "id": "Fu2RG6N510xZyAuRixD8",
+    "descriptor": "",
+    "coautores": [],
+    "eje": "05",
+    "estado": "aceptada",
+    "resumenLink": "",
+    "resumen": "",
+    "participantes": [],
+    "tipo": "ponencia",
+    "autor": {
+      "celular": "",
+      "documento": "",
+      "email": "florenciamiranda71@gmail.com",
+      "institucion": "Universidad Nacional de Rosario",
+      "celularCodigo": "+54",
+      "tituloPonencia": "",
+      "pertenencia": "comunidad",
+      "nombre": "Florencia Miranda"
+    },
+    "evaluador": "",
+    "titulo": "Prácticas de investigación y escritura de tesis doctoral: acerca de los usos de  las herramientas de IA en el ámbito académico",
+    "creado": "2026-05-21T21:38:37.438Z",
+    "actividadId": "oeZcBnbzcUEfXgW6POxq",
+    "orden": 0
+  },
+  {
+    "id": "Fv4awLDV1f0gj8bQZjPy",
+    "tipo": "poster",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1VNxi9juvNMpDEJs9bejoChF1bJYySGcx",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-03T22:22:37.041Z",
+    "titulo": "La formación docente en la era de la IA",
+    "autor": {
+      "nombre": "Gabriela Analía Pepermans",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "gabypepermans@gmail.com",
+      "documento": "24902097",
+      "celularCodigo": "+54",
+      "celular": "3416165477",
+      "pertenencia": "externo"
+    },
+    "actividadId": "WngfM3c0JOIxuU7Q9UTn",
+    "coautores": [
+      {
+        "nombre": "Gabriela Richieri Vega",
+        "institucion": "Administración Nacional de Educación Pública – Consejo de Formación en Educación (Uruguay)",
+        "email": "gabrielarichieri@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Susana Daz",
+    "estado": "aceptada",
+    "orden": 0
+  },
+  {
+    "id": "GdWSFkP3HaZBurPr76BN",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=15qrXPTbUGdUHqDpOnhbaJvsvxla9jw_t",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-04T21:47:26.098Z",
+    "titulo": "Análisis sistemático de los proyectos de ley sobre IA en Argentina",
+    "eje": "09",
+    "actividadId": "hKOtk2JlKiScSiO80uyK",
+    "evaluador": "Erika Nawoczyk",
+    "autor": {
+      "nombre": "Julián Mónaco",
+      "institucion": "TecnocenoLab - Universidad de Buenos Aires",
+      "email": "jmonaco@sociales.uba.ar",
+      "documento": "32830233",
+      "celularCodigo": "+54",
+      "celular": "1555995211",
+      "pertenencia": "externo",
+      "pago": false
+    },
+    "estado": "aceptada"
+  },
+  {
+    "id": "IXCv8THazHP5e6lP4Q0h",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1lJuYGtPC96TlUb5iykoq1Wx1Qa6wTOk_",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-07T16:25:34.781Z",
+    "titulo": "AulaBot: experiencia de integración de Inteligencia Artificial en clases de Física",
+    "autor": {
+      "nombre": "Matías Román Cadierno",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "mcadierno@ips.edu.ar",
+      "documento": "32289625",
+      "celularCodigo": "+54",
+      "celular": "3416834307",
+      "pertenencia": "externo"
+    },
+    "actividadId": "9Pf7FCFfUKaQI6gq1GEn",
+    "coautores": [
+      {
+        "nombre": "Ignacio Evangelista",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "ignacioevangelista@ips.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Gabriel Data",
+    "estado": "aceptada",
+    "orden": 1
+  },
+  {
+    "id": "ONb2PKxdU1gneI0aaTtF",
+    "tipo": "ponencia",
+    "titulo": "La IA no es un martillo. Reflexiones epistemológicas en torno a los supuestos ideológicas del conocimiento generado por la Inteligencia Artificial",
+    "resumen": "",
+    "resumenLink": "",
+    "eje": "04",
+    "estado": "aceptada",
+    "evaluador": "",
+    "autor": {
+      "nombre": "Amancio Vázquez",
+      "institucion": "Universidad Nacional de Rosario - Universidad Nacional del Litoral",
+      "email": "amanciovazquez@hotmail.com",
+      "documento": "",
+      "celularCodigo": "+54",
+      "celular": "",
+      "pertenencia": "externo",
+      "tituloPonencia": ""
+    },
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-06-04T21:19:15.721Z",
+    "actividadId": "FDhDltmBtT8eCBuN9iXZ",
+    "orden": 2
+  },
+  {
+    "id": "Ol5DK7lOzGWWfD882aTm",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1EBSEyAUnfNrjMf0-gB5O9JsdC0pidNmU",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-04T21:47:26.398Z",
+    "titulo": "Reflexiones sobre la formación de docentes de idiomas en tiempos de Inteligencia Artificial",
+    "estado": "aceptada",
+    "coautores": [
+      {
+        "nombre": "María Cecilia Postiglione",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "mceciliapostiglione@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Nadia Mancho",
+        "institucion": "Universidad Nacional de Rosario  ",
+        "email": "nadiamancho@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "comunidad"
+      }
+    ],
+    "evaluador": "Andrea Rodrigo",
+    "autor": {
+      "nombre": "Natalia Ricciardi",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "natalia.ricciardi@gmail.com",
+      "documento": "23914746",
+      "celularCodigo": "+54",
+      "celular": "3416757219",
+      "pertenencia": "comunidad",
+      "acreditado": false
+    },
+    "actividadId": "Hw5Lran53IpjnboMeOTg",
+    "orden": 0
+  },
+  {
+    "id": "Oqk4xQNDi77fqf0aGplD",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1ftHhEYHppDuEAok3JM044q3BelJXs8K4",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-03T13:50:08.539Z",
+    "titulo": "IA y educación",
+    "autor": {
+      "nombre": "Esteban Mestre",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "jovenesfilosofosros@gmail.com",
+      "documento": "14949245",
+      "celularCodigo": "+54",
+      "celular": "3413152822",
+      "pertenencia": "estudiante"
+    },
+    "evaluador": "Mariano Balla",
+    "estado": "aceptada",
+    "actividadId": "4kkNIuqu3W9PulRrvkeI",
+    "orden": 3
+  },
+  {
+    "id": "PrWDymCdW8vgt6S4Q9WF",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=12M_6OgSmoXGBWPhNyHu1aIJRcDMuqB0z",
+    "eje": "04",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-04T00:59:50.078Z",
+    "titulo": "¿En camino hacia la Inteligencia Artificial General?",
+    "estado": "aceptada",
+    "actividadId": "FDhDltmBtT8eCBuN9iXZ",
+    "evaluador": "Mariano Balla",
+    "autor": {
+      "nombre": "Ramiro Caso",
+      "institucion": "Universidad de Buenos Aires - CONICET - SADAF",
+      "email": "ramirocaso@uba.ar",
+      "documento": "28504730",
+      "celularCodigo": "+54",
+      "celular": "1157248513",
+      "pertenencia": "externo",
+      "requierePago": false
+    },
+    "orden": 0
+  },
+  {
+    "id": "SYXg0XZyATQs3Gel9W7g",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1cBMLawYmsl8i97dpoWpxGCFz8sFM7ehM",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-04T23:14:32.387Z",
+    "titulo": "Diseño instruccional autónomo: rutas de aprendizaje inteligentes para experiencias educativas personalizadas",
+    "autor": {
+      "nombre": "Jose Francisco Fernández Garnica",
+      "institucion": "Universidad Católica de Salta",
+      "email": "jffernandez@ucasal.edu.ar",
+      "documento": "30222832",
+      "celularCodigo": "+54",
+      "celular": "3876853603",
+      "pertenencia": "externo"
+    },
+    "actividadId": "9Pf7FCFfUKaQI6gq1GEn",
+    "coautores": [
+      {
+        "nombre": "Fabián Maffei",
+        "institucion": "Universidad Católica de Salta",
+        "email": "fmaffei@ucasal.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Mónica Fernández",
+        "institucion": "Universidad Católica de Salta",
+        "email": "mafernandez@ucasal.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Walter Vizcarra",
+        "institucion": "Universidad Católica de Salta",
+        "email": "wavizcarra@ucasal.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Mario Marrazzo",
+        "institucion": "Universidad Católica de Salta",
+        "email": "mmarrazzo@ucasal.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Natalia Ricciardi",
+    "estado": "aceptada",
+    "orden": 0
+  },
+  {
+    "id": "Uj9hjyOSLAbtkVZ4OMdA",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1L61hdxLBpqFvb4ixL6qD9QuX3qlBM9iL",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-06T20:40:47.293Z",
+    "titulo": "Perspectivas de trabajo conjunto en el marco del Laboratorio de Lingüística Computacional e Inteligencia Artificial",
+    "actividadId": "JPwisBqFRIVLaxi49kwZ",
+    "autor": {
+      "nombre": "Ana Gigon",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "anitagigon1@gmail.com",
+      "documento": "42178743",
+      "celularCodigo": "+54",
+      "celular": "3413209657",
+      "pertenencia": "estudiante"
+    },
+    "coautores": [
+      {
+        "nombre": "Leandro Kintal",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "leandrokintal65@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Sandra Mendizaba",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "sandranube3636@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "estudiante"
+      }
+    ],
+    "evaluador": "Andrea Rodrigo",
+    "estado": "aceptada",
+    "orden": 2
+  },
+  {
+    "id": "UyUjKmDmA2K3SV7OuSpb",
+    "tipo": "poster",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1mQ2MFTEoVZw4Csm3340BqF3TOBaB_vp1",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:34.886Z",
+    "titulo": "Inteligencia Artificial como mediación pedagógica en la reconfiguración de las prácticas docentes en danza: una experiencia situada en la escuela primaria en el marco del nuevo diseño curricular de Santa Fe",
+    "actividadId": "WngfM3c0JOIxuU7Q9UTn",
+    "evaluador": "Susana Daz",
+    "estado": "aceptada",
+    "orden": 1,
+    "autor": {
+      "nombre": "Ariadna Georgina Agostini",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "ariadnaagostini@gmail.com",
+      "documento": "28522723",
+      "celularCodigo": "+54",
+      "celular": "3415613927",
+      "pertenencia": "externo",
+      "pago": false,
+      "requierePago": false
+    }
+  },
+  {
+    "id": "VwHMAIJsgO0gqJ9ImDEa",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1DgbmeybOfXuV2tX8wOyVgcUyRmRJZXlV",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-01T01:49:35.171Z",
+    "titulo": "La Inteligencia Artificial como ambiente: reconfigurar la experiencia educativa",
+    "autor": {
+      "nombre": "Edgardo Toledo",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "panitoledo@gmail.com",
+      "documento": "17102206",
+      "celularCodigo": "+54",
+      "celular": "3415474777",
+      "pertenencia": "externo"
+    },
+    "coautores": [
+      {
+        "nombre": "Silvana Comba",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "silvanacomba7@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Gina Valenti",
+    "estado": "aceptada",
+    "actividadId": "4kkNIuqu3W9PulRrvkeI",
+    "orden": 2
+  },
+  {
+    "id": "W1gRJqx2B4G212mE4PSP",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1JLHlz4c0Z5nXBwEp4qIgYlDXkC2RW_NH",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-04T21:47:26.552Z",
+    "titulo": "Ambigüedad semántica en traducción automática e IA",
+    "actividadId": "JPwisBqFRIVLaxi49kwZ",
+    "autor": {
+      "nombre": "Silvana Elide Pierabella",
+      "institucion": "LLCIA - Universidad Nacional de Rosario",
+      "email": "silvanapierabella@gmail.com",
+      "documento": "17471371",
+      "celularCodigo": "+54",
+      "celular": "3415089764",
+      "pertenencia": "comunidad"
+    },
+    "evaluador": "Andrea Rodrigo",
+    "estado": "aceptada",
+    "orden": 0
+  },
+  {
+    "id": "W1pWj25fJKmppl4TFn1w",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1lmBsfX8YpCAyYXJ8f6bofzHJ1JWZwHPw",
+    "eje": "02",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-03T13:50:08.715Z",
+    "titulo": "Del bloque a la Red: reinterpretando el 'kuros' a través de la IA generativa.",
+    "autor": {
+      "nombre": "Maria Victoria González",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "mavirosario@gmail.com",
+      "documento": "27744572",
+      "celularCodigo": "+54",
+      "celular": "3416008237",
+      "pertenencia": "comunidad"
+    },
+    "actividadId": "F3ffqm5UeGWGwjg6PKUg",
+    "estado": "aceptada",
+    "evaluador": "Susana Daz",
+    "coautores": [
+      {
+        "nombre": "Soledad Giovanini",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "comunidad"
+      },
+      {
+        "nombre": "Patricia Cartara",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "comunidad",
+        "acreditado": false
+      }
+    ]
+  },
+  {
+    "id": "XlM7MZ59Vt3aYzddka2L",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1VVl76sds-uoE8zzT4dye7Sl8M9xmKiNJ",
+    "eje": "08",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:34.443Z",
+    "titulo": "De la alucinación a la duda: una metodología de trabajo con LLMs para la transcripción de prensa histórica",
+    "autor": {
+      "nombre": "Macarena Farías",
+      "institucion": "Universidad Nacional de Rosario - IECH-CONICET",
+      "email": "fariasmaca@gmail.com",
+      "documento": "41512591",
+      "celularCodigo": "+54",
+      "celular": "3415329528",
+      "pertenencia": "externo"
+    },
+    "actividadId": "JPwisBqFRIVLaxi49kwZ",
+    "evaluador": "Carolina Tramallino",
+    "estado": "aceptada",
+    "orden": 1
+  },
+  {
+    "id": "Y2daZbp8urinhDobfzCj",
+    "tipo": "ponencia",
+    "titulo": "La Inteligencia Artificial como “compañero de estudio”: dimensiones epistémicas y afectivas del vínculo estudiantil con los chats conversacionales en los primeros años  de la universidad",
+    "resumen": "",
+    "resumenLink": "",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-04T22:56:37.276Z",
+    "estado": "aceptada",
+    "actividadId": "4kkNIuqu3W9PulRrvkeI",
+    "coautores": [
+      {
+        "nombre": "María Luz Prados",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "maluzprados@hotmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "María Paula Marini",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "paumarini@hotmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "comunidad"
+      }
+    ],
+    "autor": {
+      "nombre": "María Paula Pierella",
+      "institucion": "Universidad Nacional de Rosario - IRICE-CONICET",
+      "email": "paupierella@gmail.com",
+      "documento": "",
+      "celularCodigo": "+54",
+      "celular": "",
+      "pertenencia": "externo"
+    },
+    "evaluador": "Liliana Sanjurjo",
+    "orden": 0
+  },
+  {
+    "id": "ZS3wBDXhth1GkR7Yt381",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1pf_vpqCyhN5ss5TTKNvW1YlpdDofkNUW",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-03T13:50:08.856Z",
+    "titulo": "Integración de la Inteligencia Artificial en la educación",
+    "autor": {
+      "nombre": "Ximena María Gimeno",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "gimenoximena@gmail.com",
+      "documento": "35584671",
+      "celularCodigo": "+54",
+      "celular": "3415704128",
+      "pertenencia": "externo"
+    },
+    "evaluador": "Natalia Ricciardi",
+    "estado": "aceptada",
+    "actividadId": "7zPuKd5xS5Cajkz8hQ4h"
+  },
+  {
+    "id": "bBBq0kuZNVWkqXoqJja8",
+    "tipo": "ponencia",
+    "titulo": "De la alfabetización digital a la alfabetización algorítmica en la educación superior",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1owa4w5xz49dgvgwQzcM4nMQeElXcBvnH",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:35.455Z",
+    "autor": {
+      "nombre": "Fabián Maffei",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "informaticamaffei@gmail.com",
+      "documento": "17646776",
+      "celularCodigo": "+54",
+      "celular": "3400443045",
+      "pertenencia": "externo"
+    },
+    "evaluador": "Carolina Tramallino",
+    "estado": "aceptada",
+    "actividadId": "Hw5Lran53IpjnboMeOTg",
+    "orden": 2
+  },
+  {
+    "id": "gCw0DdKabtsEFUcNQlxf",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1ZwqX0d81YLjHATXWBAJHete9vtnQ6xIT",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-03T13:50:08.967Z",
+    "titulo": "El español que prefiere la IA: variación, norma y poder en entornos digitales",
+    "autor": {
+      "nombre": "Marina G. Gonzalez",
+      "institucion": "Universidad Nacional del Litoral - Universidad Nacional de Rosario",
+      "email": "marinaggl@gmail.com",
+      "documento": "23959269",
+      "celularCodigo": "+54",
+      "celular": "3416538077",
+      "pertenencia": "externo"
+    },
+    "evaluador": "Lorena Pafumi",
+    "estado": "aceptada",
+    "actividadId": "oeZcBnbzcUEfXgW6POxq",
+    "orden": 2
+  },
+  {
+    "id": "km6UqVK33qclfbsgzUrK",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1xKC62I2XcBt712HaA7DXhrmKqkjqZnZO",
+    "eje": "02",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-03T13:50:08.273Z",
+    "titulo": "Co-creando narrativas: colaboración entre lo humano y la IA generativa en el diseño contemporáneo",
+    "autor": {
+      "nombre": "Victoria Nannini",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "victoria.nannini@fcpolit.unr.edu.ar",
+      "documento": "34933405",
+      "celularCodigo": "+54",
+      "celular": "3413578448",
+      "pertenencia": "externo"
+    },
+    "actividadId": "F3ffqm5UeGWGwjg6PKUg",
+    "coautores": [
+      {
+        "nombre": "Luis Callegari",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "comunidad"
+      }
+    ],
+    "evaluador": "Gina Valenti",
+    "estado": "aceptada"
+  },
+  {
+    "id": "lDw29QCVS29vCKPUQ1Sw",
+    "descriptor": "",
+    "coautores": [],
+    "eje": "01",
+    "estado": "aceptada",
+    "resumenLink": "",
+    "resumen": "",
+    "participantes": [],
+    "tipo": "ponencia",
+    "autor": {
+      "celular": "",
+      "documento": "",
+      "email": "marielaletrasvillela@gmail.com",
+      "institucion": "Universidad Nacional de Rosario",
+      "tituloPonencia": "",
+      "pertenencia": "externo",
+      "nombre": "Mariela Aguiar Villela",
+      "celularCodigo": "+54"
+    },
+    "evaluador": "",
+    "titulo": "De la obra a la experiencia: el uso de la Inteligencia Artificial en la enseñanza  interdisciplinaria de Lengua y Arte",
+    "creado": "2026-05-22T00:57:52.913Z",
+    "actividadId": "7zPuKd5xS5Cajkz8hQ4h"
+  },
+  {
+    "id": "mSuSwkmfbnraLhDk0AQt",
+    "tipo": "poster",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1BBwmU0AMQiwTgUBcHq4ouEWFZgJ-DWTR",
+    "eje": "02",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:34.333Z",
+    "titulo": "Huellas ajenas, mirada propia: autoría e imagen expandida en la era de la IA",
+    "autor": {
+      "nombre": "Lorena Jocou",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "lorena.jocou@gmail.com",
+      "documento": "29623392",
+      "celularCodigo": "+54",
+      "celular": "3416682544",
+      "pertenencia": "externo"
+    },
+    "actividadId": "WngfM3c0JOIxuU7Q9UTn",
+    "evaluador": "María Laura Carrascal",
+    "estado": "aceptada",
+    "orden": 2
+  },
+  {
+    "id": "nLzOCN7eJwBZ8nX7uW88",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1GWJ8pN3SkD6LxZvMbtqD5J0oLkrSPUwd",
+    "eje": "02",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-01T01:49:34.598Z",
+    "titulo": "Colonialidad del saber y racismo algorítmico: representaciones culturales y exclusión en la era de la IA generativa",
+    "autor": {
+      "nombre": "Delfina Gilli",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "delfinagilli2@gmail.com",
+      "documento": "42557976",
+      "celularCodigo": "+54",
+      "celular": "3416633322",
+      "pertenencia": "estudiante"
+    },
+    "actividadId": "etmL4k73Jz2teEdOKaOs",
+    "evaluador": "Marcela Valdata",
+    "estado": "aceptada",
+    "orden": 1
+  },
+  {
+    "id": "oTxhd4SmpdsmXsn703bF",
+    "tipo": "ponencia",
+    "titulo": "Mentira la verdad",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1aKR8kKlVXPr_UoZSxHy_kcEH_fC7eyvE",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-04T00:59:49.935Z",
+    "autor": {
+      "nombre": "Susana Daz Paradot",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "susanadaz@hotmail.com",
+      "documento": "16526820",
+      "celularCodigo": "+54",
+      "celular": "3416450682",
+      "pertenencia": "externo"
+    },
+    "estado": "aceptada",
+    "actividadId": "etmL4k73Jz2teEdOKaOs",
+    "evaluador": "Marcela Valdata",
+    "orden": 0
+  },
+  {
+    "id": "p70ICquVJiNbKt9vLipD",
+    "tipo": "poster",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1fPQgQ3okOXIBHtwNNmXxY-W-tm4_kXVB",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-05T20:55:40.498Z",
+    "titulo": "Implementación de la Inteligencia Artificial en la producción de materiales didácticos para la enseñanza del portugués como lengua extranjera",
+    "autor": {
+      "nombre": "Ximena Romero",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "xienzo16@gmail.com",
+      "documento": "30256151",
+      "celularCodigo": "+54",
+      "celular": "3415620234",
+      "pertenencia": "externo"
+    },
+    "actividadId": "WngfM3c0JOIxuU7Q9UTn",
+    "evaluador": "Natalia Ricciardi",
+    "estado": "aceptada",
+    "orden": 4
+  },
+  {
+    "id": "p8DhHxEKEfUm57WMMgbI",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1JOGdfRJ-KCQfqxtu-lMA5pRdLgxz1PGP",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-04T00:59:49.795Z",
+    "titulo": "Inclusión de la IAG en cátedras universitarias:  análisis y aportes desde la didáctica",
+    "autor": {
+      "nombre": "Yanina Natalia Fantasía",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "yaninafantasia@gmail.com",
+      "documento": "27481408",
+      "celularCodigo": "+54",
+      "celular": "3416873550",
+      "pertenencia": "externo"
+    },
+    "actividadId": "Hw5Lran53IpjnboMeOTg",
+    "evaluador": "Alicia Caporossi",
+    "estado": "aceptada",
+    "orden": 1
+  },
+  {
+    "id": "pARHPj5UqL0dVu9nprAk",
+    "tipo": "panel",
+    "titulo": "Soberanía cognitiva, colonialismo algorítmico , subjetividad y educación. Un abordaje  interdisciplinario",
+    "resumen": "",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [
+      {
+        "nombre": "Emmanuel Retamal",
+        "institucion": "Ministerio de Educación de la Provincia de Santa Fe, Escuela Primaria N° 1357 \"Dr. Laureano Maradona\"",
+        "email": "emmaretamal@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": "Hacia una ley de soberanía cognitiva: diagnóstico cultural de la colonización algorítmica"
+      },
+      {
+        "nombre": "Priscila Arandia",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "priscilaarandia8@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": "Algoritmos, sesgos y colonialismo digital"
+      },
+      {
+        "nombre": "Anahi Gonzalez Cendra",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "anahi.gonzalez.cendra@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": "Una mirada antropológica de los usos de la IA"
+      }
+    ],
+    "coautores": [],
+    "creado": "2026-05-04T01:23:29.855Z",
+    "actividadId": "aJGgECUmh3tZJuM085ro",
+    "resumenLink": "https://docs.google.com/document/d/1h1mwnf6dWufzUilQ47DoZy9DqqNtzS-5/edit",
+    "autor": {
+      "nombre": "Emmanuel Retamal",
+      "institucion": "Ministerio de Educación de la Provincia de Santa Fe, Escuela Primaria N° 1357 \"Dr. Laureano Maradona\"",
+      "email": "emmaretamal@gmail.com",
+      "documento": "",
+      "celularCodigo": "+54",
+      "celular": "",
+      "pertenencia": "externo"
+    },
+    "evaluador": "Federico Donner",
+    "estado": "aceptada"
+  },
+  {
+    "id": "ryXFZBdxyuZAgL72wqk0",
+    "tipo": "panel",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1NsBhF3qOraShPNCbyDl2GFPLDjzFDDXH",
+    "eje": "01",
+    "descriptor": "",
+    "coautores": [],
+    "creado": "2026-05-04T21:47:25.578Z",
+    "titulo": "Pensar la IA. Miradas interdisciplinarias en debate",
+    "autor": {
+      "nombre": "Yanina Natalia Fantasía",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "yaninafantasia@gmail.com",
+      "documento": "27481408",
+      "celularCodigo": "+54",
+      "celular": "3416873550",
+      "pertenencia": "externo"
+    },
+    "actividadId": "zxyWpnrm3qPRtSShvHyQ",
+    "evaluador": "Federico Donner",
+    "participantes": [
+      {
+        "nombre": "Yanina Natalia Fantasía",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "yaninafantasia@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": "La educación superior en tiempos algorítmicos. Algunas preguntas para pensar la enseñanza."
+      },
+      {
+        "nombre": "Andrea Espinosa",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "andrea.esp.14@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": "Desafíos asociados a la investigación de la IA: sobre los riesgos y potencialidades en Salud Mental"
+      },
+      {
+        "nombre": "Mariela Balbazoni",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "malebalbazoni@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": "Cuerpos, entornos virtuales y tecnologías generativas. Preguntas para pensar los modelos educativos-comunicacionales",
+        "acreditado": false
+      }
+    ],
+    "estado": "aceptada"
+  },
+  {
+    "id": "tf7zf7lt70FlPexN8cgf",
+    "tipo": "relato",
+    "titulo": "Diseñar con cuidado: decisiones éticas en el desarrollo de un chatbot con IA sobre femicidios en Jujuy",
+    "resumen": "",
+    "resumenLink": "",
+    "eje": "05",
+    "evaluador": "",
+    "autor": {
+      "nombre": "Dianela Jael Gahn",
+      "institucion": "Universidad de Buenos Aires",
+      "email": "dianejael@gmail.com",
+      "documento": "",
+      "celularCodigo": "+54",
+      "celular": "",
+      "pertenencia": "externo",
+      "tituloPonencia": ""
+    },
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [
+      {
+        "nombre": "Carina Elizabeth Gomez",
+        "institucion": "Universidad Nacional de Jujuy",
+        "email": "cgomez@fhycs.unju.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": ""
+      },
+      {
+        "nombre": "Jorge Justino Riera",
+        "institucion": "Universidad Nacional de Jujuy",
+        "email": "33482751@fi.unju.edu.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo",
+        "tituloPonencia": ""
+      }
+    ],
+    "creado": "2026-05-18T23:16:48.184Z",
+    "actividadId": "hKOtk2JlKiScSiO80uyK",
+    "estado": "aceptada"
+  },
+  {
+    "id": "tokK7VBEVkwF8GKOe5M4",
+    "tipo": "relato",
+    "titulo": "Un futuro posible",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=19dN1I8nI1gh19t2fGOsUFW384nRD3Fqn",
+    "eje": "02",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-04T21:47:25.860Z",
+    "autor": {
+      "nombre": "Tatiana Julia Verrastro Slaibi",
+      "institucion": "Indisciplinadxs - SIA",
+      "email": "tativerrastro@gmail.com",
+      "documento": "33182231",
+      "celularCodigo": "+54",
+      "celular": "1168979444",
+      "pertenencia": "externo"
+    },
+    "actividadId": "F3ffqm5UeGWGwjg6PKUg",
+    "coautores": [
+      {
+        "nombre": "Diego Briata",
+        "institucion": "Indisciplinadxs - SIA",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Gina Valenti",
+    "estado": "aceptada"
+  },
+  {
+    "id": "vkmaadLgCcaO8bDCqNKN",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1tgbzta43gMKN974Vddp_4JlsYcQWBAx6",
+    "eje": "08",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-01T01:49:34.727Z",
+    "titulo": "Representaciones sociales de la Inteligencia Artificial. Una comparación entre 2021 y 2024",
+    "autor": {
+      "nombre": "Bruno Gambino",
+      "institucion": "Universidad de Buenos Aires",
+      "email": "bgambino@sociales.uba.ar",
+      "documento": "41930187",
+      "celularCodigo": "+54",
+      "celular": "1122540654",
+      "pertenencia": "externo"
+    },
+    "actividadId": "etmL4k73Jz2teEdOKaOs",
+    "coautores": [
+      {
+        "nombre": "Gastón Becerra",
+        "institucion": "Universidad de Buenos Aires",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Joaquín Mezzadra",
+        "institucion": "Universidad de Buenos Aires",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      },
+      {
+        "nombre": "Ismael Ruiz Ortiz",
+        "institucion": "Universidad de Buenos Aires",
+        "email": "",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Melina Mailhou",
+    "estado": "aceptada",
+    "orden": 2
+  },
+  {
+    "id": "vr39aDoojEq9NIM927nD",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1NSMeygFudRTOrVF0oyyovmw4N7bd8O6z",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-03T22:22:37.171Z",
+    "titulo": "Talleres de escritura e Inteligencia Artificial generativa: (im)posibilidades de integración",
+    "autor": {
+      "nombre": "Marcia Arbusti",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "marciaarbusti@gmail.com",
+      "documento": "26850039",
+      "celularCodigo": "+54",
+      "celular": "3416770515",
+      "pertenencia": "comunidad"
+    },
+    "estado": "aceptada",
+    "coautores": [
+      {
+        "nombre": "Gastón Daix",
+        "institucion": "Universidad Nacional de Rosario",
+        "email": "gastondaix@gmail.com",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "comunidad"
+      }
+    ],
+    "evaluador": "Andrea Rodrigo",
+    "actividadId": "oeZcBnbzcUEfXgW6POxq",
+    "orden": 1
+  },
+  {
+    "id": "xshOiPNJue8eE6AwU1ih",
+    "tipo": "ponencia",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1ULmYCNbpludYaI3M4fbMDxgLlJCJuVto",
+    "eje": "02",
+    "evaluador": "",
+    "descriptor": "",
+    "participantes": [],
+    "coautores": [],
+    "creado": "2026-05-04T21:47:26.284Z",
+    "titulo": "El derecho de autor en la era de la Inteligencia Artificial: desafíos, tensiones y nuevas fronteras",
+    "estado": "aceptada",
+    "autor": {
+      "nombre": "Guillermo Rivera",
+      "institucion": "Universidad Nacional de Rosario",
+      "email": "grivera1072@gmail.com",
+      "documento": "22795411",
+      "celularCodigo": "+54",
+      "celular": "3416098188",
+      "pertenencia": "comunidad"
+    }
+  },
+  {
+    "id": "yfv5w6RLnzk1oqvwhmsC",
+    "tipo": "relato",
+    "resumen": "",
+    "resumenLink": "https://drive.google.com/open?id=1lPzKIzXHlcsmfNYyGaXo8ChQqgxpYOl-",
+    "eje": "01",
+    "descriptor": "",
+    "participantes": [],
+    "creado": "2026-05-01T01:49:35.003Z",
+    "titulo": "Hacia prácticas educativas integradas y disruptivas mediadas por la IA",
+    "coautores": [
+      {
+        "nombre": "Alejandra Soso",
+        "institucion": "Colegio Monseñor Juan Agustín Boneo",
+        "email": "alejandrasoso@live.com.ar",
+        "documento": "",
+        "celularCodigo": "+54",
+        "celular": "",
+        "pertenencia": "externo"
+      }
+    ],
+    "evaluador": "Lorena Pafumi",
+    "autor": {
+      "nombre": "Noelia Del Milagro Almeida",
+      "institucion": "Colegio Monseñor Juan Agustín Boneo",
+      "email": "lic.prof.noelialmeida@gmail.com",
+      "documento": "33233428",
+      "celularCodigo": "+54",
+      "celular": "3415796657",
+      "pertenencia": "externo",
+      "requierePago": false
+    },
+    "estado": "aceptada",
+    "actividadId": "9Pf7FCFfUKaQI6gq1GEn",
+    "orden": 2
+  }
+]

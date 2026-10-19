@@ -1,0 +1,372 @@
+[
+  {
+    "id": "4Zjghl1DGAWkoiZqP7LQ",
+    "tipo": "otro",
+    "fecha": "2026-06-11",
+    "horaInicio": "15:00",
+    "horaFin": "16:30",
+    "sala": "Salón de Actos",
+    "mostrar": true,
+    "descripcion": "Dirección: Sofía Di Palma | Elenco: Germán Lucatti y Eva Ricart. Apocalipsis es una obra de teatro breve en la que Evo, una científica que ha creado una fórmula para trasladar el mundo material a otra dimensión, va perdiendo partes de su cuerpo mientras se separa de René, quien se niega a abandonar el mundo. Su inclusión en las Jornadas sobre IA responde a una apuesta por el teatro como forma de resistencia ante el avance tecnológico: frente a la progresiva disolución de lo material, la obra defiende al cuerpo como territorio irreemplazable de la experiencia, invitando al público a reflexionar sobre los límites entre lo real y lo virtual, y el futuro de las sensibilidades humanas.",
+    "participantes": [
+      {
+        "institucion": "Universidad Nacional de Rosario",
+        "nombre": "Anabel Hernández"
+      },
+      {
+        "institucion": "Universidad Nacional de Rosario",
+        "nombre": "María Noel Do"
+      },
+      {
+        "institucion": "CONICET - Universidad Nacional de Rosario",
+        "nombre": "Laura Pomponio"
+      },
+      {
+        "rol": "Directora",
+        "institucion": "Universidad Nacional de Rosario",
+        "nombre": "Sofía Di Palma"
+      }
+    ],
+    "titulo": "Apocalipsis. Debate sobre las alucinaciones de la IA",
+    "descriptor": "Obra de teatro. Debate"
+  },
+  {
+    "id": "4kkNIuqu3W9PulRrvkeI",
+    "tipo": "mesa",
+    "fecha": "2026-06-12",
+    "horaFin": "10:30",
+    "horaInicio": "09:00",
+    "sala": "Aula 302 NC",
+    "titulo": "IA, salud y educación",
+    "mostrar": true,
+    "moderador": "María Paula Pierella"
+  },
+  {
+    "id": "7zPuKd5xS5Cajkz8hQ4h",
+    "tipo": "mesa",
+    "horaFin": "16:30",
+    "fecha": "2026-06-11",
+    "sala": "Aula 301 NC",
+    "horaInicio": "15:00",
+    "titulo": "Experiencias pedagógicas con IA",
+    "mostrar": true,
+    "moderador": "Ileana Sorgentoni"
+  },
+  {
+    "id": "9Pf7FCFfUKaQI6gq1GEn",
+    "tipo": "mesa",
+    "horaFin": "14:30",
+    "fecha": "2026-06-11",
+    "horaInicio": "13:00",
+    "titulo": "IA y enseñanza",
+    "mostrar": true,
+    "sala": "Aula 303 NC",
+    "moderador": "Magalí Gómez Castillo"
+  },
+  {
+    "id": "Cqd5ltQHItVgaK7XPEfw",
+    "tipo": "otro",
+    "fecha": "2026-06-12",
+    "titulo": "La IA piensa... ¿con nosotros o por nosotros? Una pregunta epistemológica",
+    "descriptor": "Conversatorio",
+    "mostrar": true,
+    "horaFin": "14:30",
+    "sala": "Aula 301 NC",
+    "horaInicio": "13:00",
+    "participantes": [
+      {
+        "nombre": "Pablo Racca",
+        "rol": "Moderador",
+        "institucion": "Universidad Nacional de Rosario"
+      },
+      {
+        "rol": "Moderadora",
+        "nombre": "Eugenia Vitelli",
+        "institucion": "Universidad Nacional de Rosario"
+      }
+    ]
+  },
+  {
+    "id": "DPl6aDA1Wd9eY5MpeVRX",
+    "tipo": "panel",
+    "titulo": "Panel de apertura",
+    "fecha": "2026-06-10",
+    "horaInicio": "17:00",
+    "horaFin": "18:30",
+    "sala": "Salón de Actos",
+    "participantes": [
+      {
+        "nombre": "Guillermo Rivera",
+        "institucion": "Universidad Nacional de Rosario",
+        "tituloPonencia": "El Derecho de Autor en la era de la Inteligencia Artificial: desafíos, tensiones y nuevas fronteras"
+      },
+      {
+        "nombre": "Gustavo Pellicore",
+        "institucion": "Universidad Nacional de Rosario",
+        "tituloPonencia": "De un Chat a un Agente: cómo evoluciona la Inteligencia Artificial"
+      }
+    ]
+  },
+  {
+    "id": "E5ZfdvI2NgugGUaYgct7",
+    "tipo": "panel",
+    "titulo": "¿Lenguaje es todo lo que se necesita?",
+    "fecha": "2026-06-11",
+    "horaInicio": "17:00",
+    "horaFin": "18:30",
+    "sala": "Salón de Actos",
+    "coordinador": "Andrea Rodrigo",
+    "participantes": [
+      {
+        "nombre": "Andrea Rodrigo",
+        "institucion": "LLCIA - Universidad Nacional de Rosario",
+        "invitadoId": "ksL41n0Bfr1RLutIs9rp"
+      },
+      {
+        "institucion": "Sinc(i) CONICET/Universidad Nacional del Litoral - Universidad Nacional de Entre Ríos",
+        "invitadoId": "N7eKWOYR1jc8cJSSuN06",
+        "nombre": "Hugo Leonardo Rufiner"
+      },
+      {
+        "institucion": "CIFASIS CONICET/Universidad Nacional de Rosario",
+        "invitadoId": "sHFZxsKDGU5RfuRotwsY",
+        "nombre": "Pablo Granitto"
+      }
+    ],
+    "mostrar": true
+  },
+  {
+    "id": "F3ffqm5UeGWGwjg6PKUg",
+    "tipo": "mesa",
+    "sala": "Aula 301 NC",
+    "horaFin": "10:30",
+    "fecha": "2026-06-12",
+    "horaInicio": "09:00",
+    "titulo": "IA, arte y comunicación",
+    "mostrar": true,
+    "moderador": "Cristian Villafañe"
+  },
+  {
+    "id": "FDhDltmBtT8eCBuN9iXZ",
+    "tipo": "mesa",
+    "horaFin": "12:30",
+    "fecha": "2026-06-12",
+    "horaInicio": "11:00",
+    "sala": "Aula 303 NC",
+    "titulo": "IA y filosofía",
+    "mostrar": true,
+    "moderador": "Luciano Astor"
+  },
+  {
+    "id": "Hw5Lran53IpjnboMeOTg",
+    "tipo": "mesa",
+    "horaFin": "14:30",
+    "horaInicio": "13:00",
+    "fecha": "2026-06-12",
+    "sala": "Aula 303 NC",
+    "titulo": "IA y educación superior",
+    "mostrar": true,
+    "moderador": "Natalia Ricciardi"
+  },
+  {
+    "id": "JPwisBqFRIVLaxi49kwZ",
+    "tipo": "mesa",
+    "fecha": "2026-06-11",
+    "horaInicio": "13:00",
+    "horaFin": "14:30",
+    "sala": "Aula 301 NC",
+    "titulo": "IA y problemáticas del lenguaje",
+    "mostrar": true,
+    "moderador": "Lorena Pafumi"
+  },
+  {
+    "id": "NKvH60U1lwlggcyPPVcV",
+    "tipo": "panel",
+    "fecha": "2026-06-12",
+    "horaFin": "12:30",
+    "sala": "Aula 301 NC",
+    "horaInicio": "11:00",
+    "participantes": [
+      {
+        "nombre": "Francisco Arri",
+        "institucion": "Universidad ORT Uruguay"
+      },
+      {
+        "nombre": "María Teresa Lugo",
+        "institucion": "Universidad Nacional de Quilmes"
+      }
+    ],
+    "titulo": "Desafíos de la IA en el campo educativo",
+    "mostrar": true
+  },
+  {
+    "id": "RKGCyRCBaJphUIa42tKQ",
+    "fecha": "2026-06-11",
+    "tipo": "conferencia",
+    "invitadoId": "NwtYyRDJDVEzPDYJKOf0",
+    "titulo": "Inteligencia artificial. Reconfiguración de la enseñanza desde una didáctica generativa",
+    "sala": "Aula 301 NC",
+    "horaFin": "12:30",
+    "horaInicio": "11:00",
+    "mostrar": true
+  },
+  {
+    "id": "TzAC0iDyLwPGn27RAH6O",
+    "tipo": "conferencia",
+    "titulo": "Entre algoritmos y humanismo: Inteligencia Artificial, educación y compromiso social",
+    "fecha": "2026-06-11",
+    "horaInicio": "09:00",
+    "horaFin": "10:30",
+    "sala": "Salón de Actos",
+    "invitadoId": "Mm9sP6AmbBEGPjuDmPCm",
+    "mostrar": true
+  },
+  {
+    "id": "WEvBYuXMb3asL4VI3ZUl",
+    "tipo": "conferencia",
+    "fecha": "2026-06-10",
+    "sala": "Salón de Actos",
+    "invitadoId": "SMPJqDDOuY3DwGbiQgmZ",
+    "horaFin": "20:30",
+    "horaInicio": "19:00",
+    "coordinador": "",
+    "moderador": "",
+    "titulo": "Consentimiento, daño y ficción: hacia una ética de los deepfakes",
+    "resumen": "En esta conferencia quiero analizar las implicaciones éticas de los deepfakes a partir de la relación entre consentimiento y actos comunicativos. Generados por inteligencia artificial, estos contenidos desdibujan la frontera entre lo real y lo sintético, produciendo imágenes verosímiles de hechos que nunca ocurrieron. Sostendré que, en particular en el caso de los deepfakes sexuales no consentidos, no estamos ante representaciones neutrales sino ante acciones: su circulación constituye actos que pueden insultar, humillar o silenciar, independientemente de su veracidad.\n\nMás allá de la autonomía individual, estas prácticas vulneran derechos fundamentales como la privacidad, la imagen y la dignidad, al tiempo que erosionan la confianza en la evidencia audiovisual. Frente a este escenario, propondré un marco ético basado en tres criterios: consentimiento informado, finalidad legítima y respeto por los derechos fundamentales."
+  },
+  {
+    "id": "WngfM3c0JOIxuU7Q9UTn",
+    "tipo": "pósters",
+    "fecha": "2026-06-11",
+    "sala": "Salón de Actos",
+    "horaFin": "14:00",
+    "horaInicio": "12:00",
+    "titulo": "Sesión de Pósters",
+    "mostrar": true
+  },
+  {
+    "id": "aJGgECUmh3tZJuM085ro",
+    "tipo": "panel",
+    "fecha": "2026-06-11",
+    "titulo": "Soberanía cognitiva, colonialismo algorítmico , subjetividad y educación. Un abordaje interdisciplinario",
+    "mostrar": true,
+    "sala": "Aula 302 NC",
+    "horaFin": "16:30",
+    "horaInicio": "15:00"
+  },
+  {
+    "id": "adFC3ktmBFDW1BMNCuXQ",
+    "tipo": "otro",
+    "fecha": "2026-06-12",
+    "horaInicio": "15:00",
+    "horaFin": "16:30",
+    "descriptor": "Charla",
+    "titulo": "El nuevo ecosistema cognitivo: entre gente y agentes",
+    "mostrar": true,
+    "participantes": [
+      {
+        "nombre": "Matías Grinberg",
+        "institucion": "Humai - Universidad de San Andrés",
+        "invitadoId": "VI4GINXsOTVraukb9t6r"
+      }
+    ],
+    "sala": "Aula 301 NC"
+  },
+  {
+    "id": "eN8QxXpePcQdGNZuaPAu",
+    "tipo": "conferencia",
+    "fecha": "2026-06-12",
+    "sala": "Salón de Actos",
+    "invitadoId": "0s6bpbQJcKVwUY4fospE",
+    "horaFin": "19:30",
+    "horaInicio": "18:00",
+    "titulo": "IA y la re-construcción de la Realidad Social ",
+    "mostrar": true
+  },
+  {
+    "id": "etmL4k73Jz2teEdOKaOs",
+    "tipo": "mesa",
+    "fecha": "2026-06-11",
+    "titulo": "IA, utopía, distopía",
+    "mostrar": true,
+    "horaFin": "12:30",
+    "horaInicio": "11:00",
+    "sala": "Aula 303 NC",
+    "moderador": "Susana Daz Paradot"
+  },
+  {
+    "id": "hKOtk2JlKiScSiO80uyK",
+    "tipo": "mesa",
+    "fecha": "2026-06-12",
+    "horaFin": "12:30",
+    "horaInicio": "11:00",
+    "sala": "Aula 302 NC",
+    "titulo": "IA, problemas éticos y jurídicos",
+    "mostrar": true,
+    "moderador": "Erika Nawoczyk "
+  },
+  {
+    "id": "oeZcBnbzcUEfXgW6POxq",
+    "tipo": "mesa",
+    "horaFin": "10:30",
+    "fecha": "2026-06-12",
+    "sala": "Aula 303 NC",
+    "horaInicio": "09:00",
+    "titulo": "IA y escritura",
+    "mostrar": true,
+    "moderador": "Florencia Miranda"
+  },
+  {
+    "id": "u75nXgbAIjTLWmbqPgvI",
+    "tipo": "panel",
+    "titulo": "Inteligencias artificiales: tecnopoder y nuevos modos de coloniaje",
+    "fecha": "2026-06-12",
+    "horaInicio": "17:00",
+    "horaFin": "18:00",
+    "sala": "Salón de Actos",
+    "participantes": [
+      {
+        "nombre": "Fernando Irigaray",
+        "institucion": "Universidad Nacional de Rosario"
+      },
+      {
+        "nombre": "Sebastián Castro Rojas",
+        "institucion": "Universidad Nacional de Rosario"
+      }
+    ],
+    "mostrar": true
+  },
+  {
+    "id": "zHDiFpYD8OYm0FeGZDDC",
+    "tipo": "otro",
+    "fecha": "2026-06-11",
+    "horaInicio": "19:00",
+    "horaFin": "20:30",
+    "sala": "Salón de Actos",
+    "descriptor": "Charla",
+    "titulo": "Los Fabricantes",
+    "mostrar": true,
+    "participantes": [
+      {
+        "nombre": "Tomás Vizzón",
+        "institucion": "Anfibia Podcast - Universidad Nacional de San Martín - Universidad de San Andrés",
+        "invitadoId": "3eGAwEgJwgcH9FOnvut1"
+      },
+      {
+        "nombre": "Florencia Cornara",
+        "institucion": "Universidad Nacional de Hurlingham",
+        "invitadoId": "RXAt9Zu8AQw5vDepBf3g"
+      }
+    ]
+  },
+  {
+    "id": "zxyWpnrm3qPRtSShvHyQ",
+    "tipo": "panel",
+    "fecha": "2026-06-12",
+    "titulo": "Pensar la IA. Miradas interdisciplinarias en debate",
+    "horaFin": "16:30",
+    "horaInicio": "15:00",
+    "sala": "Aula 303 NC",
+    "mostrar": true
+  }
+]

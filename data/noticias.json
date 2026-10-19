@@ -1,0 +1,47 @@
+[
+  {
+    "id": "2ofwZZ3l6dkXeH8hOTHl",
+    "resumen": "Ya se encuentra disponible el programa de las Jornadas. ",
+    "nuevaPestania": false,
+    "enlace": "https://jornadas-ia.site/programa",
+    "titulo": "Programa",
+    "creado": "2026-05-30T14:28:54.078Z",
+    "fecha": "2026-05-29"
+  },
+  {
+    "id": "DDNEHieJksNLqQew81hB",
+    "fecha": "2026-05-08",
+    "creado": "2026-05-10T22:55:14.825Z",
+    "nuevaPestania": true,
+    "titulo": "Convocatoria para voluntarios",
+    "enlace": "https://docs.google.com/forms/d/e/1FAIpQLScm58YnGnBJ8-ksOzs9HA1Wem7Fljtrn4FAqPHU780LG7_-Tw/viewform",
+    "resumen": "👉 Se convocan estudiantes para colaborar en la realización de las Jornadas: \"La Inteligencia Artificial en Debate\" organizadas por la Facultad de Humanidades y Artes de la UNR que se realizarán los días 10, 11 y 12 de junio de 2026. La convocatoria está orientada a estudiantes de cualquiera de las carreras de nuestra Casa de Estudios. +info: estud-hum@unr.edu.ar"
+  },
+  {
+    "id": "E9KmI891c3R6VR6Cd41C",
+    "enlace": "https://forms.gle/3m5nuZt681HgLnHQ9",
+    "fecha": "2026-05-30",
+    "resumen": "Está disponible el formulario de inscripción para asistir a las Jornadas. Las actividades son gratuitas, pero quienes deseen contar con un certificado por su participación deberán pagar un arancel. En ese caso los días del evento deberán acercarse a la mesa de acreditaciones para confirmar su asistencia.",
+    "titulo": "Inscripción como asistentes",
+    "nuevaPestania": true,
+    "creado": "2026-05-30T14:36:16.107Z"
+  },
+  {
+    "id": "paAxuFA8HPh6OL1NKL2l",
+    "titulo": "SEGUNDA CIRCULAR",
+    "resumen": "Ya se encuentra disponible la Segunda Circular convocando a participar en las Jornadas.",
+    "fecha": "2026-04-14",
+    "enlace": "https://drive.google.com/file/d/1NYfCTfNe6Sf6pCivoTKcHvQM389iOP3y/view?usp=share_link",
+    "creado": "2026-04-14T22:00:37.720Z",
+    "nuevaPestania": true
+  },
+  {
+    "id": "wuOAjNP71YzZpTsBhJ76",
+    "titulo": "Prórroga del plazo para presentación de resúmenes",
+    "resumen": "Se prorroga hasta el 3 de mayo de 2026 el envío de resúmenes para participar como expositor en las Jornadas",
+    "fecha": "2026-04-14",
+    "enlace": "",
+    "creado": "2026-04-14T03:33:38.472Z",
+    "nuevaPestania": true
+  }
+]
