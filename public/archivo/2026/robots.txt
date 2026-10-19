@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://jornadas-ia.site/archivo/2026/sitemap.xml
