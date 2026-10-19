@@ -22,7 +22,7 @@ export const CONGRESO = {
   pais:         'Argentina',
   fechaInicio:  new Date('2026-06-10T09:00:00-03:00'),
   fechaTexto:   '10 · 11 · 12 de junio de 2026',
-  url:          'https://jornadas-ia.site',
+  url:          'https://2026.jornadas-ia.site',
   urlInstitucion: 'https://fhumyar.unr.edu.ar',
   logoPath:     '/logo-hya.png',
   instagram:           'https://www.instagram.com/jornadas.ia/',
