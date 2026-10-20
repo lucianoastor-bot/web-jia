@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect } from 'react'
 import { CONGRESO } from '@/congreso.config'
 
@@ -69,12 +68,12 @@ export default function Hero() {
         </div>
 
         <div className="hero__actions">
-          <Link href="/programa" className="btn btn--primary">
+          <a href="/archivo/2026/programa/" className="btn btn--primary">
             Programa
-          </Link>
-          <Link href="/contacto" className="btn btn--ghost">
+          </a>
+          <a href="/archivo/2026/contacto/" className="btn btn--ghost">
             Contacto
-          </Link>
+          </a>
         </div>
 
       </div>

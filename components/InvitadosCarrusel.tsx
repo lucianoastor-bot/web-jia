@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import { useInvitados }   from '@/lib/hooks/useInvitados'
 import { useActividades } from '@/lib/hooks/useActividades'
@@ -116,9 +115,9 @@ export default function InvitadosCarrusel() {
                 })
 
               return (
-                <Link
+                <a
                   key={inv.id}
-                  href="/invitados"
+                  href="/archivo/2026/invitados/"
                   className="invitado-card"
                   style={{ flex: `0 0 calc((100% - ${visible - 1} * var(--carousel-gap)) / ${visible})` }}
                 >
@@ -153,7 +152,7 @@ export default function InvitadosCarrusel() {
                       </div>
                     )}
                   </div>
-                </Link>
+                </a>
               )
             })}
           </div>

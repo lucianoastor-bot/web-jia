@@ -2,45 +2,39 @@
 
 import React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { useState, useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useState } from 'react'
 import { CONGRESO } from '@/congreso.config'
 import { NAVEGACION } from '@/app.config'
 
+// ARCHIVO 2026: el sitio se publica bajo /archivo/2026, servido como estático
+// desde una subcarpeta del sitio principal. Para evitar que el router SPA de
+// Next duplique el basePath al navegar, TODA la navegación interna usa anclas
+// normales (<a>, recarga completa) con la URL absoluta del archivo.
+const BASE = '/archivo/2026'
+
+function archivoHref(href: string): string {
+  if (href.startsWith('http')) return href                 // externo (ej: Instagram)
+  if (href.startsWith('/#'))   return `${BASE}/${href.slice(1)}` // /#organizacion → /archivo/2026/#organizacion
+  return `${BASE}${href}/`                                   // /invitados → /archivo/2026/invitados/
+}
+
+const InstagramIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+    <circle cx="12" cy="12" r="4"/>
+    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+  </svg>
+)
+
 export default function Header() {
-  const [open, setOpen]   = useState(false)
-  const router            = useRouter()
-  const pathname          = usePathname()
-
-  // Navegación a secciones del home via hash.
-  // Si ya estamos en /, hace scrollIntoView directo.
-  // Si venimos de otra página, navega sin scroll y luego desplaza al elemento.
-  const handleHashNav = useCallback((e: React.MouseEvent, href: string) => {
-    e.preventDefault()
-    const id = href.replace('/#', '')
-    setOpen(false)
-
-    const scrollToEl = () => {
-      const el = document.getElementById(id)
-      if (el) el.scrollIntoView({ behavior: 'smooth' })
-    }
-
-    if (pathname === '/') {
-      scrollToEl()
-    } else {
-      router.push('/', { scroll: false })
-      // Espera a que el home renderice antes de desplazar
-      setTimeout(scrollToEl, 400)
-    }
-  }, [pathname, router])
+  const [open, setOpen] = useState(false)
 
   return (
     <>
       <nav className="nav" role="navigation" aria-label="Navegación principal">
 
         {/* Brand */}
-        <Link href="/" className="nav__brand">
+        <a href={`${BASE}/`} className="nav__brand">
           <Image
             className="nav__brand-logo"
             src={CONGRESO.logoPath}
@@ -53,7 +47,7 @@ export default function Header() {
             <span className="nav__brand-title">{CONGRESO.nombreCorto}</span>
             <span className="nav__brand-sub">{CONGRESO.siglas} · {CONGRESO.anio}</span>
           </div>
-        </Link>
+        </a>
 
         {/* Desktop links */}
         <ul className="nav__links">
@@ -61,18 +55,13 @@ export default function Header() {
             <React.Fragment key={enlace.href}>
               {i > 0 && <li><span className="nav__sep">·</span></li>}
               <li>
-                {enlace.href.startsWith('/#')
-                  ? <a href={enlace.href} className="nav__link" onClick={e => handleHashNav(e, enlace.href)}>
-                      {enlace.etiqueta}
-                    </a>
-                  : enlace.href.startsWith('http')
-                  ? <a href={enlace.href} className="nav__link" target="_blank" rel="noopener noreferrer">
-                      {enlace.etiqueta}
-                    </a>
-                  : <Link href={enlace.href} className="nav__link">
-                      {enlace.etiqueta}
-                    </Link>
-                }
+                <a
+                  href={archivoHref(enlace.href)}
+                  className="nav__link"
+                  {...(enlace.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  {enlace.etiqueta}
+                </a>
               </li>
             </React.Fragment>
           ))}
@@ -84,11 +73,7 @@ export default function Header() {
               rel="noopener noreferrer"
               aria-label="Instagram de las Jornadas"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <circle cx="12" cy="12" r="4"/>
-                <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
-              </svg>
+              <InstagramIcon />
             </a>
           </li>
         </ul>
@@ -109,37 +94,16 @@ export default function Header() {
       {/* Mobile drawer */}
       <div className={`nav__drawer ${open ? 'is-open' : ''}`} role="menu">
         {NAVEGACION.map(enlace => (
-          enlace.href.startsWith('/#')
-            ? <a
-                key={enlace.href}
-                href={enlace.href}
-                className="nav__link"
-                role="menuitem"
-                onClick={e => handleHashNav(e, enlace.href)}
-              >
-                {enlace.etiqueta}
-              </a>
-            : enlace.href.startsWith('http')
-            ? <a
-                key={enlace.href}
-                href={enlace.href}
-                className="nav__link"
-                role="menuitem"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
-              >
-                {enlace.etiqueta}
-              </a>
-            : <Link
-                key={enlace.href}
-                href={enlace.href}
-                className="nav__link"
-                role="menuitem"
-                onClick={() => setOpen(false)}
-              >
-                {enlace.etiqueta}
-              </Link>
+          <a
+            key={enlace.href}
+            href={archivoHref(enlace.href)}
+            className="nav__link"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            {...(enlace.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {enlace.etiqueta}
+          </a>
         ))}
         <a
           href={CONGRESO.instagram}
@@ -149,11 +113,7 @@ export default function Header() {
           aria-label="Instagram de las Jornadas"
           onClick={() => setOpen(false)}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-            <circle cx="12" cy="12" r="4"/>
-            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
-          </svg>
+          <InstagramIcon />
           Instagram
         </a>
       </div>
