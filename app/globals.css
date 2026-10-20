@@ -5,9 +5,5 @@
 
 @import './css/tokens.css';
 @import './css/base.css';
-@import './css/animations.css';
-@import './css/nav.css';
-@import './css/hero.css';
 @import './css/content.css';
-@import './css/sections.css';
 @import './css/admin.css';
