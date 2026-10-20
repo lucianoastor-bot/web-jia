@@ -1,57 +1,169 @@
-import Hero from '@/components/Hero'
-import Ejes from '@/components/Ejes'
-import InvitadosCarrusel from '@/components/InvitadosCarrusel'
-import Noticias from '@/components/Noticias'
-import SeccionOrganizacion from '@/components/SeccionOrganizacion'
-import SeccionContacto from '@/components/SeccionContacto'
-import { CONGRESO } from '@/congreso.config'
+// app/page.tsx
+// Landing provisoria: el sitio 2026 quedó archivado en /archivo/2026 y la
+// edición 2027 está en preparación.
 
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'EducationEvent',
-  name: CONGRESO.nombre,
-  description: `Jornadas académicas sobre inteligencia artificial organizadas por la ${CONGRESO.institucion} de la ${CONGRESO.universidad}.`,
-  startDate: '2026-06-10T09:00:00-03:00',
-  endDate: '2026-06-12T20:00:00-03:00',
-  eventStatus: 'https://schema.org/EventScheduled',
-  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-  location: {
-    '@type': 'Place',
-    name: `${CONGRESO.institucion} — ${CONGRESO.universidad}`,
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Entre Ríos 758',
-      addressLocality: 'Rosario',
-      addressRegion: 'Santa Fe',
-      addressCountry: 'AR',
-    },
-  },
-  organizer: {
-    '@type': 'Organization',
-    name: `${CONGRESO.institucion}, ${CONGRESO.universidad}`,
-    url: CONGRESO.urlInstitucion,
-  },
-  url: CONGRESO.url,
-  image: `${CONGRESO.url}/og.png`,
-}
+import { CONGRESO } from '@/congreso.config'
 
 export default function Home() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      <main>
-        <Hero />
-        <div className="content" id="contenido">
-          <div className="home-bloque"><InvitadosCarrusel /></div>
-          <div className="home-bloque home-bloque--tinted"><Ejes /></div>
-          <div className="home-bloque"><Noticias /></div>
-          <div className="home-bloque home-bloque--tinted"><SeccionOrganizacion /></div>
-          <div className="home-bloque"><SeccionContacto /></div>
+    <div
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--c-dark)',
+        color: 'var(--c-white)',
+        fontFamily: 'var(--font-sans)',
+      }}
+    >
+      {/* Barra superior: login */}
+      <header style={{ display: 'flex', justifyContent: 'flex-end', padding: '1.5rem 8vw' }}>
+        <a
+          href="/login"
+          style={{
+            color: 'var(--c-white)',
+            textDecoration: 'none',
+            fontSize: '0.8rem',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            fontWeight: 500,
+            opacity: 0.7,
+          }}
+        >
+          Login
+        </a>
+      </header>
+
+      {/* Contenido central */}
+      <main
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          gap: '2rem',
+          padding: '1rem 8vw',
+        }}
+      >
+        <div style={{ maxWidth: '760px', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <p
+            style={{
+              fontSize: 'clamp(1.2rem, 3vw, 1.7rem)',
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              color: 'var(--c-turq)',
+              fontWeight: 500,
+              margin: 0,
+            }}
+          >
+            Jornadas
+          </p>
+
+          <h1
+            style={{
+              fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+              lineHeight: 1.1,
+              fontWeight: 700,
+              margin: 0,
+            }}
+          >
+            La Inteligencia Artificial en debate
+          </h1>
+
+          <p
+            style={{
+              fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)',
+              color: 'rgba(255,255,255,0.75)',
+              margin: 0,
+            }}
+          >
+            Ya estamos trabajando en las de 2027
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+          <a
+            href="/archivo/2026/index.html"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.9rem 1.8rem',
+              background: 'var(--c-turq)',
+              color: 'var(--c-dark)',
+              fontWeight: 700,
+              fontSize: '1rem',
+              textDecoration: 'none',
+              borderRadius: '2px',
+            }}
+          >
+            Jornadas 2026 →
+          </a>
+
+          {/* Instagram + contacto */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', marginTop: '0.25rem' }}>
+            <a
+              href={CONGRESO.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                color: 'var(--c-white)',
+                textDecoration: 'none',
+                opacity: 0.85,
+                fontSize: '0.95rem',
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+              </svg>
+              @jornadas.ia
+            </a>
+
+            <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', margin: 0 }}>
+              Contacto:{' '}
+              <a
+                href="mailto:ia.jornadas.hya@gmail.com"
+                style={{ color: 'var(--c-turq)', textDecoration: 'none' }}
+              >
+                ia.jornadas.hya@gmail.com
+              </a>
+            </p>
+          </div>
         </div>
       </main>
-    </>
+
+      {/* Logos institucionales — igual que el footer 2026 */}
+      <footer
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2.5rem',
+          padding: '2.5rem 8vw',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo-upar.png"
+          alt="Universidad Nacional de Rosario"
+          style={{ height: '48px', width: 'auto' }}
+        />
+        <a href={CONGRESO.urlInstitucion} target="_blank" rel="noopener noreferrer">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-hya.png"
+            alt={`${CONGRESO.institucion} — ${CONGRESO.universidad}`}
+            style={{ height: '48px', width: 'auto', display: 'block' }}
+          />
+        </a>
+      </footer>
+    </div>
   )
 }

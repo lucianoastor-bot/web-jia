@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin', '/login'],
+      disallow: ['/admin', '/login', '/acreditacion'],
     },
     sitemap: `${CONGRESO.url}/sitemap.xml`,
   }

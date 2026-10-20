@@ -8,39 +8,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: base,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 1,
     },
     {
-      url: `${base}/invitados`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${base}/propuestas`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${base}/organizacion`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    // Agregar cuando esté disponible:
-    // {
-    //   url: `${base}/programa`,
-    //   lastModified: new Date(),
-    //   changeFrequency: 'weekly',
-    //   priority: 0.9,
-    // },
-    {
-      url: `${base}/contacto`,
+      url: `${base}/archivo/2026/`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
-      priority: 0.5,
+      priority: 0.6,
     },
   ]
 }
